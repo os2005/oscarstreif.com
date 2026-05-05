@@ -72,12 +72,12 @@ a {
 
 .topographic-map {
   position: absolute;
-  inset: -4%;
+  inset: -2%;
   z-index: 1;
-  width: 108%;
-  height: 108%;
+  width: 104%;
+  height: 104%;
   fill: none;
-  opacity: 0.34;
+  opacity: 0.38;
 }
 
 .topographic-map path {
@@ -86,30 +86,35 @@ a {
   stroke-linejoin: round;
 }
 
-.topographic-map__flow {
-  opacity: 0.32;
-  stroke: rgba(122, 122, 122, 0.46);
-  stroke-width: 1;
-}
-
-.topographic-map__hill {
-  stroke: rgba(135, 135, 135, 0.5);
-  stroke-width: 1.05;
-}
-
-.topographic-map__hill--main {
-  opacity: 0.58;
-}
-
-.topographic-map__hill--left,
-.topographic-map__hill--upper {
-  opacity: 0.38;
-}
-
-.topographic-map__ridge {
-  opacity: 0.24;
-  stroke: rgba(112, 112, 112, 0.44);
+.topographic-map__terrain {
+  opacity: 0.2;
+  stroke: rgba(150, 150, 150, 0.48);
   stroke-width: 0.9;
+}
+
+.topographic-map__island {
+  opacity: 0.34;
+  stroke: rgba(150, 150, 150, 0.52);
+  stroke-width: 0.85;
+}
+
+.topographic-map__island--small {
+  opacity: 0.28;
+  stroke-width: 0.78;
+}
+
+.topographic-map__island path:nth-child(2n) {
+  opacity: 0.78;
+}
+
+.topographic-map__island path:nth-child(3n) {
+  opacity: 0.62;
+}
+
+.topographic-map__survey {
+  opacity: 0.14;
+  stroke: rgba(160, 160, 160, 0.5);
+  stroke-width: 0.85;
 }
 
 .hero-scramble-live {

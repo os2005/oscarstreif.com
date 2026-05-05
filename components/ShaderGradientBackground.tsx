@@ -1,3 +1,87 @@
+const CONTOUR_LOOPS = [
+  "M-152 4C-146-78-82-132 9-139C103-146 174-91 181-10C189 79 123 142 23 149C-78 156-159 96-152 4Z",
+  "M-124 2C-119-59-72-100 2-106C76-112 133-71 140-8C148 61 96 108 18 114C-61 120-130 73-124 2Z",
+  "M-96 1C-91-44-58-76-3-81C52-86 98-55 104-7C111 45 72 82 12 87C-47 92-101 55-96 1Z",
+  "M-69-2C-64-33-40-54 0-57C40-60 73-38 78-5C84 31 54 58 10 62C-33 66-74 38-69-2Z",
+  "M-43-4C-39-23-24-36 3-38C30-39 52-25 55-5C59 18 38 35 10 38C-17 40-47 22-43-4Z",
+  "M-21-4C-18-14-10-21 5-22C20-22 32-14 34-4C36 9 23 18 8 19C-7 20-24 10-21-4Z",
+];
+
+const SMALL_CONTOUR_LOOPS = [
+  "M-88 0C-83-46-44-74 9-76C63-78 99-44 98 3C97 50 56 79 4 78C-49 77-93 48-88 0Z",
+  "M-66 1C-62-32-34-52 5-54C44-55 71-31 71 2C70 35 41 56 3 56C-36 55-70 35-66 1Z",
+  "M-43 0C-40-20-23-33 4-34C31-35 49-20 49 1C49 23 29 37 3 37C-23 36-46 22-43 0Z",
+  "M-22-1C-20-11-10-19 5-19C20-19 30-10 30 1C30 14 17 21 3 21C-12 20-24 12-22-1Z",
+];
+
+const CONTOUR_ISLANDS = [
+  { transform: "translate(116 74) rotate(-17) scale(0.72 0.52)", size: "small" },
+  { transform: "translate(318 92) rotate(11) scale(0.58 0.9)" },
+  { transform: "translate(535 65) rotate(-28) scale(0.52 0.42)", size: "small" },
+  { transform: "translate(735 112) rotate(19) scale(0.48 0.74)", size: "small" },
+  { transform: "translate(1010 92) rotate(-9) scale(0.72 0.48)" },
+  { transform: "translate(1305 112) rotate(14) scale(0.56 0.84)" },
+  { transform: "translate(1516 84) rotate(-20) scale(0.42 0.54)", size: "small" },
+  { transform: "translate(95 286) rotate(23) scale(0.54 0.86)" },
+  { transform: "translate(278 318) rotate(-11) scale(0.62 0.44)", size: "small" },
+  { transform: "translate(515 285) rotate(8) scale(0.84 0.62)" },
+  { transform: "translate(782 310) rotate(-5) scale(0.56 1.08)" },
+  { transform: "translate(1082 322) rotate(21) scale(0.76 0.56)" },
+  { transform: "translate(1358 292) rotate(-15) scale(0.52 0.66)", size: "small" },
+  { transform: "translate(1554 334) rotate(12) scale(0.44 0.82)" },
+  { transform: "translate(190 528) rotate(-27) scale(0.72 0.5)" },
+  { transform: "translate(432 558) rotate(15) scale(0.64 0.78)" },
+  { transform: "translate(674 514) rotate(-8) scale(0.48 0.56)", size: "small" },
+  { transform: "translate(918 548) rotate(18) scale(0.84 0.64)" },
+  { transform: "translate(1198 535) rotate(-19) scale(0.62 0.9)" },
+  { transform: "translate(1448 552) rotate(8) scale(0.52 0.58)", size: "small" },
+  { transform: "translate(70 760) rotate(8) scale(0.48 0.72)", size: "small" },
+  { transform: "translate(335 780) rotate(-14) scale(0.76 0.54)" },
+  { transform: "translate(602 760) rotate(22) scale(0.52 0.78)" },
+  { transform: "translate(860 786) rotate(-10) scale(0.42 0.52)", size: "small" },
+  { transform: "translate(1095 765) rotate(12) scale(0.7 0.5)" },
+  { transform: "translate(1398 782) rotate(-21) scale(0.66 0.84)" },
+  { transform: "translate(1605 742) rotate(13) scale(0.44 0.62)", size: "small" },
+];
+
+const SURVEY_MARKS = [
+  "translate(92 164)",
+  "translate(356 170)",
+  "translate(672 150)",
+  "translate(930 162)",
+  "translate(1268 176)",
+  "translate(1510 158)",
+  "translate(172 414)",
+  "translate(420 430)",
+  "translate(760 410)",
+  "translate(1040 424)",
+  "translate(1330 430)",
+  "translate(1546 408)",
+  "translate(244 694)",
+  "translate(540 704)",
+  "translate(834 690)",
+  "translate(1168 708)",
+  "translate(1476 690)",
+];
+
+function ContourIsland({
+  transform,
+  size,
+}: {
+  transform: string;
+  size?: string;
+}) {
+  const loops = size === "small" ? SMALL_CONTOUR_LOOPS : CONTOUR_LOOPS;
+
+  return (
+    <g className={`topographic-map__island${size === "small" ? " topographic-map__island--small" : ""}`} transform={transform}>
+      {loops.map((path, index) => (
+        <path d={path} key={index} />
+      ))}
+    </g>
+  );
+}
+
 export function ShaderGradientBackground() {
   return (
     <div aria-hidden="true" className="static-grain-background absolute inset-0 z-0">
@@ -7,36 +91,23 @@ export function ShaderGradientBackground() {
         preserveAspectRatio="xMidYMid slice"
         viewBox="0 0 1600 900"
       >
-        <g className="topographic-map__flow">
-          <path d="M-80 214C120 128 280 116 420 174C568 235 701 235 845 172C1004 102 1164 118 1314 226C1419 302 1536 323 1680 270" />
-          <path d="M-72 290C112 215 270 207 414 261C560 316 708 312 864 244C1008 181 1151 199 1285 293C1405 377 1528 399 1666 354" />
-          <path d="M-90 682C118 599 302 599 451 681C596 761 745 767 907 693C1064 622 1218 632 1368 725C1468 786 1572 799 1688 760" />
-          <path d="M-76 754C118 686 293 690 443 762C594 835 737 840 895 775C1052 710 1201 719 1342 799C1444 857 1550 868 1672 834" />
+        <g className="topographic-map__terrain">
+          <path d="M-80 210C54 168 140 172 230 226C330 287 430 274 514 189C597 106 710 95 814 157C907 213 1010 207 1108 138C1214 64 1338 72 1436 156C1518 226 1598 234 1680 192" />
+          <path d="M-74 372C74 312 180 326 274 411C365 493 491 482 590 386C688 291 818 282 916 363C1013 444 1135 436 1234 350C1329 268 1448 267 1546 346C1608 396 1658 405 1712 386" />
+          <path d="M-92 640C40 585 154 596 258 676C368 761 494 762 611 676C726 591 844 590 954 672C1067 755 1196 760 1302 682C1414 600 1541 609 1678 712" />
         </g>
 
-        <g className="topographic-map__hill topographic-map__hill--main">
-          <path d="M702 401C719 292 824 222 966 218C1116 214 1247 284 1314 393C1379 499 1344 610 1234 690C1124 770 962 785 837 720C723 661 681 531 702 401Z" />
-          <path d="M789 410C806 322 894 267 1004 270C1119 274 1220 329 1272 412C1327 500 1296 588 1204 648C1115 707 985 716 886 662C797 614 772 498 789 410Z" />
-          <path d="M876 416C891 352 956 314 1037 321C1124 328 1196 369 1230 431C1266 497 1238 564 1166 607C1098 649 1001 653 928 613C864 578 862 477 876 416Z" />
-          <path d="M955 430C967 390 1011 367 1064 375C1120 384 1168 413 1188 454C1210 499 1188 543 1139 569C1094 592 1031 592 990 566C952 542 945 468 955 430Z" />
-          <path d="M1023 444C1035 421 1061 410 1090 417C1121 424 1147 443 1156 467C1166 494 1150 519 1121 532C1094 544 1058 541 1038 523C1018 506 1014 466 1023 444Z" />
-        </g>
+        {CONTOUR_ISLANDS.map((island) => (
+          <ContourIsland key={island.transform} {...island} />
+        ))}
 
-        <g className="topographic-map__hill topographic-map__hill--left">
-          <path d="M116 622C171 541 279 517 378 559C470 598 518 695 468 773C421 847 300 870 198 824C104 781 64 699 116 622Z" />
-          <path d="M182 648C221 595 292 581 356 609C417 635 449 700 416 751C384 799 304 812 237 782C174 754 146 697 182 648Z" />
-          <path d="M244 676C268 647 307 640 342 656C375 671 394 707 376 735C358 762 314 769 278 753C244 738 224 701 244 676Z" />
-        </g>
-
-        <g className="topographic-map__hill topographic-map__hill--upper">
-          <path d="M346 144C392 84 482 70 558 105C633 140 661 215 616 272C570 329 480 344 407 311C334 278 301 203 346 144Z" />
-          <path d="M401 168C431 132 486 125 533 147C580 169 599 217 570 252C542 287 483 296 438 274C395 253 373 203 401 168Z" />
-          <path d="M451 190C468 174 496 171 519 183C543 196 553 220 537 236C521 253 492 256 470 244C448 232 435 206 451 190Z" />
-        </g>
-
-        <g className="topographic-map__ridge">
-          <path d="M1305 60C1267 143 1263 215 1290 279C1318 347 1306 418 1262 487C1218 555 1207 626 1231 702C1251 766 1241 833 1198 922" />
-          <path d="M1380 38C1349 116 1349 183 1375 241C1404 304 1394 368 1355 431C1313 498 1305 565 1330 635C1351 694 1344 766 1306 858" />
+        <g className="topographic-map__survey">
+          {SURVEY_MARKS.map((transform) => (
+            <g key={transform} transform={transform}>
+              <path d="M-14 0H14" />
+              <path d="M0-14V14" />
+            </g>
+          ))}
         </g>
       </svg>
     </div>
