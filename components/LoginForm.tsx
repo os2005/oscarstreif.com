@@ -28,8 +28,8 @@ export function LoginForm({ next }: LoginFormProps) {
           className="w-full rounded-2xl border border-white/12 bg-black/55 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-white/40"
           id="email"
           name="email"
-          type="text"
-          autoComplete="username"
+          type="email"
+          autoComplete="email"
           required
         />
       </div>
