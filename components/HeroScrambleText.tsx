@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type TextPart = {
   text: string;
@@ -128,22 +128,18 @@ export function HeroScrambleText({ parts }: HeroScrambleTextProps) {
 
     hasAnimatedRef.current = true;
 
-    let frameId = 0;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      const nextElapsed = Math.min(now - start, totalDuration);
+    const startedAt = performance.now();
+    const intervalId = window.setInterval(() => {
+      const nextElapsed = Math.min(performance.now() - startedAt, totalDuration);
       setElapsed(nextElapsed);
 
-      if (nextElapsed < totalDuration) {
-        frameId = window.requestAnimationFrame(tick);
+      if (nextElapsed >= totalDuration) {
+        window.clearInterval(intervalId);
       }
-    };
-
-    frameId = window.requestAnimationFrame(tick);
+    }, SCRAMBLE_STEP_MS);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
+      window.clearInterval(intervalId);
     };
   }, [reducedMotion, totalDuration]);
 
@@ -200,3 +196,5 @@ export function HeroScrambleText({ parts }: HeroScrambleTextProps) {
     </span>
   );
 }
+
+export default memo(HeroScrambleText);
