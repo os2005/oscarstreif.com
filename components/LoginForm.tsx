@@ -14,7 +14,10 @@ export function LoginForm({ next }: LoginFormProps) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="space-y-5 border border-white/10 bg-black/55 p-6 backdrop-blur">
+    <form
+      action={formAction}
+      className="space-y-5 rounded-[28px] border border-white/12 bg-white/[0.055] p-6 shadow-[0_18px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+    >
       {state.error ? <FormMessage kind="error">{state.error}</FormMessage> : null}
       <input name="next" type="hidden" value={next ?? ""} />
       <div>
@@ -22,11 +25,11 @@ export function LoginForm({ next }: LoginFormProps) {
           E-Mail
         </label>
         <input
-          className="w-full border border-white/12 bg-black px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-white/40"
+          className="w-full rounded-2xl border border-white/12 bg-black/55 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-white/40"
           id="email"
           name="email"
-          type="email"
-          autoComplete="email"
+          type="text"
+          autoComplete="username"
           required
         />
       </div>
@@ -35,7 +38,7 @@ export function LoginForm({ next }: LoginFormProps) {
           Password
         </label>
         <input
-          className="w-full border border-white/12 bg-black px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-white/40"
+          className="w-full rounded-2xl border border-white/12 bg-black/55 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-white/40"
           id="password"
           name="password"
           type="password"
@@ -44,7 +47,7 @@ export function LoginForm({ next }: LoginFormProps) {
         />
       </div>
       <button
-        className="w-full border border-white/16 bg-white px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-2xl border border-white/16 bg-white px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

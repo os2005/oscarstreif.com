@@ -21,7 +21,7 @@ type PrivatePageProps = {
 function renderSection(section: "overview" | "password" | "invite" | "members") {
   if (section === "password") {
     return (
-      <AuthCard title="Change Password" description="Update your admin password for future logins.">
+      <AuthCard title="Change Password" description="Update your admin password for future logins." tone="dark">
         <PasswordChangeForm />
       </AuthCard>
     );
@@ -29,7 +29,7 @@ function renderSection(section: "overview" | "password" | "invite" | "members") 
 
   if (section === "invite") {
     return (
-      <AuthCard title="Create Invitation" description="Create a login for a new shared user.">
+      <AuthCard title="Create Invitation" description="Create a login for a new shared user." tone="dark">
         <InviteUserForm />
       </AuthCard>
     );
@@ -71,12 +71,12 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
 
       <div className="mt-10">
         {section === "members" ? (
-          <AuthCard title="Manage Members" description="Review all existing logins, adjust access levels or delete members.">
+          <AuthCard title="Manage Members" description="Review all existing logins, adjust access levels or delete members." tone="dark">
             <MemberManagement initialAdminEmail={ADMIN_EMAIL} members={members} />
           </AuthCard>
         ) : section === "overview" ? (
-          <AuthCard title="Admin Overview" description="Open the settings menu to change your password, invite shared users or manage members.">
-            <p className="max-w-2xl text-base leading-7 text-ink/72">
+          <AuthCard title="Admin Overview" description="Open the settings menu to change your password, invite shared users or manage members." tone="dark">
+            <p className="max-w-2xl text-base leading-7 text-paper/72">
               Shared users can only access the Shared Area. The Private Area and all member administration remain restricted
               to the admin account.
             </p>

@@ -6,8 +6,8 @@ type FormMessageProps = {
 export function FormMessage({ kind, children }: FormMessageProps) {
   const styles =
     kind === "error"
-      ? "border-red-400/45 bg-red-50 text-red-900"
-      : "border-emerald-500/35 bg-emerald-50 text-emerald-950";
+      ? "border-red-400/28 bg-red-400/8 text-red-100"
+      : "border-emerald-400/24 bg-emerald-400/8 text-emerald-100";
 
   return <div className={`mb-5 border px-4 py-3 text-sm leading-6 ${styles}`}>{children}</div>;
 }

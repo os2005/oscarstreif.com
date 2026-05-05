@@ -14,11 +14,11 @@ export function PasswordChangeForm() {
       {state.error ? <FormMessage kind="error">{state.error}</FormMessage> : null}
       {state.success ? <FormMessage kind="success">{state.success}</FormMessage> : null}
       <div>
-        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-ink/58" htmlFor="currentPassword">
+        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-paper/58" htmlFor="currentPassword">
           Current password
         </label>
         <input
-          className="w-full border border-ink/18 bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-accent"
+          className="w-full rounded-2xl border border-paper/14 bg-black/55 px-4 py-3 text-base text-paper outline-none transition focus:border-paper/36"
           id="currentPassword"
           name="currentPassword"
           type="password"
@@ -27,11 +27,11 @@ export function PasswordChangeForm() {
         />
       </div>
       <div>
-        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-ink/58" htmlFor="nextPassword">
+        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-paper/58" htmlFor="nextPassword">
           New password
         </label>
         <input
-          className="w-full border border-ink/18 bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-accent"
+          className="w-full rounded-2xl border border-paper/14 bg-black/55 px-4 py-3 text-base text-paper outline-none transition focus:border-paper/36"
           id="nextPassword"
           name="nextPassword"
           type="password"
@@ -40,11 +40,11 @@ export function PasswordChangeForm() {
         />
       </div>
       <div>
-        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-ink/58" htmlFor="confirmPassword">
+        <label className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-paper/58" htmlFor="confirmPassword">
           Confirm new password
         </label>
         <input
-          className="w-full border border-ink/18 bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-accent"
+          className="w-full rounded-2xl border border-paper/14 bg-black/55 px-4 py-3 text-base text-paper outline-none transition focus:border-paper/36"
           id="confirmPassword"
           name="confirmPassword"
           type="password"
@@ -53,7 +53,7 @@ export function PasswordChangeForm() {
         />
       </div>
       <button
-        className="border border-ink bg-ink px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-paper transition hover:border-accent hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-2xl border border-paper/16 bg-paper px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

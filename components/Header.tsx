@@ -45,13 +45,17 @@ export async function Header({ variant = "light" }: HeaderProps) {
             ))}
           </div>
           {user ? (
-            <div className="hidden items-center gap-3 md:flex">
+            <div
+              className={`hidden items-center gap-1 rounded-full border px-2 py-1 md:flex ${
+                isDark ? "border-paper/18 bg-black/25 backdrop-blur" : "border-ink/16 bg-white/70 backdrop-blur"
+              }`}
+            >
               {memberLinks.map((link) => (
                 <Link
-                  className={`rounded-full border px-4 py-2 transition ${
+                  className={`rounded-full px-4 py-2 transition ${
                     isDark
-                      ? "border-paper/18 text-paper/80 hover:border-paper/42 hover:text-white"
-                      : "border-ink/18 text-ink/78 hover:border-ink/40 hover:text-ink"
+                      ? "text-paper/78 hover:bg-white/6 hover:text-white"
+                      : "text-ink/78 hover:bg-ink/5 hover:text-ink"
                   }`}
                   href={link.href}
                   key={link.href}
@@ -59,7 +63,7 @@ export async function Header({ variant = "light" }: HeaderProps) {
                   {link.label}
                 </Link>
               ))}
-              <div className={isDark ? "text-paper/80" : "text-ink/78"}>
+              <div className={isDark ? "text-red-300 hover:text-red-200" : "text-red-700 hover:text-red-600"}>
                 <LogoutButton />
               </div>
             </div>

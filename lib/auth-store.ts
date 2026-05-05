@@ -43,19 +43,20 @@ function createInitialStore(): AuthStore {
 
 function ensureAdminUser(store: AuthStore) {
   const adminUsers = store.users.filter((user) => user.role === "admin");
+  const now = new Date().toISOString();
+  const nonAdminUsers = store.users.filter((user) => user.role !== "admin");
+  const matchingAdmin = adminUsers.find((user) => user.email === ADMIN_EMAIL.toLowerCase());
 
-  if (adminUsers.length === 1 && adminUsers[0]?.email === ADMIN_EMAIL.toLowerCase()) {
+  if (matchingAdmin) {
     return;
   }
 
   const adminPassword = createPasswordHash(ADMIN_PASSWORD);
-  const now = new Date().toISOString();
-  const nonAdminUsers = store.users.filter((user) => user.role !== "admin");
-  const existingAdmin = adminUsers[0];
+  const preservedAdmin = adminUsers.find((user) => user.email === ADMIN_EMAIL.toLowerCase()) ?? adminUsers[0];
 
-  const adminUser: StoredUser = existingAdmin
+  const adminUser: StoredUser = preservedAdmin
     ? {
-        ...existingAdmin,
+        ...preservedAdmin,
         email: ADMIN_EMAIL.toLowerCase(),
         role: "admin",
         ...adminPassword,
