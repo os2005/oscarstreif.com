@@ -80,6 +80,33 @@ a {
   animation: hero-crt-noise 0.95s steps(2, end) infinite;
 }
 
+.hero-char {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-char-placeholder {
+  color: transparent;
+}
+
+.hero-char-final {
+  color: inherit;
+}
+
+.hero-char-overlay {
+  position: absolute;
+  inset: 0;
+  color: inherit;
+}
+
+.hero-char-overlay-pending {
+  opacity: 0;
+}
+
+.hero-char-overlay-active {
+  opacity: 0.92;
+}
+
 @keyframes hero-crt-noise {
   0% {
     transform: translate3d(0, 0, 0);

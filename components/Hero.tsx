@@ -1,4 +1,5 @@
 import { Instrument_Serif } from "next/font/google";
+import { HeroScrambleText } from "./HeroScrambleText";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -13,7 +14,13 @@ export function Hero() {
         <h1
           className={`${instrumentSerif.className} text-balance text-[clamp(3.75rem,5.85vw,6rem)] font-normal leading-none tracking-normal text-white drop-shadow-[0_1px_12px_rgba(255,255,255,0.12)]`}
         >
-          The only limits are those you create in your <span className="hero-accent hero-accent-noise">Mind</span>.
+          <HeroScrambleText
+            parts={[
+              { text: "The only limits are those you create in your " },
+              { text: "Mind", highlighted: true },
+              { text: "." },
+            ]}
+          />
         </h1>
       </div>
     </section>
