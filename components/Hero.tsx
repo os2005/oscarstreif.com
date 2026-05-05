@@ -13,7 +13,7 @@ export function Hero() {
         <h1
           className={`${instrumentSerif.className} text-balance text-[clamp(3.75rem,5.85vw,6rem)] font-normal leading-none tracking-normal text-white drop-shadow-[0_1px_12px_rgba(255,255,255,0.12)]`}
         >
-          The only limits are those you <span className="hero-accent">create</span> in your mind.
+          The only limits are those you create in your <span className="hero-accent hero-accent-noise">Mind</span>.
         </h1>
       </div>
     </section>
