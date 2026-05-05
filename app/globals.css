@@ -51,6 +51,25 @@ a {
   background-size: 180px 180px;
 }
 
+.bubble-drift {
+  animation-name: bubble-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes bubble-drift {
+  from {
+    margin-left: calc(var(--bubble-drift-x, 0vw) * -1);
+    margin-top: calc(var(--bubble-drift-y, 0vh) * -1);
+  }
+
+  to {
+    margin-left: var(--bubble-drift-x, 0vw);
+    margin-top: var(--bubble-drift-y, 0vh);
+  }
+}
+
 .hero-accent {
   position: relative;
   display: inline-block;
@@ -156,6 +175,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .bubble-drift {
+    animation: none;
+  }
+
   .hero-accent-noise-ready::after {
     animation: none;
     opacity: 0.18;
