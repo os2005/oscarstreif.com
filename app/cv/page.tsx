@@ -54,7 +54,7 @@ const experience: CVEntry[] = [
   },
   {
     date: "since 02/26",
-    title: "Co-Founder",
+    title: "Advisor",
     organization: "ColdLog GbR, Karlsruhe",
     bullets: [
       "Development of a product for digital cold-chain monitoring with a concrete intention to found a company",
