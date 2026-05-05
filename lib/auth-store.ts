@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
 import { randomBytes, scryptSync } from "crypto";
-import { ADMIN_EMAIL, ADMIN_PASSWORD, APP_DATA_DIR } from "./auth-config";
+import { ADMIN_EMAIL, ADMIN_PASSWORD, APP_DATA_DIR, AUTH_STORE_VERSION } from "./auth-config";
 import type { AuthStore, StoredSession, StoredUser } from "./auth-types";
 
 const STORE_FILENAME = "auth-store.json";
@@ -26,6 +26,7 @@ function createInitialStore(): AuthStore {
   const adminPassword = createPasswordHash(ADMIN_PASSWORD);
 
   return {
+    storeVersion: AUTH_STORE_VERSION,
     users: [
       {
         id: randomBytes(16).toString("hex"),
@@ -42,6 +43,15 @@ function createInitialStore(): AuthStore {
 }
 
 function ensureAdminUser(store: AuthStore) {
+  if (store.storeVersion !== AUTH_STORE_VERSION) {
+    const resetStore = createInitialStore();
+    store.storeVersion = resetStore.storeVersion;
+    store.users = resetStore.users;
+    store.sessions = resetStore.sessions;
+    store.invitations = resetStore.invitations;
+    return;
+  }
+
   const adminUsers = store.users.filter((user) => user.role === "admin");
   const now = new Date().toISOString();
   const nonAdminUsers = store.users.filter((user) => user.role !== "admin");
@@ -95,6 +105,7 @@ export function readStore(): AuthStore {
   const parsedStore = JSON.parse(readFileSync(storePath, "utf8")) as Partial<AuthStore>;
 
   const store: AuthStore = {
+    storeVersion: parsedStore.storeVersion ?? 0,
     users: (parsedStore.users ?? []).map((user) => ({
       ...user,
       role: normalizeRole(user.role),
@@ -124,6 +135,7 @@ export function writeStore(store: AuthStore) {
 
 export function updateStore<T>(updater: (store: AuthStore) => T): T {
   const store = readStore();
+  store.storeVersion = AUTH_STORE_VERSION;
   const result = updater(store);
   writeStore(store);
   return result;

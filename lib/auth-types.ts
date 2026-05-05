@@ -27,6 +27,7 @@ export type StoredInvitation = {
 };
 
 export type AuthStore = {
+  storeVersion: number;
   users: StoredUser[];
   sessions: StoredSession[];
   invitations: StoredInvitation[];

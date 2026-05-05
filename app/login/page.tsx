@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
-import { ShaderGradientBackground } from "@/components/ShaderGradientBackground";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata = {
@@ -25,7 +24,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-black text-white">
-      <ShaderGradientBackground />
       <Header variant="landing" />
       <section className="relative z-10 flex min-h-dvh items-center justify-center px-6 py-24">
         <div className="w-full max-w-sm">
