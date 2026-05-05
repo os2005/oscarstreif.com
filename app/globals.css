@@ -46,6 +46,7 @@ a {
   z-index: 50;
   opacity: 0.22;
   mix-blend-mode: multiply;
+  contain: paint;
   background-image:
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23noise)' opacity='.52'/%3E%3C/svg%3E");
   background-size: 180px 180px;
@@ -141,86 +142,7 @@ a {
   }
 }
 
-.landing-bubble {
-  position: absolute;
-  border-radius: 999px;
-  transform: translate3d(-50%, -50%, 0);
-  background:
-    radial-gradient(circle at 50% 50%, rgba(239, 244, 248, 0.54) 0%, rgba(201, 211, 222, 0.34) 34%, rgba(146, 160, 176, 0.1) 66%, rgba(255, 255, 255, 0) 100%);
-  animation-name: landing-bubble-drift;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-}
-
-.landing-bubble-a {
-  left: 16%;
-  top: 18%;
-  width: 24rem;
-  height: 24rem;
-  opacity: 0.24;
-  filter: blur(14px);
-  --bubble-drift-x: 1.8rem;
-  --bubble-drift-y: -1.4rem;
-  animation-duration: 18s;
-  animation-delay: -3s;
-}
-
-.landing-bubble-b {
-  left: 82%;
-  top: 18%;
-  width: 27rem;
-  height: 27rem;
-  opacity: 0.28;
-  filter: blur(16px);
-  --bubble-drift-x: -2rem;
-  --bubble-drift-y: 1.4rem;
-  animation-duration: 21s;
-  animation-delay: -8s;
-}
-
-.landing-bubble-c {
-  left: 77%;
-  top: 70%;
-  width: 23rem;
-  height: 23rem;
-  opacity: 0.2;
-  filter: blur(13px);
-  --bubble-drift-x: -1.4rem;
-  --bubble-drift-y: -1.8rem;
-  animation-duration: 19s;
-  animation-delay: -5s;
-}
-
-.landing-bubble-d {
-  left: 21%;
-  top: 78%;
-  width: 19rem;
-  height: 19rem;
-  opacity: 0.16;
-  filter: blur(11px);
-  --bubble-drift-x: 1.1rem;
-  --bubble-drift-y: -1.2rem;
-  animation-duration: 23s;
-  animation-delay: -10s;
-}
-
-@keyframes landing-bubble-drift {
-  from {
-    transform: translate3d(calc(-50% - var(--bubble-drift-x, 0rem)), calc(-50% - var(--bubble-drift-y, 0rem)), 0);
-  }
-
-  to {
-    transform: translate3d(calc(-50% + var(--bubble-drift-x, 0rem)), calc(-50% + var(--bubble-drift-y, 0rem)), 0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .landing-bubble {
-    animation: none;
-    transform: translate3d(-50%, -50%, 0);
-  }
-
   .hero-accent-noise-ready::after {
     animation: none;
     opacity: 0.18;
