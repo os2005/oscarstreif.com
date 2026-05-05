@@ -69,6 +69,7 @@ function getRandomCharacter(target: string, phase: number, globalIndex: number) 
 export function HeroScrambleText({ parts }: HeroScrambleTextProps) {
   const hasAnimatedRef = useRef(false);
   const [elapsed, setElapsed] = useState(0);
+  const [softFocus, setSoftFocus] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   const preparedParts = useMemo<PreparedPart[]>(() => {
@@ -144,11 +145,55 @@ export function HeroScrambleText({ parts }: HeroScrambleTextProps) {
   }, [reducedMotion, totalDuration]);
 
   const displayElapsed = reducedMotion ? totalDuration : elapsed;
+  const isSettled = displayElapsed >= totalDuration;
+
+  useEffect(() => {
+    if (reducedMotion || !isSettled) {
+      return;
+    }
+
+    let isCancelled = false;
+    const timeoutIds: number[] = [];
+
+    const scheduleTimeout = (callback: () => void, delay: number) => {
+      const timeoutId = window.setTimeout(callback, delay);
+      timeoutIds.push(timeoutId);
+    };
+
+    const schedulePulse = () => {
+      scheduleTimeout(
+        () => {
+          if (isCancelled) return;
+
+          setSoftFocus(true);
+          scheduleTimeout(() => setSoftFocus(false), 64);
+          scheduleTimeout(() => setSoftFocus(true), 138);
+          scheduleTimeout(() => {
+            setSoftFocus(false);
+            if (!isCancelled) {
+              schedulePulse();
+            }
+          }, 218);
+        },
+        8500 + Math.random() * 5200,
+      );
+    };
+
+    schedulePulse();
+
+    return () => {
+      isCancelled = true;
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, [isSettled, reducedMotion]);
 
   return (
     <span aria-label={finalText}>
       <span className="sr-only">{finalText}</span>
-      <span aria-hidden="true">
+      <span
+        aria-hidden="true"
+        className={`hero-scramble-live${isSettled && !reducedMotion && softFocus ? " hero-scramble-soft-focus" : ""}`}
+      >
         {preparedParts.map((part, partIndex) => {
           const highlightedReady =
             !part.highlighted ||
