@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 export default async function PrivatePage() {
-  const access = await getAccessForRole("admin");
+  const access = await getAccessForRole("private");
 
   if (!access) {
     return null;
@@ -20,8 +20,8 @@ export default async function PrivatePage() {
   return (
     <ProtectedContent
       title="Private Area"
-      description="This area is only visible to the admin."
-      label="Admin only"
+      description="This area is visible to the admin and users with private access."
+      label="Private access"
     />
   );
 }

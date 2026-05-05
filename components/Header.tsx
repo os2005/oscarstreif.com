@@ -24,6 +24,11 @@ export async function Header({ variant = "light" }: HeaderProps) {
           { href: "/private", label: "Private" },
           { href: "/settings", label: "Settings" },
         ]
+      : user?.role === "private"
+        ? [
+            { href: "/shared", label: "Shared" },
+            { href: "/private", label: "Private" },
+          ]
       : user?.role === "shared"
         ? [{ href: "/shared", label: "Shared" }]
         : [];

@@ -1,6 +1,7 @@
 "use server";
 
-import { createSharedInvitation, changeCurrentUserPassword } from "@/lib/auth";
+import { createInvitation, changeCurrentUserPassword } from "@/lib/auth";
+import type { Role } from "@/lib/auth-types";
 
 export type PasswordActionState = {
   error?: string;
@@ -13,7 +14,7 @@ export type InviteActionState = {
   credentials?: {
     email: string;
     password: string;
-    role: "shared";
+    role: Exclude<Role, "admin">;
   };
 };
 
@@ -56,11 +57,11 @@ export async function createInvitationAction(
     return { error: "Please enter an email address." };
   }
 
-  if (role !== "shared") {
-    return { error: "Only the shared access role is available right now." };
+  if (role !== "shared" && role !== "private") {
+    return { error: "Please choose a valid access role." };
   }
 
-  const result = await createSharedInvitation(email);
+  const result = await createInvitation(email, role);
   if (!result.ok) {
     return { error: result.error };
   }

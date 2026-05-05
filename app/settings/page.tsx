@@ -31,7 +31,7 @@ export default async function SettingsPage() {
         </AuthCard>
         <AuthCard
           title="Create invitation"
-          description="Create a login for another person and limit their access to the Shared Area."
+          description="Create a login for another person and choose whether they can access the Shared Area only or both Shared and Private."
         >
           <InviteUserForm />
         </AuthCard>

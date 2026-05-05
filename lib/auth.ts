@@ -98,6 +98,13 @@ export async function getAccessForRole(requiredRole: Role): Promise<AccessResult
     return { allowed: true, user };
   }
 
+  if (requiredRole === "private") {
+    return {
+      allowed: user.role === "admin" || user.role === "private",
+      user,
+    };
+  }
+
   return {
     allowed: user.role === "admin",
     user,
@@ -193,7 +200,7 @@ export async function changeCurrentUserPassword(currentPassword: string, nextPas
   return { ok: true as const };
 }
 
-export async function createSharedInvitation(email: string) {
+export async function createInvitation(email: string, role: Exclude<Role, "admin">) {
   const user = await requireUser("/settings");
 
   if (user.role !== "admin") {
@@ -213,7 +220,7 @@ export async function createSharedInvitation(email: string) {
     const newUser: StoredUser = {
       id: crypto.randomUUID(),
       email: normalizedEmail,
-      role: "shared",
+      role,
       ...passwordRecord,
       createdAt: now,
       updatedAt: now,
@@ -223,7 +230,7 @@ export async function createSharedInvitation(email: string) {
     mutableStore.invitations.push({
       id: crypto.randomUUID(),
       email: normalizedEmail,
-      role: "shared",
+      role,
       createdByUserId: user.id,
       createdAt: now,
     });
@@ -239,6 +246,6 @@ export async function createSharedInvitation(email: string) {
     ok: true as const,
     email: normalizedEmail,
     password: temporaryPassword,
-    role: "shared" as const,
+    role,
   };
 }

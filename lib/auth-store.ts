@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
 import { randomBytes, scryptSync } from "crypto";
 import { ADMIN_EMAIL, ADMIN_PASSWORD, APP_DATA_DIR } from "./auth-config";
-import type { AuthStore, StoredSession } from "./auth-types";
+import type { AuthStore, Role, StoredSession, StoredUser } from "./auth-types";
 
 const STORE_FILENAME = "auth-store.json";
 
@@ -41,6 +41,46 @@ function createInitialStore(): AuthStore {
   };
 }
 
+function ensureAdminUser(store: AuthStore) {
+  const adminUsers = store.users.filter((user) => user.role === "admin");
+
+  if (adminUsers.length === 1 && adminUsers[0]?.email === ADMIN_EMAIL.toLowerCase()) {
+    return;
+  }
+
+  const adminPassword = createPasswordHash(ADMIN_PASSWORD);
+  const now = new Date().toISOString();
+  const nonAdminUsers = store.users.filter((user) => user.role !== "admin");
+  const existingAdmin = adminUsers[0];
+
+  const adminUser: StoredUser = existingAdmin
+    ? {
+        ...existingAdmin,
+        email: ADMIN_EMAIL.toLowerCase(),
+        role: "admin",
+        ...adminPassword,
+        updatedAt: now,
+      }
+    : {
+        id: randomBytes(16).toString("hex"),
+        email: ADMIN_EMAIL.toLowerCase(),
+        role: "admin",
+        ...adminPassword,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+  store.users = [...nonAdminUsers, adminUser];
+}
+
+function normalizeRole(role: string | undefined): Role {
+  if (role === "admin" || role === "private" || role === "shared") {
+    return role;
+  }
+
+  return "shared";
+}
+
 export function readStore(): AuthStore {
   ensureDataDir();
   const storePath = getStorePath();
@@ -54,23 +94,22 @@ export function readStore(): AuthStore {
   const parsedStore = JSON.parse(readFileSync(storePath, "utf8")) as Partial<AuthStore>;
 
   const store: AuthStore = {
-    users: parsedStore.users ?? [],
+    users: (parsedStore.users ?? []).map((user) => ({
+      ...user,
+      role: normalizeRole(user.role),
+      email: user.email.toLowerCase(),
+    })),
     sessions: parsedStore.sessions ?? [],
-    invitations: parsedStore.invitations ?? [],
+    invitations: (parsedStore.invitations ?? []).map((invitation) => ({
+      ...invitation,
+      role: invitation.role === "private" ? "private" : "shared",
+      email: invitation.email.toLowerCase(),
+    })),
   };
 
-  if (!store.users.some((user) => user.role === "admin")) {
-    const now = new Date().toISOString();
-    const adminPassword = createPasswordHash(ADMIN_PASSWORD);
-
-    store.users.push({
-      id: randomBytes(16).toString("hex"),
-      email: ADMIN_EMAIL.toLowerCase(),
-      role: "admin",
-      ...adminPassword,
-      createdAt: now,
-      updatedAt: now,
-    });
+  const before = JSON.stringify(store);
+  ensureAdminUser(store);
+  if (JSON.stringify(store) !== before) {
     writeStore(store);
   }
 

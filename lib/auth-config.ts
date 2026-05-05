@@ -1,4 +1,4 @@
-export const ADMIN_EMAIL = "us.stive@gmail.com";
+export const ADMIN_EMAIL = "os.streif@gmail.com";
 export const ADMIN_PASSWORD = "Test1234";
 
 export const SESSION_COOKIE_NAME = "oscarstreif_session";

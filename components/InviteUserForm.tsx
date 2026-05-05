@@ -36,6 +36,7 @@ export function InviteUserForm() {
           name="role"
         >
           <option value="shared">Shared</option>
+          <option value="private">Private</option>
         </select>
       </div>
       <button
