@@ -1,4 +1,4 @@
-const linkedInUrl = "https://www.linkedin.com/in/oscar-streif-placeholder";
+const linkedInUrl = "https://www.linkedin.com/in/oscar-streif-9681262b1/";
 
 export function ContactLinks() {
   return (

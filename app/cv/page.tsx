@@ -204,6 +204,16 @@ export default function CVPage() {
                   os.streif@gmail.com
                 </a>
               </p>
+              <p>
+                <a
+                  className="transition hover:text-accent"
+                  href="https://www.linkedin.com/in/oscar-streif-9681262b1/"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  LinkedIn
+                </a>
+              </p>
             </div>
           </div>
         </header>
