@@ -9,7 +9,7 @@ Group=www-data
 WorkingDirectory=/var/www/oscarstreif.com/current
 Environment=NODE_ENV=production
 Environment=PORT=3000
-ExecStart=/usr/bin/node .next/standalone/server.js
+ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5
 

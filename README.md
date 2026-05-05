@@ -72,7 +72,7 @@ sudo systemctl status oscarstreif.service
 Nginx:
 
 ```bash
-sudo cp deploy/nginx/oscarstreif.com.conf /etc/nginx/sites-available/oscarstreif.com.conf
+sudo cp deploy/nginx/oscarstreif.com.bootstrap.conf /etc/nginx/sites-available/oscarstreif.com.conf
 sudo ln -s /etc/nginx/sites-available/oscarstreif.com.conf /etc/nginx/sites-enabled/oscarstreif.com.conf
 sudo nginx -t
 sudo systemctl reload nginx
@@ -84,8 +84,17 @@ TLS:
 sudo certbot --nginx -d oscarstreif.com -d www.oscarstreif.com
 ```
 
+After the first successful certbot run, replace the bootstrap config with the TLS config:
+
+```bash
+sudo cp deploy/nginx/oscarstreif.com.conf /etc/nginx/sites-available/oscarstreif.com.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
 Notes:
 
-- The app is configured with `output: "standalone"` in `next.config.ts`.
+- The production service uses `npm run start`, which serves the compiled `.next` output directly.
 - `robots.txt` and `sitemap.xml` are generated through Next metadata routes.
 - The systemd unit expects the deployed repo at `/var/www/oscarstreif.com/current`.
+- Use `deploy/nginx/oscarstreif.com.bootstrap.conf` before the first certificate is issued.
