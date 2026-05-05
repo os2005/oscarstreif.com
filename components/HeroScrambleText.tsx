@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type TextPart = {
   text: string;
@@ -13,131 +13,190 @@ type HeroScrambleTextProps = {
 
 type CharacterMeta = {
   char: string;
-  order: number | null;
+  globalIndex: number | null;
 };
 
-const SCRAMBLE_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*?";
-const STAGGER_MS = 28;
-const SCRAMBLE_MS = 220;
+type PreparedPart = TextPart & {
+  characters: CharacterMeta[];
+};
 
-function buildCharacterMeta(text: string, startOrder: number) {
-  let order = startOrder;
+const SCRAMBLE_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789∙·•/\\|_-";
+const CHAR_STAGGER_MS = 24;
+const SCRAMBLE_STEP_MS = 34;
+const BASE_SCRAMBLE_STEPS = 4;
+const EXTRA_SCRAMBLE_STEPS = 4;
+const SETTLE_PADDING_MS = 120;
+
+function splitCharacters(text: string, startIndex: number) {
+  let nextIndex = startIndex;
   const characters: CharacterMeta[] = [];
 
   for (const char of text) {
     if (char === " ") {
-      characters.push({ char, order: null });
+      characters.push({ char, globalIndex: null });
       continue;
     }
 
-    characters.push({ char, order });
-    order += 1;
+    characters.push({ char, globalIndex: nextIndex });
+    nextIndex += 1;
   }
 
   return {
     characters,
-    nextOrder: order,
+    nextIndex,
   };
 }
 
-function getScrambledCharacter(target: string, elapsed: number, order: number) {
-  if (target === " ") {
-    return target;
-  }
+function getScrambleSteps(globalIndex: number) {
+  return BASE_SCRAMBLE_STEPS + (globalIndex % (EXTRA_SCRAMBLE_STEPS + 1));
+}
 
-  const index = Math.abs(Math.floor(elapsed / 30) + order * 11) % SCRAMBLE_SET.length;
-  const candidate = SCRAMBLE_SET[index] ?? target;
+function getCharacterDelay(globalIndex: number) {
+  return globalIndex * CHAR_STAGGER_MS;
+}
 
-  if (target === target.toLowerCase()) {
-    return candidate.toLowerCase();
-  }
+function getCharacterDuration(globalIndex: number) {
+  return getScrambleSteps(globalIndex) * SCRAMBLE_STEP_MS;
+}
 
-  return candidate;
+function getRandomCharacter(target: string, phase: number, globalIndex: number) {
+  const seed = globalIndex * 17 + phase * 13;
+  const char = SCRAMBLE_SET[seed % SCRAMBLE_SET.length] ?? target;
+
+  return target === target.toLowerCase() ? char.toLowerCase() : char;
 }
 
 export function HeroScrambleText({ parts }: HeroScrambleTextProps) {
+  const hasAnimatedRef = useRef(false);
   const [elapsed, setElapsed] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-  const preparedParts = useMemo(() => {
-    return parts.reduce<
-      Array<
-        TextPart & {
-          characters: CharacterMeta[];
-        }
-      >
-    >((accumulator, part) => {
-      const currentOrder = accumulator.reduce(
-        (count, entry) => count + entry.characters.filter((character) => character.order !== null).length,
-        0
-      );
-      const result = buildCharacterMeta(part.text, currentOrder);
+  const preparedParts = useMemo<PreparedPart[]>(() => {
+    return parts.reduce<{ items: PreparedPart[]; nextIndex: number }>(
+      (accumulator, part) => {
+        const result = splitCharacters(part.text, accumulator.nextIndex);
 
-      accumulator.push({
-        ...part,
-        characters: result.characters,
-      });
+        accumulator.items.push({
+          ...part,
+          characters: result.characters,
+        });
 
-      return accumulator;
-    }, []);
+        return {
+          items: accumulator.items,
+          nextIndex: result.nextIndex,
+        };
+      },
+      { items: [], nextIndex: 0 }
+    ).items;
   }, [parts]);
 
   const finalText = useMemo(() => parts.map((part) => part.text).join(""), [parts]);
-  const totalAnimatedCharacters = useMemo(
-    () => preparedParts.flatMap((part) => part.characters).filter((character) => character.order !== null).length,
+  const animatedCharacterCount = useMemo(
+    () => preparedParts.flatMap((part) => part.characters).filter((character) => character.globalIndex !== null).length,
     [preparedParts]
   );
 
+  const totalDuration = useMemo(() => {
+    if (animatedCharacterCount === 0) {
+      return 0;
+    }
+
+    const finalIndex = animatedCharacterCount - 1;
+    return getCharacterDelay(finalIndex) + getCharacterDuration(finalIndex) + SETTLE_PADDING_MS;
+  }, [animatedCharacterCount]);
+
   useEffect(() => {
-    let frame = 0;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      return;
+    }
+
+    if (hasAnimatedRef.current || totalDuration === 0) {
+      return;
+    }
+
+    hasAnimatedRef.current = true;
+
+    let frameId = 0;
     const start = performance.now();
-    const totalDuration = totalAnimatedCharacters * STAGGER_MS + SCRAMBLE_MS + 120;
 
     const tick = (now: number) => {
-      const nextElapsed = now - start;
-      setElapsed(nextElapsed >= totalDuration ? totalDuration : nextElapsed);
+      const nextElapsed = Math.min(now - start, totalDuration);
+      setElapsed(nextElapsed);
 
       if (nextElapsed < totalDuration) {
-        frame = window.requestAnimationFrame(tick);
+        frameId = window.requestAnimationFrame(tick);
       }
     };
 
-    frame = window.requestAnimationFrame(tick);
+    frameId = window.requestAnimationFrame(tick);
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(frameId);
     };
-  }, [totalAnimatedCharacters]);
+  }, [reducedMotion, totalDuration]);
+
+  const displayElapsed = reducedMotion ? totalDuration : elapsed;
 
   return (
-    <>
+    <span aria-label={finalText}>
       <span className="sr-only">{finalText}</span>
       <span aria-hidden="true">
-        {preparedParts.map((part, partIndex) => (
-          <span className={part.highlighted ? "hero-accent hero-accent-noise" : undefined} key={`${part.text}-${partIndex}`}>
-            {part.characters.map((character, index) => {
-              if (character.char === " ") {
-                return <span key={`space-${partIndex}-${index}`}> </span>;
-              }
+        {preparedParts.map((part, partIndex) => {
+          const highlightedReady =
+            !part.highlighted ||
+            part.characters.every((character) => {
+              if (character.globalIndex === null) return true;
+              return displayElapsed >= getCharacterDelay(character.globalIndex) + getCharacterDuration(character.globalIndex);
+            });
 
-              const start = (character.order ?? 0) * STAGGER_MS;
-              const isFinal = elapsed >= start + SCRAMBLE_MS;
-              const isActive = elapsed >= start && !isFinal;
-              const scrambleChar = character.order === null ? character.char : getScrambledCharacter(character.char, elapsed - start, character.order);
+          return (
+            <span
+              className={part.highlighted ? `hero-accent hero-accent-noise${highlightedReady ? " hero-accent-noise-ready" : ""}` : undefined}
+              key={`${part.text}-${partIndex}`}
+            >
+              {part.characters.map((character, index) => {
+                if (character.char === " ") {
+                  return <span key={`space-${partIndex}-${index}`}> </span>;
+                }
 
-              return (
-                <span className="hero-char" key={`${partIndex}-${index}`}>
-                  <span className={isFinal ? "hero-char-final" : "hero-char-placeholder"}>{character.char}</span>
-                  {!isFinal ? (
-                    <span className={`hero-char-overlay ${isActive ? "hero-char-overlay-active" : "hero-char-overlay-pending"}`}>
-                      {isActive ? scrambleChar : character.char}
+                const globalIndex = character.globalIndex ?? 0;
+                const delay = getCharacterDelay(globalIndex);
+                const duration = getCharacterDuration(globalIndex);
+                const phase = Math.max(0, displayElapsed - delay);
+                const isStarted = displayElapsed >= delay;
+                const isFinal = displayElapsed >= delay + duration;
+                const scramblePhase = Math.max(0, Math.floor(phase / SCRAMBLE_STEP_MS));
+                const displayChar = isFinal ? character.char : getRandomCharacter(character.char, scramblePhase, globalIndex);
+
+                return (
+                  <span className="hero-char" key={`${partIndex}-${index}`}>
+                    <span className="hero-char-placeholder">{character.char}</span>
+                    <span
+                      className={`hero-char-live ${
+                        !isStarted ? "hero-char-live-pending" : isFinal ? "hero-char-live-final" : "hero-char-live-active"
+                      }`}
+                    >
+                      {displayChar}
                     </span>
-                  ) : null}
-                </span>
-              );
-            })}
-          </span>
-        ))}
+                  </span>
+                );
+              })}
+            </span>
+          );
+        })}
       </span>
-    </>
+    </span>
   );
 }

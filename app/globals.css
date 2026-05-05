@@ -77,7 +77,12 @@ a {
   pointer-events: none;
   -webkit-text-fill-color: transparent;
   -webkit-mask-image: linear-gradient(#000, #000);
+  opacity: 0;
+}
+
+.hero-accent-noise-ready::after {
   animation: hero-crt-noise 0.95s steps(2, end) infinite;
+  opacity: 0.24;
 }
 
 .hero-char {
@@ -89,22 +94,33 @@ a {
   color: transparent;
 }
 
-.hero-char-final {
-  color: inherit;
-}
-
-.hero-char-overlay {
+.hero-char-live {
   position: absolute;
   inset: 0;
   color: inherit;
+  will-change: transform, opacity, filter;
+  transition:
+    opacity 130ms ease,
+    transform 170ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 170ms ease;
 }
 
-.hero-char-overlay-pending {
+.hero-char-live-pending {
   opacity: 0;
+  transform: translateY(0.12em);
+  filter: blur(6px);
 }
 
-.hero-char-overlay-active {
-  opacity: 0.92;
+.hero-char-live-active {
+  opacity: 0.72;
+  transform: translateY(0.08em);
+  filter: blur(1.8px);
+}
+
+.hero-char-live-final {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
 @keyframes hero-crt-noise {
@@ -136,6 +152,23 @@ a {
     transform: translate3d(0, 0, 0);
     background-position: 0 0, 3px 4px;
     opacity: 0.21;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-accent-noise-ready::after {
+    animation: none;
+    opacity: 0.18;
+  }
+
+  .hero-char-live,
+  .hero-char-live-pending,
+  .hero-char-live-active,
+  .hero-char-live-final {
+    transition: none;
+    transform: none;
+    filter: none;
+    opacity: 1;
   }
 }
 
