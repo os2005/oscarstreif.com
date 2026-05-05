@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { changePasswordAction, type PasswordActionState } from "@/app/settings/actions";
+import { changePasswordAction, type PasswordActionState } from "@/app/private/actions";
 import { FormMessage } from "./FormMessage";
 
 const initialState: PasswordActionState = {};

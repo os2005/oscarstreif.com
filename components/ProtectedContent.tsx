@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Header } from "./Header";
 
 type ProtectedContentProps = {
@@ -19,14 +18,6 @@ export function ProtectedContent({ title, description, label, children }: Protec
           <p className="mt-8 max-w-2xl text-lg leading-8 text-paper/70">{description}</p>
         </div>
         {children ? <div className="mt-14">{children}</div> : null}
-        <div className="mt-14 flex gap-5 font-mono text-xs uppercase tracking-[0.2em] text-paper/68">
-          <Link className="transition hover:text-white" href="/">
-            Home
-          </Link>
-          <Link className="transition hover:text-white" href="/login">
-            Login
-          </Link>
-        </div>
       </section>
     </main>
   );

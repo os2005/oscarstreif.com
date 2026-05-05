@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createInvitationAction, type InviteActionState } from "@/app/settings/actions";
+import { createInvitationAction, type InviteActionState } from "@/app/private/actions";
 import { FormMessage } from "./FormMessage";
 
 const initialState: InviteActionState = {};
@@ -36,7 +36,6 @@ export function InviteUserForm() {
           name="role"
         >
           <option value="shared">Shared</option>
-          <option value="private">Private</option>
         </select>
       </div>
       <button

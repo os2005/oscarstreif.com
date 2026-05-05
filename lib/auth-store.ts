@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
 import { randomBytes, scryptSync } from "crypto";
 import { ADMIN_EMAIL, ADMIN_PASSWORD, APP_DATA_DIR } from "./auth-config";
-import type { AuthStore, Role, StoredSession, StoredUser } from "./auth-types";
+import type { AuthStore, StoredSession, StoredUser } from "./auth-types";
 
 const STORE_FILENAME = "auth-store.json";
 
@@ -73,8 +73,8 @@ function ensureAdminUser(store: AuthStore) {
   store.users = [...nonAdminUsers, adminUser];
 }
 
-function normalizeRole(role: string | undefined): Role {
-  if (role === "admin" || role === "private" || role === "shared") {
+function normalizeRole(role: string | undefined) {
+  if (role === "admin" || role === "shared") {
     return role;
   }
 
@@ -102,7 +102,7 @@ export function readStore(): AuthStore {
     sessions: parsedStore.sessions ?? [],
     invitations: (parsedStore.invitations ?? []).map((invitation) => ({
       ...invitation,
-      role: invitation.role === "private" ? "private" : "shared",
+      role: "shared",
       email: invitation.email.toLowerCase(),
     })),
   };

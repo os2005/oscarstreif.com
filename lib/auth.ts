@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AUTH_SECRET, SESSION_COOKIE_NAME, SESSION_DURATION_MS } from "./auth-config";
+import { ADMIN_EMAIL, AUTH_SECRET, SESSION_COOKIE_NAME, SESSION_DURATION_MS } from "./auth-config";
 import {
   createSessionRecord,
   findUserByEmail,
@@ -98,13 +98,6 @@ export async function getAccessForRole(requiredRole: Role): Promise<AccessResult
     return { allowed: true, user };
   }
 
-  if (requiredRole === "private") {
-    return {
-      allowed: user.role === "admin" || user.role === "private",
-      user,
-    };
-  }
-
   return {
     allowed: user.role === "admin",
     user,
@@ -167,7 +160,7 @@ export async function logoutCurrentUser() {
 }
 
 export async function changeCurrentUserPassword(currentPassword: string, nextPassword: string) {
-  const user = await requireUser("/settings");
+  const user = await requireUser("/private");
   const store = readStore();
   const storedUser = store.users.find((entry) => entry.id === user.id);
 
@@ -201,7 +194,7 @@ export async function changeCurrentUserPassword(currentPassword: string, nextPas
 }
 
 export async function createInvitation(email: string, role: Exclude<Role, "admin">) {
-  const user = await requireUser("/settings");
+  const user = await requireUser("/private");
 
   if (user.role !== "admin") {
     return { ok: false as const, error: "Only admins can create invitations." };
@@ -248,4 +241,75 @@ export async function createInvitation(email: string, role: Exclude<Role, "admin
     password: temporaryPassword,
     role,
   };
+}
+
+export function listMembers() {
+  const store = readStore();
+
+  return store.users
+    .map((user) => ({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+    }))
+    .sort((left, right) => left.email.localeCompare(right.email));
+}
+
+export async function updateMemberRole(memberId: string, role: Role) {
+  const user = await requireUser("/private");
+
+  if (user.role !== "admin") {
+    return { ok: false as const, error: "Only admins can manage members." };
+  }
+
+  if (role !== "admin" && role !== "shared") {
+    return { ok: false as const, error: "Invalid role." };
+  }
+
+  return updateStore((store) => {
+    const member = store.users.find((entry) => entry.id === memberId);
+    if (!member) {
+      return { ok: false as const, error: "Member not found." };
+    }
+
+    if (member.email === ADMIN_EMAIL.toLowerCase() && role !== "admin") {
+      return { ok: false as const, error: "The initial admin account must remain an admin." };
+    }
+
+    member.role = role;
+    member.updatedAt = new Date().toISOString();
+
+    return { ok: true as const };
+  });
+}
+
+export async function deleteMember(memberId: string) {
+  const user = await requireUser("/private");
+
+  if (user.role !== "admin") {
+    return { ok: false as const, error: "Only admins can manage members." };
+  }
+
+  return updateStore((store) => {
+    const member = store.users.find((entry) => entry.id === memberId);
+    if (!member) {
+      return { ok: false as const, error: "Member not found." };
+    }
+
+    if (member.email === ADMIN_EMAIL.toLowerCase()) {
+      return { ok: false as const, error: "The initial admin account cannot be deleted." };
+    }
+
+    const adminCount = store.users.filter((entry) => entry.role === "admin").length;
+    if (member.role === "admin" && adminCount <= 1) {
+      return { ok: false as const, error: "The last admin cannot be deleted." };
+    }
+
+    store.users = store.users.filter((entry) => entry.id !== memberId);
+    store.sessions = store.sessions.filter((entry) => entry.userId !== memberId);
+    store.invitations = store.invitations.filter((entry) => entry.email !== member.email);
+
+    return { ok: true as const };
+  });
 }

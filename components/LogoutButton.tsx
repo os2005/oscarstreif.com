@@ -9,7 +9,7 @@ export function LogoutButton() {
   return (
     <form action={formAction}>
       <button
-        className="transition hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-current/25 px-4 py-2 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

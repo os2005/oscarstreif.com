@@ -21,7 +21,7 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
     return { error: result.error };
   }
 
-  redirect(next || (result.role === "admin" ? "/settings" : result.role === "private" ? "/private" : "/shared"));
+  redirect(next || (result.role === "admin" ? "/private" : "/shared"));
 }
 
 export async function logoutAction() {

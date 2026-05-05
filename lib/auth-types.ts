@@ -1,4 +1,4 @@
-export type Role = "admin" | "private" | "shared";
+export type Role = "admin" | "shared";
 
 export type StoredUser = {
   id: string;

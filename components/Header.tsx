@@ -6,7 +6,6 @@ const publicLinks = [
   { href: "/me", label: "Me" },
   { href: "/projects", label: "Projects" },
   { href: "/cv", label: "CV" },
-  { href: "/login", label: "Login" },
 ];
 
 type HeaderProps = {
@@ -22,13 +21,7 @@ export async function Header({ variant = "light" }: HeaderProps) {
       ? [
           { href: "/shared", label: "Shared" },
           { href: "/private", label: "Private" },
-          { href: "/settings", label: "Settings" },
         ]
-      : user?.role === "private"
-        ? [
-            { href: "/shared", label: "Shared" },
-            { href: "/private", label: "Private" },
-          ]
       : user?.role === "shared"
         ? [{ href: "/shared", label: "Shared" }]
         : [];
@@ -45,21 +38,30 @@ export async function Header({ variant = "light" }: HeaderProps) {
         </Link>
         <div className="flex items-center gap-5 md:gap-8">
           <div className="flex items-center gap-4 md:gap-6">
-            {publicLinks.map((link) => (
+            {[...publicLinks, ...(user ? [] : [{ href: "/login", label: "Login" }])].map((link) => (
               <Link className={`transition hover:text-white ${isLanding ? "text-white/78" : ""}`} href={link.href} key={link.href}>
                 {link.label}
               </Link>
             ))}
           </div>
           {user ? (
-            <div className={`hidden items-center gap-4 md:flex ${isDark ? "text-paper/52" : "text-ink/52"}`}>
+            <div className="hidden items-center gap-3 md:flex">
               {memberLinks.map((link) => (
-                <Link className="transition hover:text-white" href={link.href} key={link.href}>
+                <Link
+                  className={`rounded-full border px-4 py-2 transition ${
+                    isDark
+                      ? "border-paper/18 text-paper/80 hover:border-paper/42 hover:text-white"
+                      : "border-ink/18 text-ink/78 hover:border-ink/40 hover:text-ink"
+                  }`}
+                  href={link.href}
+                  key={link.href}
+                >
                   {link.label}
                 </Link>
               ))}
-              <span className={isDark ? "text-paper/34" : "text-ink/34"}>{user.email}</span>
-              <LogoutButton />
+              <div className={isDark ? "text-paper/80" : "text-ink/78"}>
+                <LogoutButton />
+              </div>
             </div>
           ) : null}
         </div>

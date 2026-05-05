@@ -1,7 +1,8 @@
 "use server";
 
-import { createInvitation, changeCurrentUserPassword } from "@/lib/auth";
-import type { Role } from "@/lib/auth-types";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { changeCurrentUserPassword, createInvitation, deleteMember, updateMemberRole } from "@/lib/auth";
 
 export type PasswordActionState = {
   error?: string;
@@ -14,7 +15,7 @@ export type InviteActionState = {
   credentials?: {
     email: string;
     password: string;
-    role: Exclude<Role, "admin">;
+    role: "shared";
   };
 };
 
@@ -30,8 +31,8 @@ export async function changePasswordAction(
     return { error: "Please complete all password fields." };
   }
 
-  if (nextPassword.length < 8) {
-    return { error: "The new password must be at least 8 characters long." };
+  if (!nextPassword.trim()) {
+    return { error: "The new password cannot be empty." };
   }
 
   if (nextPassword !== confirmPassword) {
@@ -58,10 +59,10 @@ export async function createInvitationAction(
   }
 
   if (role !== "shared") {
-    return { error: "Please choose a valid access role." };
+    return { error: "Only the shared access role is currently available." };
   }
 
-  const result = await createInvitation(email, role);
+  const result = await createInvitation(email, "shared");
   if (!result.ok) {
     return { error: result.error };
   }
@@ -71,7 +72,24 @@ export async function createInvitationAction(
     credentials: {
       email: result.email,
       password: result.password,
-      role: result.role,
+      role: "shared",
     },
   };
+}
+
+export async function updateMemberRoleAction(formData: FormData) {
+  const memberId = String(formData.get("memberId") ?? "");
+  const role = String(formData.get("role") ?? "shared");
+
+  await updateMemberRole(memberId, role === "admin" ? "admin" : "shared");
+  revalidatePath("/private");
+  redirect("/private?section=members");
+}
+
+export async function deleteMemberAction(formData: FormData) {
+  const memberId = String(formData.get("memberId") ?? "");
+
+  await deleteMember(memberId);
+  revalidatePath("/private");
+  redirect("/private?section=members");
 }

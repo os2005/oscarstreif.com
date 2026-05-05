@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
+import { ShaderGradientBackground } from "@/components/ShaderGradientBackground";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata = {
@@ -18,12 +20,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const next = params.next;
 
   if (user) {
-    redirect(user.role === "admin" ? "/settings" : user.role === "private" ? "/private" : "/shared");
+    redirect(user.role === "admin" ? "/private" : "/shared");
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-black px-6 py-12">
-      <LoginForm next={next} />
+    <main className="relative min-h-dvh overflow-hidden bg-black text-white">
+      <ShaderGradientBackground />
+      <Header variant="landing" />
+      <section className="relative z-10 flex min-h-dvh items-center justify-center px-6 py-24">
+        <div className="w-full max-w-sm">
+          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">Login</p>
+          <LoginForm next={next} />
+        </div>
+      </section>
     </main>
   );
 }
