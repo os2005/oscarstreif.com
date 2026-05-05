@@ -145,16 +145,63 @@ a {
   border-radius: 999px;
   transform: translate3d(-50%, -50%, 0);
   background:
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.78) 0%, rgba(249, 250, 252, 0.58) 34%, rgba(255, 255, 255, 0.12) 68%, rgba(255, 255, 255, 0) 100%);
+    radial-gradient(circle at 50% 50%, rgba(239, 244, 248, 0.54) 0%, rgba(201, 211, 222, 0.34) 34%, rgba(146, 160, 176, 0.1) 66%, rgba(255, 255, 255, 0) 100%);
   animation-name: landing-bubble-drift;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  will-change: transform;
 }
 
-.landing-bubble-reduced {
-  filter: blur(8px) !important;
+.landing-bubble-a {
+  left: 16%;
+  top: 18%;
+  width: 24rem;
+  height: 24rem;
+  opacity: 0.24;
+  filter: blur(14px);
+  --bubble-drift-x: 1.8rem;
+  --bubble-drift-y: -1.4rem;
+  animation-duration: 18s;
+  animation-delay: -3s;
+}
+
+.landing-bubble-b {
+  left: 82%;
+  top: 18%;
+  width: 27rem;
+  height: 27rem;
+  opacity: 0.28;
+  filter: blur(16px);
+  --bubble-drift-x: -2rem;
+  --bubble-drift-y: 1.4rem;
+  animation-duration: 21s;
+  animation-delay: -8s;
+}
+
+.landing-bubble-c {
+  left: 77%;
+  top: 70%;
+  width: 23rem;
+  height: 23rem;
+  opacity: 0.2;
+  filter: blur(13px);
+  --bubble-drift-x: -1.4rem;
+  --bubble-drift-y: -1.8rem;
+  animation-duration: 19s;
+  animation-delay: -5s;
+}
+
+.landing-bubble-d {
+  left: 21%;
+  top: 78%;
+  width: 19rem;
+  height: 19rem;
+  opacity: 0.16;
+  filter: blur(11px);
+  --bubble-drift-x: 1.1rem;
+  --bubble-drift-y: -1.2rem;
+  animation-duration: 23s;
+  animation-delay: -10s;
 }
 
 @keyframes landing-bubble-drift {
