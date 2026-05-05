@@ -51,6 +51,48 @@ a {
   background-size: 180px 180px;
 }
 
+.hero-accent {
+  position: relative;
+  display: inline-block;
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(20, 92, 255, 0.18);
+}
+
+.hero-accent::after {
+  content: "";
+  position: absolute;
+  inset: -0.08em -0.14em;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0.34) 50%, rgba(255, 255, 255, 0.02) 62%, transparent 100%);
+  transform: translateX(-165%) skewX(-18deg);
+  animation: hero-accent-sweep 5.8s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+@keyframes hero-accent-sweep {
+  0%,
+  16% {
+    transform: translateX(-165%) skewX(-18deg);
+    opacity: 0;
+  }
+
+  28% {
+    opacity: 0.8;
+  }
+
+  46% {
+    transform: translateX(165%) skewX(-18deg);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(165%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
 @media print {
   .site-header,
   .grain-overlay,
