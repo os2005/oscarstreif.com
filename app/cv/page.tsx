@@ -200,18 +200,8 @@ export default function CVPage() {
             <div className="space-y-1.5 text-sm leading-6 text-ink/65 md:text-right">
               <p>Karlsruhe, Germany</p>
               <p>
-                <a className="transition hover:text-accent" href="tel:+491638692756">
-                  +49 163 8692756
-                </a>
-              </p>
-              <p>
                 <a className="transition hover:text-accent" href="mailto:os.streif@gmail.com">
                   os.streif@gmail.com
-                </a>
-              </p>
-              <p>
-                <a className="transition hover:text-accent" href="mailto:uzgsf@student.kit.edu">
-                  uzgsf@student.kit.edu
                 </a>
               </p>
             </div>
