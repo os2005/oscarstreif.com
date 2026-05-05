@@ -21,7 +21,7 @@ export type StoredSession = {
 export type StoredInvitation = {
   id: string;
   email: string;
-  role: Exclude<Role, "admin">;
+  role: Role;
   createdByUserId: string;
   createdAt: string;
 };

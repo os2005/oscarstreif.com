@@ -114,7 +114,7 @@ export function readStore(): AuthStore {
     sessions: parsedStore.sessions ?? [],
     invitations: (parsedStore.invitations ?? []).map((invitation) => ({
       ...invitation,
-      role: "shared",
+      role: normalizeRole(invitation.role),
       email: invitation.email.toLowerCase(),
     })),
   };

@@ -193,11 +193,15 @@ export async function changeCurrentUserPassword(currentPassword: string, nextPas
   return { ok: true as const };
 }
 
-export async function createInvitation(email: string, role: Exclude<Role, "admin">) {
+export async function createInvitation(email: string, role: Role) {
   const user = await requireUser("/private");
 
   if (user.role !== "admin") {
     return { ok: false as const, error: "Only admins can create invitations." };
+  }
+
+  if (role !== "admin" && role !== "shared") {
+    return { ok: false as const, error: "Invalid role." };
   }
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -275,6 +279,11 @@ export async function updateMemberRole(memberId: string, role: Role) {
 
     if (member.email === ADMIN_EMAIL.toLowerCase() && role !== "admin") {
       return { ok: false as const, error: "The initial admin account must remain an admin." };
+    }
+
+    const adminCount = store.users.filter((entry) => entry.role === "admin").length;
+    if (member.role === "admin" && role !== "admin" && adminCount <= 1) {
+      return { ok: false as const, error: "The last admin cannot be downgraded." };
     }
 
     member.role = role;

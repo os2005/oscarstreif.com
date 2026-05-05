@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createInvitation, changeCurrentUserPassword } from "@/lib/auth";
 import type { Role } from "@/lib/auth-types";
 
@@ -14,7 +15,7 @@ export type InviteActionState = {
   credentials?: {
     email: string;
     password: string;
-    role: Exclude<Role, "admin">;
+    role: Role;
   };
 };
 
@@ -57,7 +58,7 @@ export async function createInvitationAction(
     return { error: "Please enter an email address." };
   }
 
-  if (role !== "shared") {
+  if (role !== "shared" && role !== "admin") {
     return { error: "Please choose a valid access role." };
   }
 
@@ -65,6 +66,8 @@ export async function createInvitationAction(
   if (!result.ok) {
     return { error: result.error };
   }
+
+  revalidatePath("/private");
 
   return {
     success: "Invitation created successfully.",

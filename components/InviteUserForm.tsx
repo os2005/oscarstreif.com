@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createInvitationAction, type InviteActionState } from "@/app/private/actions";
 import { FormMessage } from "./FormMessage";
 
@@ -8,6 +9,13 @@ const initialState: InviteActionState = {};
 
 export function InviteUserForm() {
   const [state, formAction, pending] = useActionState(createInvitationAction, initialState);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.credentials) {
+      router.refresh();
+    }
+  }, [router, state.credentials]);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -36,6 +44,7 @@ export function InviteUserForm() {
           name="role"
         >
           <option value="shared">Shared</option>
+          <option value="admin">Admin</option>
         </select>
       </div>
       <button

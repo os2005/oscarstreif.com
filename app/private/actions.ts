@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { changeCurrentUserPassword, createInvitation, deleteMember, updateMemberRole } from "@/lib/auth";
+import type { Role } from "@/lib/auth-types";
 
 export type PasswordActionState = {
   error?: string;
@@ -15,7 +16,7 @@ export type InviteActionState = {
   credentials?: {
     email: string;
     password: string;
-    role: "shared";
+    role: Role;
   };
 };
 
@@ -58,21 +59,23 @@ export async function createInvitationAction(
     return { error: "Please enter an email address." };
   }
 
-  if (role !== "shared") {
-    return { error: "Only the shared access role is currently available." };
+  if (role !== "shared" && role !== "admin") {
+    return { error: "Please choose a valid access role." };
   }
 
-  const result = await createInvitation(email, "shared");
+  const result = await createInvitation(email, role);
   if (!result.ok) {
     return { error: result.error };
   }
+
+  revalidatePath("/private");
 
   return {
     success: "Invitation created successfully.",
     credentials: {
       email: result.email,
       password: result.password,
-      role: "shared",
+      role: result.role,
     },
   };
 }
