@@ -52,6 +52,22 @@ a {
   background-size: 180px 180px;
 }
 
+.static-grain-background {
+  pointer-events: none;
+  overflow: hidden;
+  background: #000;
+}
+
+.static-grain-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.08' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23grain)' opacity='.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
 .hero-accent {
   position: relative;
   display: inline-block;
