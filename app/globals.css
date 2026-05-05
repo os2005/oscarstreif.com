@@ -56,27 +56,60 @@ a {
   pointer-events: none;
   overflow: hidden;
   background: #000;
+  isolation: isolate;
 }
 
 .static-grain-background::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   opacity: 0.28;
   background-image:
     url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.08' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23grain)' opacity='.55'/%3E%3C/svg%3E");
   background-size: 180px 180px;
 }
 
-.static-grain-background::after {
-  content: "";
+.topographic-map {
   position: absolute;
-  inset: -8%;
-  opacity: 0.22;
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 900 620' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%237a7a7a' stroke-width='1.05' stroke-linecap='round' stroke-linejoin='round' opacity='.42'%3E%3Cpath d='M-36 142C66 92 142 88 221 128c78 40 139 44 212 12 92-40 167-22 242 45 60 53 139 70 262 24'/%3E%3Cpath d='M-20 190c96-44 176-48 254-9 84 42 150 42 236 4 88-39 161-18 229 42 60 53 129 68 235 30'/%3E%3Cpath d='M26 250c72-30 136-32 196-3 83 40 160 44 239 9 85-37 151-20 213 30 57 46 122 62 208 34'/%3E%3Cpath d='M112 327c56-27 107-28 154-6 74 35 142 37 211 7 71-31 127-19 178 24 50 42 104 55 171 34'/%3E%3Cpath d='M176 396c44-19 83-20 119-3 54 26 104 27 154 5 56-25 101-14 141 20 39 32 82 43 135 25'/%3E%3Cpath d='M-50 500c128-52 232-51 311 1 73 48 153 53 241 12 103-48 192-39 276 26 58 45 118 57 188 31'/%3E%3Cpath d='M-30 558c115-41 210-38 285 9 73 45 148 48 230 11 91-41 169-30 241 27 51 40 102 49 165 28'/%3E%3C/g%3E%3Cg fill='none' stroke='%235f5f5f' stroke-width='.85' stroke-linecap='round' stroke-linejoin='round' opacity='.26'%3E%3Cpath d='M628-28c-40 58-46 116-18 173 31 63 27 122-10 177-39 58-39 115 2 171 29 40 33 88 12 145'/%3E%3Cpath d='M706-16c-34 54-38 104-12 152 30 55 27 108-7 160-35 53-34 105 3 158 28 39 33 82 16 132'/%3E%3Cpath d='M782-8c-27 48-29 92-7 132 26 48 24 94-5 138-31 47-30 91 2 138 25 36 29 73 14 116'/%3E%3C/g%3E%3C/svg%3E");
-  background-position: center;
-  background-size: 900px 620px;
+  inset: -4%;
+  z-index: 1;
+  width: 108%;
+  height: 108%;
+  fill: none;
+  opacity: 0.34;
+}
+
+.topographic-map path {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.topographic-map__flow {
+  opacity: 0.32;
+  stroke: rgba(122, 122, 122, 0.46);
+  stroke-width: 1;
+}
+
+.topographic-map__hill {
+  stroke: rgba(135, 135, 135, 0.5);
+  stroke-width: 1.05;
+}
+
+.topographic-map__hill--main {
+  opacity: 0.58;
+}
+
+.topographic-map__hill--left,
+.topographic-map__hill--upper {
+  opacity: 0.38;
+}
+
+.topographic-map__ridge {
+  opacity: 0.24;
+  stroke: rgba(112, 112, 112, 0.44);
+  stroke-width: 0.9;
 }
 
 .hero-scramble-live {
