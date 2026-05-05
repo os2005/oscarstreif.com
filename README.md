@@ -98,3 +98,5 @@ Notes:
 - `robots.txt` and `sitemap.xml` are generated through Next metadata routes.
 - The systemd unit expects the deployed repo at `/var/www/oscarstreif.com/current`.
 - Use `deploy/nginx/oscarstreif.com.bootstrap.conf` before the first certificate is issued.
+- Authentication data is stored locally on the server under `/var/lib/oscarstreif/auth-store.json`.
+- Replace the placeholder `AUTH_SECRET` in the systemd unit with a long random value before production use.

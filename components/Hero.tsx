@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Instrument_Serif } from "next/font/google";
 
 const instrumentSerif = Instrument_Serif({
@@ -16,14 +15,6 @@ export function Hero() {
         >
           The only limits are those you create in your mind.
         </h1>
-        <div className="mt-10 flex justify-center gap-7 font-mono text-[11px] uppercase tracking-[0.24em] text-white/46 md:hidden">
-          <Link className="transition hover:text-accent" href="/private">
-            Private
-          </Link>
-          <Link className="transition hover:text-accent" href="/shared">
-            Shared
-          </Link>
-        </div>
       </div>
     </section>
   );

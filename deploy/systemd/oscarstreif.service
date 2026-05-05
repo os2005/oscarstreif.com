@@ -9,6 +9,9 @@ Group=www-data
 WorkingDirectory=/var/www/oscarstreif.com/current
 Environment=NODE_ENV=production
 Environment=PORT=3000
+Environment=APP_DATA_DIR=/var/lib/oscarstreif
+Environment=AUTH_SECRET=replace-this-with-a-long-random-secret
+StateDirectory=oscarstreif
 ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5

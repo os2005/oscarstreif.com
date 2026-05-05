@@ -1,23 +1,32 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { LogoutButton } from "./LogoutButton";
 
 const publicLinks = [
   { href: "/me", label: "Me" },
   { href: "/projects", label: "Projects" },
   { href: "/cv", label: "CV" },
-];
-
-const accessLinks = [
-  { href: "/private", label: "Private" },
-  { href: "/shared", label: "Shared" },
+  { href: "/login", label: "Login" },
 ];
 
 type HeaderProps = {
   variant?: "light" | "dark" | "landing";
 };
 
-export function Header({ variant = "light" }: HeaderProps) {
+export async function Header({ variant = "light" }: HeaderProps) {
+  const user = await getCurrentUser();
   const isDark = variant === "dark" || variant === "landing";
   const isLanding = variant === "landing";
+  const memberLinks =
+    user?.role === "admin"
+      ? [
+          { href: "/shared", label: "Shared" },
+          { href: "/private", label: "Private" },
+          { href: "/settings", label: "Settings" },
+        ]
+      : user?.role === "shared"
+        ? [{ href: "/shared", label: "Shared" }]
+        : [];
 
   return (
     <header
@@ -37,13 +46,17 @@ export function Header({ variant = "light" }: HeaderProps) {
               </Link>
             ))}
           </div>
-          <div className={`hidden items-center gap-4 md:flex ${isDark ? "text-paper/38" : "text-ink/45"}`}>
-            {accessLinks.map((link) => (
-              <Link className="transition hover:text-white" href={link.href} key={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {user ? (
+            <div className={`hidden items-center gap-4 md:flex ${isDark ? "text-paper/52" : "text-ink/52"}`}>
+              {memberLinks.map((link) => (
+                <Link className="transition hover:text-white" href={link.href} key={link.href}>
+                  {link.label}
+                </Link>
+              ))}
+              <span className={isDark ? "text-paper/34" : "text-ink/34"}>{user.email}</span>
+              <LogoutButton />
+            </div>
+          ) : null}
         </div>
       </nav>
     </header>

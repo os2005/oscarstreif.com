@@ -16,7 +16,7 @@ export function ShaderGradientBackground() {
         offsetY={0}
         scale={1.34}
         rotation={0}
-        speed={0.28}
+        speed={0.42}
         colors={["hsl(204, 18%, 54%)", "hsl(198, 34%, 76%)", "hsl(205, 28%, 42%)"]}
       />
       <div className="absolute inset-0 bg-black/42" />
