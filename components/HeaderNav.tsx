@@ -33,7 +33,7 @@ export function HeaderNav({ isDark, isLanding, role }: HeaderNavProps) {
     role === "admin"
       ? [
           { href: "/shared", label: "Shared" },
-          { href: "/private", label: "Private" },
+          { href: "/private", label: "Control" },
         ]
       : role === "shared"
         ? [{ href: "/shared", label: "Shared" }]

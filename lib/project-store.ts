@@ -5,7 +5,7 @@ import { APP_DATA_DIR } from "./auth-config";
 import type { ProjectMockData, ProjectStore, ProjectStatus, ProjectVisibility, StoredProject } from "./project-types";
 
 const PROJECT_STORE_FILENAME = "project-store.json";
-const PROJECT_STORE_VERSION = 1;
+const PROJECT_STORE_VERSION = 2;
 
 function createPreviewDataUri(title: string, accent: string, secondary: string, detail: string) {
   const svg = `
@@ -43,12 +43,15 @@ function createSeedProject(input: {
   description: string;
   visibility: ProjectVisibility;
   tags: string[];
-  accent: string;
-  secondary: string;
+  accentColor?: string;
+  secondaryColor?: string;
+  externalUrl?: string;
   detail: string;
   mock: ProjectMockData;
 }): StoredProject {
   const now = new Date().toISOString();
+  const accentColor = input.accentColor ?? "#145cff";
+  const secondaryColor = input.secondaryColor ?? "#6de0ff";
 
   return {
     id: randomUUID(),
@@ -56,7 +59,10 @@ function createSeedProject(input: {
     slug: input.slug,
     description: input.description,
     visibility: input.visibility,
-    previewImage: createPreviewDataUri(input.title, input.accent, input.secondary, input.detail),
+    previewImage: createPreviewDataUri(input.title, accentColor, secondaryColor, input.detail),
+    accentColor,
+    secondaryColor,
+    externalUrl: input.externalUrl,
     tags: input.tags,
     status: "active",
     mock: input.mock,
@@ -71,10 +77,11 @@ function createDemoProjects() {
       title: "ColdLog",
       slug: "coldlog",
       description: "A calm operating surface for temperature logging, lab runs and quick anomaly checks.",
-      visibility: "open",
+      visibility: "shared",
       tags: ["lab", "monitoring", "demo"],
-      accent: "#145cff",
-      secondary: "#6de0ff",
+      accentColor: "#145cff",
+      secondaryColor: "#6de0ff",
+      externalUrl: "https://coldlog.de",
       detail: "Live logging dashboard",
       mock: {
         eyebrow: "Monitoring",
@@ -102,8 +109,8 @@ function createDemoProjects() {
       description: "A shared sponsor overview for partnerships, follow-ups and pitch-material readiness.",
       visibility: "shared",
       tags: ["shared", "partnerships", "crm"],
-      accent: "#0e8f72",
-      secondary: "#cde86a",
+      accentColor: "#0e8f72",
+      secondaryColor: "#cde86a",
       detail: "Shared sponsorship cockpit",
       mock: {
         eyebrow: "Shared workspace",
@@ -131,8 +138,8 @@ function createDemoProjects() {
       description: "A private control room for internal metrics, access snapshots and weekly execution signals.",
       visibility: "private",
       tags: ["private", "ops", "admin"],
-      accent: "#6f3cff",
-      secondary: "#141b27",
+      accentColor: "#6f3cff",
+      secondaryColor: "#141b27",
       detail: "Private execution dashboard",
       mock: {
         eyebrow: "Internal ops",
@@ -200,6 +207,9 @@ function normalizeProject(project: Partial<StoredProject>): StoredProject {
     description: String(project.description ?? "").trim(),
     visibility: normalizeVisibility(project.visibility),
     previewImage: String(project.previewImage ?? "").trim(),
+    accentColor: project.accentColor ? String(project.accentColor).trim() : undefined,
+    secondaryColor: project.secondaryColor ? String(project.secondaryColor).trim() : undefined,
+    externalUrl: project.externalUrl ? String(project.externalUrl).trim() : undefined,
     tags: Array.isArray(project.tags)
       ? project.tags
           .map((tag) => String(tag).trim())
@@ -236,9 +246,7 @@ export function readProjectStore(): ProjectStore {
   const storePath = getProjectStorePath();
 
   if (!existsSync(storePath)) {
-    const initialStore = createInitialStore();
-    writeFileSync(storePath, JSON.stringify(initialStore, null, 2), "utf8");
-    return initialStore;
+    return createInitialStore();
   }
 
   const parsedStore = JSON.parse(readFileSync(storePath, "utf8")) as Partial<ProjectStore>;
@@ -249,7 +257,6 @@ export function readProjectStore(): ProjectStore {
 
   if (!store.projects.length) {
     store.projects = createDemoProjects();
-    writeProjectStore(store);
   }
 
   if (store.storeVersion !== PROJECT_STORE_VERSION) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ControlCenterAccordion } from "./ControlCenterAccordion";
 import { InviteUserForm } from "./InviteUserForm";
 import { MemberManagement } from "./MemberManagement";
 import { PasswordChangeForm } from "./PasswordChangeForm";
@@ -16,7 +17,7 @@ type Member = {
 
 type AdminSettingsBoxProps = {
   initialAdminEmail: string;
-  initialSection?: SettingsSection;
+  initialSection?: SettingsSection | null;
   members: Member[];
 };
 
@@ -26,36 +27,9 @@ const settingsSections: { id: SettingsSection; label: string }[] = [
   { id: "members", label: "Manage Members" },
 ];
 
-function AccordionItem({
-  children,
-  isOpen,
-  label,
-  onToggle,
-}: {
-  children: React.ReactNode;
-  isOpen: boolean;
-  label: string;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-paper/12 bg-black/20">
-      <button
-        aria-expanded={isOpen}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-white/[0.035] md:px-6"
-        onClick={onToggle}
-        type="button"
-      >
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/72">{label}</span>
-        <span className="font-mono text-lg leading-none text-paper/54">{isOpen ? "-" : "+"}</span>
-      </button>
-      {isOpen ? <div className="border-t border-paper/10 px-5 py-5 md:px-6 md:py-6">{children}</div> : null}
-    </div>
-  );
-}
-
 export function AdminSettingsBox({
   initialAdminEmail,
-  initialSection = "password",
+  initialSection = null,
   members,
 }: AdminSettingsBoxProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection | null>(initialSection);
@@ -63,7 +37,7 @@ export function AdminSettingsBox({
   return (
     <div className="space-y-4">
       {settingsSections.map((section) => (
-        <AccordionItem
+        <ControlCenterAccordion
           isOpen={activeSection === section.id}
           key={section.id}
           label={section.label}
@@ -74,7 +48,7 @@ export function AdminSettingsBox({
           {section.id === "members" ? (
             <MemberManagement initialAdminEmail={initialAdminEmail} members={members} />
           ) : null}
-        </AccordionItem>
+        </ControlCenterAccordion>
       ))}
     </div>
   );

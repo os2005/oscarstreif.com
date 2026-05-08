@@ -8,6 +8,9 @@ type UpsertProjectInput = {
   description: string;
   visibility: ProjectVisibility;
   previewImage: string;
+  accentColor?: string;
+  secondaryColor?: string;
+  externalUrl?: string;
   tags: string[];
   status: ProjectStatus;
 };
@@ -24,10 +27,52 @@ export function getProjectPath(project: Pick<StoredProject, "visibility" | "slug
   return `/project/${project.visibility}/${project.slug}`;
 }
 
+export function getProjectSharedPath(project: Pick<StoredProject, "slug">) {
+  return `/shared/${project.slug}`;
+}
+
+function normalizeOptionalValue(value?: string) {
+  const normalized = value?.trim();
+  return normalized ? normalized : undefined;
+}
+
+function normalizeColorValue(value?: string) {
+  const normalized = normalizeOptionalValue(value);
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  const colorPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  return colorPattern.test(normalized) ? normalized : null;
+}
+
+function normalizeExternalUrl(value?: string) {
+  const normalized = normalizeOptionalValue(value);
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(normalized);
+
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 function toProjectRecord(project: StoredProject): ProjectRecord {
   return {
     ...project,
     path: getProjectPath(project),
+    sharedPath: getProjectSharedPath(project),
+    visitPath: getProjectSharedPath(project),
   };
 }
 
@@ -67,6 +112,9 @@ function ensureUniqueSlug(projects: StoredProject[], slug: string, ignoredProjec
 
 function validateProjectInput(input: UpsertProjectInput) {
   const slug = normalizeProjectSlug(input.slug);
+  const accentColor = normalizeColorValue(input.accentColor);
+  const secondaryColor = normalizeColorValue(input.secondaryColor);
+  const externalUrl = normalizeExternalUrl(input.externalUrl);
 
   if (!input.title.trim()) {
     return { ok: false as const, error: "Please provide a project title." };
@@ -84,6 +132,18 @@ function validateProjectInput(input: UpsertProjectInput) {
     return { ok: false as const, error: "Please provide a screenshot or preview image URL." };
   }
 
+  if (accentColor === null) {
+    return { ok: false as const, error: "Please provide a valid accent color in hex format." };
+  }
+
+  if (secondaryColor === null) {
+    return { ok: false as const, error: "Please provide a valid secondary color in hex format." };
+  }
+
+  if (externalUrl === null) {
+    return { ok: false as const, error: "Please provide a valid external URL starting with http or https." };
+  }
+
   return {
     ok: true as const,
     payload: {
@@ -92,6 +152,9 @@ function validateProjectInput(input: UpsertProjectInput) {
       slug,
       description: input.description.trim(),
       previewImage: input.previewImage.trim(),
+      accentColor,
+      secondaryColor,
+      externalUrl,
       tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
     },
   };

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { changeCurrentUserPassword, createInvitation, deleteMember, getAccessForRole, updateMemberRole } from "@/lib/auth";
 import type { Role } from "@/lib/auth-types";
-import { createProject, deleteProject, getProjectPath, updateProject } from "@/lib/projects";
+import { createProject, deleteProject, getProjectPath, getProjectSharedPath, updateProject } from "@/lib/projects";
 import type { ProjectStatus, ProjectVisibility } from "@/lib/project-types";
 
 export type PasswordActionState = {
@@ -42,6 +42,9 @@ function parseProjectFormData(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   const description = String(formData.get("description") ?? "");
   const previewImage = String(formData.get("previewImage") ?? "");
+  const accentColor = String(formData.get("accentColor") ?? "");
+  const secondaryColor = String(formData.get("secondaryColor") ?? "");
+  const externalUrl = String(formData.get("externalUrl") ?? "");
   const tags = String(formData.get("tags") ?? "")
     .split(",")
     .map((tag) => tag.trim())
@@ -64,6 +67,9 @@ function parseProjectFormData(formData: FormData) {
       slug,
       description,
       previewImage,
+      accentColor,
+      secondaryColor,
+      externalUrl,
       tags,
       visibility: visibility as ProjectVisibility,
       status: status as ProjectStatus,
@@ -150,7 +156,7 @@ export async function createProjectAction(
     return { error: result.error };
   }
 
-  revalidateProjectSurfaces([result.project.path]);
+  revalidateProjectSurfaces([result.project.path, result.project.sharedPath]);
 
   return { success: "Project created successfully." };
 }
@@ -186,8 +192,18 @@ export async function saveProjectAction(
     previousVisibility === "private" || previousVisibility === "shared" || previousVisibility === "open"
       ? getProjectPath({ visibility: previousVisibility, slug: previousSlug })
       : null;
+  const staleSharedPath = previousSlug ? getProjectSharedPath({ slug: previousSlug }) : null;
+  const nextPaths = [result.project.path, result.project.sharedPath];
 
-  revalidateProjectSurfaces(stalePath ? [stalePath, result.project.path] : [result.project.path]);
+  if (stalePath) {
+    nextPaths.push(stalePath);
+  }
+
+  if (staleSharedPath) {
+    nextPaths.push(staleSharedPath);
+  }
+
+  revalidateProjectSurfaces(nextPaths);
 
   return { success: "Project saved successfully." };
 }
@@ -220,8 +236,10 @@ export async function deleteProjectAction(formData: FormData) {
 
   const result = deleteProject(projectId);
   if (result.ok) {
-    revalidateProjectSurfaces(projectPath ? [projectPath] : []);
+    const paths = projectPath ? [projectPath] : [];
+    paths.push(result.project.sharedPath);
+    revalidateProjectSurfaces(paths);
   }
 
-  redirect("/private?section=all-projects");
+  redirect("/private?section=existing-projects");
 }

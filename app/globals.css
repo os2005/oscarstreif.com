@@ -205,6 +205,103 @@ a {
   filter: blur(0);
 }
 
+.redirect-progress-bar {
+  background: linear-gradient(90deg, rgba(20, 92, 255, 0.92), rgba(109, 224, 255, 0.92));
+  box-shadow: 0 0 18px rgba(20, 92, 255, 0.24);
+  transition: width 140ms ease-out;
+}
+
+.redirect-rocket-wrap {
+  position: relative;
+  display: flex;
+  height: 148px;
+  width: 86px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.redirect-rocket-trail {
+  position: absolute;
+  bottom: 8px;
+  width: 10px;
+  height: 86px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(109, 224, 255, 0), rgba(109, 224, 255, 0.9));
+  filter: blur(0.5px);
+  animation: redirect-trail 1.4s ease-in-out infinite;
+}
+
+.redirect-rocket {
+  position: relative;
+  width: 44px;
+  height: 84px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px 999px 22px 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(221, 233, 255, 0.84)),
+    linear-gradient(180deg, rgba(20, 92, 255, 0.1), rgba(109, 224, 255, 0.08));
+  box-shadow:
+    0 10px 28px rgba(20, 92, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  animation: redirect-rocket-float 1.4s ease-in-out infinite;
+}
+
+.redirect-rocket::before,
+.redirect-rocket::after {
+  content: "";
+  position: absolute;
+  bottom: 16px;
+  width: 15px;
+  height: 20px;
+  background: linear-gradient(180deg, rgba(20, 92, 255, 0.8), rgba(109, 224, 255, 0.72));
+}
+
+.redirect-rocket::before {
+  left: -11px;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+
+.redirect-rocket::after {
+  right: -11px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.redirect-rocket-window {
+  position: absolute;
+  left: 50%;
+  top: 19px;
+  width: 12px;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0 28%, #6de0ff 40%, #145cff 100%);
+  box-shadow: 0 0 16px rgba(109, 224, 255, 0.35);
+}
+
+@keyframes redirect-rocket-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes redirect-trail {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scaleY(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1.06);
+  }
+}
+
 @keyframes hero-crt-noise {
   0% {
     background-position: 0 0, 3px 4px;
@@ -243,11 +340,15 @@ a {
   .hero-char-live,
   .hero-char-live-pending,
   .hero-char-live-active,
-  .hero-char-live-final {
+  .hero-char-live-final,
+  .redirect-progress-bar,
+  .redirect-rocket,
+  .redirect-rocket-trail {
     transition: none;
     transform: none;
     filter: none;
     opacity: 1;
+    animation: none;
   }
 }
 

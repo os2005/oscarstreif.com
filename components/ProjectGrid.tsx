@@ -90,7 +90,7 @@ export function ProjectGrid({
           <div className="mt-6">
             <Link
               className={`inline-flex rounded-full border px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] transition ${buttonTheme}`}
-              href={project.path}
+              href={project.visitPath}
             >
               Visit
             </Link>

@@ -1,30 +1,33 @@
 import { AccessDenied } from "@/components/AccessDenied";
 import { PrivateAreaPanel, type PrivateAreaSectionParam } from "@/components/PrivateAreaPanel";
-import { ProjectGrid } from "@/components/ProjectGrid";
 import { ProtectedContent } from "@/components/ProtectedContent";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
 import { getAccessForRole, listMembers } from "@/lib/auth";
-import { listProjects, listProjectsByVisibility } from "@/lib/projects";
+import { listProjects } from "@/lib/projects";
 
 export const metadata = {
-  title: "Private",
+  title: "Control Center",
 };
 
 type PrivatePageProps = {
   searchParams: Promise<{
+    project?: string;
     section?: string;
   }>;
 };
 
 function getInitialSection(section?: string): PrivateAreaSectionParam | null {
   if (
-    section === "settings" ||
     section === "projects" ||
+    section === "manage-projects" ||
+    section === "settings" ||
     section === "password" ||
     section === "invite" ||
     section === "members" ||
+    section === "view-all-projects" ||
+    section === "project-table" ||
     section === "create-project" ||
-    section === "all-projects"
+    section === "existing-projects"
   ) {
     return section;
   }
@@ -35,7 +38,7 @@ function getInitialSection(section?: string): PrivateAreaSectionParam | null {
 export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   const access = await getAccessForRole("admin");
   const params = await searchParams;
-  const initialSection = getInitialSection(params.section) ?? "settings";
+  const initialSection = getInitialSection(params.section) ?? "projects";
 
   if (!access) {
     return null;
@@ -46,25 +49,14 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   }
 
   return (
-    <ProtectedContent title="Private Area" label="Admin">
+    <ProtectedContent description="Projects, public delivery surfaces and account controls are managed here centrally." title="Control Center" label="Private Area">
       <PrivateAreaPanel
+        focusedProjectId={params.project ?? null}
         initialAdminEmail={ADMIN_EMAIL}
         initialSection={initialSection}
         members={listMembers()}
         projects={listProjects()}
       />
-      <div className="mt-14">
-        <div className="mb-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/48">Private projects</p>
-          <h2 className="mt-3 font-display text-5xl leading-none text-paper md:text-6xl">Restricted work</h2>
-        </div>
-        <ProjectGrid
-          emptyDescription="Private projects will appear here once they are active and marked as private in the project registry."
-          emptyTitle="No private projects yet"
-          projects={listProjectsByVisibility("private")}
-          theme="dark"
-        />
-      </div>
     </ProtectedContent>
   );
 }

@@ -24,6 +24,9 @@ export type StoredProject = {
   description: string;
   visibility: ProjectVisibility;
   previewImage: string;
+  accentColor?: string;
+  secondaryColor?: string;
+  externalUrl?: string;
   tags: string[];
   status: ProjectStatus;
   mock?: ProjectMockData;
@@ -38,4 +41,6 @@ export type ProjectStore = {
 
 export type ProjectRecord = StoredProject & {
   path: string;
+  sharedPath: string;
+  visitPath: string;
 };
