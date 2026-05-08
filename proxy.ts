@@ -6,6 +6,11 @@ const protectedPrefixes = ["/private", "/settings", "/project/private"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  if (pathname === "/CV") {
+    return NextResponse.redirect(new URL("/cv", request.url));
+  }
+
   const requiresAuth =
     pathname === "/shared" ||
     protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -25,5 +30,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/private/:path*", "/shared", "/settings/:path*", "/project/private/:path*"],
+  matcher: ["/private/:path*", "/shared", "/settings/:path*", "/project/private/:path*", "/CV"],
 };
