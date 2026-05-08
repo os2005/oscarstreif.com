@@ -2,11 +2,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME } from "./lib/auth-config";
 
-const protectedPrefixes = ["/private", "/shared", "/settings", "/project/private", "/project/shared"];
+const protectedPrefixes = ["/private", "/settings", "/project/private"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const requiresAuth = protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  const requiresAuth =
+    pathname === "/shared" ||
+    protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   if (!requiresAuth) {
     return NextResponse.next();
@@ -23,5 +25,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/private/:path*", "/shared/:path*", "/settings/:path*", "/project/private/:path*", "/project/shared/:path*"],
+  matcher: ["/private/:path*", "/shared", "/settings/:path*", "/project/private/:path*"],
 };
