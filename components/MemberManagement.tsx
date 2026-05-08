@@ -35,7 +35,7 @@ export function MemberManagement({ members, initialAdminEmail, initialError = nu
               <div>
                 <p className="text-lg text-paper">{member.email}</p>
                 <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/48">
-                  {member.role} · added {new Date(member.createdAt).toLocaleDateString("en-GB")}
+                  {member.role} - added {new Date(member.createdAt).toLocaleDateString("en-GB")}
                 </p>
               </div>
               <div className="flex flex-col gap-3 md:flex-row">

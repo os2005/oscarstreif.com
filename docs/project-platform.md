@@ -2,6 +2,8 @@
 
 This codebase uses a two-layer project platform built into the existing Next.js app.
 
+For future Codex project work, start with `docs/codex-project-starterpack/START_HERE.md`.
+
 ## 1. Runtime project record vs project module
 
 There are two different pieces that work together by slug.
