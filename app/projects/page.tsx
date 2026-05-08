@@ -1,6 +1,6 @@
 import { PageShell } from "@/components/PageShell";
-import { ProjectCard } from "@/components/ProjectCard";
-import { Section } from "@/components/Section";
+import { ProjectGrid } from "@/components/ProjectGrid";
+import { listProjectsByVisibility } from "@/lib/projects";
 
 export const metadata = {
   title: "Projects",
@@ -8,41 +8,12 @@ export const metadata = {
 
 export default function ProjectsPage() {
   return (
-    <PageShell eyebrow="Work in progress" title="Projects and focus areas">
-      <Section title="Main focus areas">
-        <div className="grid gap-4 md:grid-cols-2">
-          <ProjectCard title="Chemistry" label="KIT" description="Academic work and scientific grounding at KIT." />
-          <ProjectCard
-            title="PionierGarage"
-            label="Leadership"
-            description="Chairman role in a student entrepreneurship initiative at KIT, including ecosystem formats such as GROW and Startup Karlsruhe."
-          />
-          <ProjectCard
-            title="KIT Gründerschmiede"
-            label="Chemistry and entrepreneurship"
-            description="Chemistry-related activity in the entrepreneurial environment around KIT."
-          />
-          <ProjectCard
-            title="Scholarship and academic development"
-            label="Support"
-            description="Scholarship-supported development. Exact details can be added once public wording is ready."
-          />
-        </div>
-      </Section>
-      <Section title="Personal projects">
-        <div className="grid gap-4 md:grid-cols-2">
-          <ProjectCard
-            title="Personal systems"
-            label="Building"
-            description="A place for projects that turn ideas into tangible tools, workflows or experiments."
-          />
-          <ProjectCard
-            title="Future project placeholder"
-            label="Optional"
-            description="Reserved for ColdLog, CodeLock or another project once there is enough public content."
-          />
-        </div>
-      </Section>
+    <PageShell eyebrow="Project registry" title="Open projects">
+      <ProjectGrid
+        emptyDescription="Public projects will appear here once they are active and marked as open in the central project registry."
+        emptyTitle="No open projects yet"
+        projects={listProjectsByVisibility("open")}
+      />
     </PageShell>
   );
 }

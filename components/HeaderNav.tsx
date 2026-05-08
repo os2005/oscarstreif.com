@@ -41,6 +41,7 @@ export function HeaderNav({ isDark, isLanding, role }: HeaderNavProps) {
 
   const textBase = isLanding ? "text-white/78 hover:text-white" : isDark ? "text-paper/78 hover:text-white" : "text-ink/78 hover:text-ink";
   const activeText = "text-accent";
+  const memberActive = "bg-accent text-white shadow-[0_0_24px_rgba(20,92,255,0.24)]";
 
   return (
     <div className="flex items-center gap-5 md:gap-8">
@@ -65,7 +66,7 @@ export function HeaderNav({ isDark, isLanding, role }: HeaderNavProps) {
             <Link
               className={`rounded-full px-4 py-2 transition ${
                 activeKey === link.href
-                  ? activeText
+                  ? memberActive
                   : isDark
                     ? "text-paper/78 hover:bg-white/6 hover:text-white"
                     : "text-ink/78 hover:bg-ink/5 hover:text-ink"

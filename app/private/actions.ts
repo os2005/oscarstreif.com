@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { changeCurrentUserPassword, createInvitation, deleteMember, updateMemberRole } from "@/lib/auth";
+import { changeCurrentUserPassword, createInvitation, deleteMember, getAccessForRole, updateMemberRole } from "@/lib/auth";
 import type { Role } from "@/lib/auth-types";
+import { createProject, deleteProject, getProjectPath, updateProject } from "@/lib/projects";
+import type { ProjectStatus, ProjectVisibility } from "@/lib/project-types";
 
 export type PasswordActionState = {
   error?: string;
@@ -19,6 +21,55 @@ export type InviteActionState = {
     role: Role;
   };
 };
+
+export type ProjectEditorActionState = {
+  error?: string;
+  success?: string;
+};
+
+function revalidateProjectSurfaces(paths: string[]) {
+  revalidatePath("/private");
+  revalidatePath("/shared");
+  revalidatePath("/projects");
+
+  for (const path of paths) {
+    revalidatePath(path);
+  }
+}
+
+function parseProjectFormData(formData: FormData) {
+  const title = String(formData.get("title") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+  const description = String(formData.get("description") ?? "");
+  const previewImage = String(formData.get("previewImage") ?? "");
+  const tags = String(formData.get("tags") ?? "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  const visibility = String(formData.get("visibility") ?? "open");
+  const status = String(formData.get("status") ?? "draft");
+
+  if (visibility !== "private" && visibility !== "shared" && visibility !== "open") {
+    return { ok: false as const, error: "Please choose a valid visibility level." };
+  }
+
+  if (status !== "draft" && status !== "active" && status !== "archived") {
+    return { ok: false as const, error: "Please choose a valid project status." };
+  }
+
+  return {
+    ok: true as const,
+    payload: {
+      title,
+      slug,
+      description,
+      previewImage,
+      tags,
+      visibility: visibility as ProjectVisibility,
+      status: status as ProjectStatus,
+    },
+  };
+}
 
 export async function changePasswordAction(
   _: PasswordActionState,
@@ -80,13 +131,74 @@ export async function createInvitationAction(
   };
 }
 
+export async function createProjectAction(
+  _: ProjectEditorActionState,
+  formData: FormData
+): Promise<ProjectEditorActionState> {
+  const access = await getAccessForRole("admin");
+  if (!access?.allowed) {
+    return { error: "Only admins can manage projects." };
+  }
+
+  const parsed = parseProjectFormData(formData);
+  if (!parsed.ok) {
+    return { error: parsed.error };
+  }
+
+  const result = createProject(parsed.payload);
+  if (!result.ok) {
+    return { error: result.error };
+  }
+
+  revalidateProjectSurfaces([result.project.path]);
+
+  return { success: "Project created successfully." };
+}
+
+export async function saveProjectAction(
+  _: ProjectEditorActionState,
+  formData: FormData
+): Promise<ProjectEditorActionState> {
+  const access = await getAccessForRole("admin");
+  if (!access?.allowed) {
+    return { error: "Only admins can manage projects." };
+  }
+
+  const projectId = String(formData.get("projectId") ?? "");
+  const previousSlug = String(formData.get("previousSlug") ?? "");
+  const previousVisibility = String(formData.get("previousVisibility") ?? "open");
+
+  if (!projectId) {
+    return { error: "Project not found." };
+  }
+
+  const parsed = parseProjectFormData(formData);
+  if (!parsed.ok) {
+    return { error: parsed.error };
+  }
+
+  const result = updateProject(projectId, parsed.payload);
+  if (!result.ok) {
+    return { error: result.error };
+  }
+
+  const stalePath =
+    previousVisibility === "private" || previousVisibility === "shared" || previousVisibility === "open"
+      ? getProjectPath({ visibility: previousVisibility, slug: previousSlug })
+      : null;
+
+  revalidateProjectSurfaces(stalePath ? [stalePath, result.project.path] : [result.project.path]);
+
+  return { success: "Project saved successfully." };
+}
+
 export async function updateMemberRoleAction(formData: FormData) {
   const memberId = String(formData.get("memberId") ?? "");
   const role = String(formData.get("role") ?? "shared");
 
   await updateMemberRole(memberId, role === "admin" ? "admin" : "shared");
   revalidatePath("/private");
-  redirect("/private?section=members");
+  redirect("/private?section=settings&settings=members");
 }
 
 export async function deleteMemberAction(formData: FormData) {
@@ -94,5 +206,22 @@ export async function deleteMemberAction(formData: FormData) {
 
   await deleteMember(memberId);
   revalidatePath("/private");
-  redirect("/private?section=members");
+  redirect("/private?section=settings&settings=members");
+}
+
+export async function deleteProjectAction(formData: FormData) {
+  const access = await getAccessForRole("admin");
+  if (!access?.allowed) {
+    redirect("/private");
+  }
+
+  const projectId = String(formData.get("projectId") ?? "");
+  const projectPath = String(formData.get("projectPath") ?? "");
+
+  const result = deleteProject(projectId);
+  if (result.ok) {
+    revalidateProjectSurfaces(projectPath ? [projectPath] : []);
+  }
+
+  redirect("/private?section=projects");
 }
