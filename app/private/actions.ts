@@ -198,7 +198,7 @@ export async function updateMemberRoleAction(formData: FormData) {
 
   await updateMemberRole(memberId, role === "admin" ? "admin" : "shared");
   revalidatePath("/private");
-  redirect("/private?section=settings&settings=members");
+  redirect("/private?section=members");
 }
 
 export async function deleteMemberAction(formData: FormData) {
@@ -206,7 +206,7 @@ export async function deleteMemberAction(formData: FormData) {
 
   await deleteMember(memberId);
   revalidatePath("/private");
-  redirect("/private?section=settings&settings=members");
+  redirect("/private?section=members");
 }
 
 export async function deleteProjectAction(formData: FormData) {

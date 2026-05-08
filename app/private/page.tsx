@@ -13,34 +13,23 @@ export const metadata = {
 type PrivatePageProps = {
   searchParams: Promise<{
     section?: string;
-    settings?: string;
   }>;
 };
 
-type AdminSection = "password" | "invite" | "members";
-type PanelSection = "settings" | "projects";
+type AdminSection = "password" | "invite" | "members" | "projects";
 
 function getInitialSection(section?: string): AdminSection | null {
-  if (section === "password" || section === "invite" || section === "members") {
+  if (section === "password" || section === "invite" || section === "members" || section === "projects") {
     return section;
   }
 
   return null;
 }
 
-function getInitialPanel(section?: string): PanelSection {
-  if (section === "projects") {
-    return "projects";
-  }
-
-  return "settings";
-}
-
 export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   const access = await getAccessForRole("admin");
   const params = await searchParams;
-  const settingsSection =
-    getInitialSection(params.settings) ?? getInitialSection(params.section) ?? "password";
+  const initialSection = getInitialSection(params.section) ?? "password";
 
   if (!access) {
     return null;
@@ -54,8 +43,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
     <ProtectedContent title="Private Area" label="Admin">
       <AdminSettingsBox
         initialAdminEmail={ADMIN_EMAIL}
-        initialPanel={getInitialPanel(params.section)}
-        initialSection={settingsSection}
+        initialSection={initialSection}
         members={listMembers()}
         projects={listProjects()}
       />

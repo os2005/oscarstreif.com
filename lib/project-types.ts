@@ -2,6 +2,21 @@ export type ProjectVisibility = "private" | "shared" | "open";
 
 export type ProjectStatus = "draft" | "active" | "archived";
 
+export type ProjectMockSection = {
+  title: string;
+  body: string;
+};
+
+export type ProjectMockData = {
+  eyebrow: string;
+  headline: string;
+  intro: string;
+  primaryCta: string;
+  secondaryCta: string;
+  highlights: string[];
+  sections: ProjectMockSection[];
+};
+
 export type StoredProject = {
   id: string;
   title: string;
@@ -11,6 +26,7 @@ export type StoredProject = {
   previewImage: string;
   tags: string[];
   status: ProjectStatus;
+  mock?: ProjectMockData;
   createdAt: string;
   updatedAt: string;
 };

@@ -28,6 +28,31 @@ function getOverviewPath(visibility: ProjectVisibility) {
   return `/${visibility}`;
 }
 
+function getMockContent(project: NonNullable<ReturnType<typeof findProjectByVisibilityAndSlug>>) {
+  if (project.mock) {
+    return project.mock;
+  }
+
+  return {
+    eyebrow: `${project.visibility} workspace`,
+    headline: project.title,
+    intro: project.description,
+    primaryCta: "Open preview",
+    secondaryCta: "Review summary",
+    highlights: project.tags.length ? project.tags : [project.visibility, project.status, project.slug],
+    sections: [
+      {
+        title: "Overview",
+        body: project.description,
+      },
+      {
+        title: "Current state",
+        body: `This project is currently marked as ${project.status} and is exposed through the ${project.visibility} area.`,
+      },
+    ],
+  };
+}
+
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { visibility, slug } = await params;
 
@@ -77,6 +102,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const isDark = visibility !== "open";
   const overviewPath = getOverviewPath(visibility);
+  const mock = getMockContent(project);
 
   return (
     <main className={isDark ? "min-h-dvh bg-ink text-paper" : "min-h-dvh bg-paper text-ink"}>
@@ -85,11 +111,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
             <p className={isDark ? "font-mono text-xs uppercase tracking-[0.28em] text-paper/48" : "font-mono text-xs uppercase tracking-[0.28em] text-ink/46"}>
-              {visibility} project
+              {mock.eyebrow}
             </p>
-            <h1 className="mt-5 max-w-4xl font-display text-6xl leading-[0.92] md:text-8xl">{project.title}</h1>
+            <h1 className="mt-5 max-w-4xl font-display text-6xl leading-[0.92] md:text-8xl">{mock.headline}</h1>
             <p className={isDark ? "mt-8 max-w-3xl text-lg leading-8 text-paper/72" : "mt-8 max-w-3xl text-lg leading-8 text-ink/70"}>
-              {project.description}
+              {mock.intro}
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               <span
@@ -116,6 +142,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   {tag}
                 </span>
               ))}
+            </div>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <button
+                className={`rounded-full px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] ${
+                  isDark ? "bg-paper text-ink" : "bg-ink text-paper"
+                }`}
+                type="button"
+              >
+                {mock.primaryCta}
+              </button>
+              <button
+                className={`rounded-full border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] ${
+                  isDark ? "border-paper/16 text-paper" : "border-ink/14 text-ink"
+                }`}
+                type="button"
+              >
+                {mock.secondaryCta}
+              </button>
             </div>
           </div>
 
@@ -155,6 +199,39 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </span>
             </div>
           )}
+        </div>
+
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+          {mock.highlights.map((highlight) => (
+            <div
+              className={`rounded-[1.75rem] border p-5 ${
+                isDark ? "border-paper/12 bg-white/[0.04]" : "border-ink/12 bg-white/65"
+              }`}
+              key={highlight}
+            >
+              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
+                Highlight
+              </p>
+              <p className="mt-4 font-display text-3xl leading-none">{highlight}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 grid gap-5 lg:grid-cols-2">
+          {mock.sections.map((section) => (
+            <article
+              className={`rounded-[1.9rem] border p-6 ${
+                isDark ? "border-paper/12 bg-white/[0.04]" : "border-ink/12 bg-white/65"
+              }`}
+              key={section.title}
+            >
+              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
+                Section
+              </p>
+              <h2 className="mt-4 font-display text-4xl leading-none">{section.title}</h2>
+              <p className={isDark ? "mt-4 leading-7 text-paper/70" : "mt-4 leading-7 text-ink/70"}>{section.body}</p>
+            </article>
+          ))}
         </div>
       </section>
     </main>
