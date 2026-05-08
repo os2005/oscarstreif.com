@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { AccessDenied } from "@/components/AccessDenied";
 import { Header } from "@/components/Header";
 import { ProjectRedirectScreen } from "@/components/ProjectRedirectScreen";
 import { ProjectShowcase } from "@/components/ProjectShowcase";
 import { ShaderGradientBackground } from "@/components/ShaderGradientBackground";
 import { getCurrentUser } from "@/lib/auth";
+import { getProjectAccessDecision } from "@/lib/project-access";
+import { resolveProjectModule } from "@/lib/project-modules/resolve-project-module";
 import { findProjectBySlug } from "@/lib/projects";
 
 type SharedProjectPageProps = {
@@ -19,6 +20,13 @@ export async function generateMetadata({ params }: SharedProjectPageProps): Prom
   const project = findProjectBySlug(slug);
 
   if (!project || project.status !== "active") {
+    return {};
+  }
+
+  const user = await getCurrentUser();
+  const accessDecision = getProjectAccessDecision(project, user);
+
+  if (accessDecision.kind !== "allowed") {
     return {};
   }
 
@@ -39,16 +47,15 @@ export default async function SharedProjectPage({ params }: SharedProjectPagePro
     notFound();
   }
 
-  if (project.visibility === "private") {
-    const user = await getCurrentUser();
+  const user = await getCurrentUser();
+  const accessDecision = getProjectAccessDecision(project, user);
 
-    if (!user) {
-      redirect(`/login?next=${encodeURIComponent(project.sharedPath)}`);
-    }
+  if (accessDecision.kind === "login-required") {
+    redirect(`/login?next=${encodeURIComponent(accessDecision.next)}`);
+  }
 
-    if (user.role !== "admin") {
-      return <AccessDenied />;
-    }
+  if (accessDecision.kind === "denied") {
+    notFound();
   }
 
   if (project.externalRedirectUrl) {
@@ -61,19 +68,43 @@ export default async function SharedProjectPage({ params }: SharedProjectPagePro
     );
   }
 
+  const projectModule = resolveProjectModule(project);
+  const isDark = project.visibility !== "open";
+  const headerVariant = isDark ? "dark" : "light";
+  const backHref =
+    project.visibility === "private" ? "/private" : project.visibility === "shared" ? "/shared" : "/projects";
+  const backLabel =
+    project.visibility === "private"
+      ? "Back to private workspace"
+      : project.visibility === "shared"
+        ? "Back to shared area"
+        : "Back to overview";
+
+  if (projectModule) {
+    const SharedPage = projectModule.SharedPage;
+
+    return (
+      <main className={isDark ? "min-h-dvh bg-ink text-paper" : "min-h-dvh bg-paper text-ink"}>
+        <Header variant={headerVariant} />
+        <SharedPage
+          backHref={backHref}
+          backLabel={backLabel}
+          isDark={isDark}
+          pathLabel={project.sharedPath}
+          project={project}
+          viewer={user}
+        />
+      </main>
+    );
+  }
+
   return (
-    <main className={project.visibility === "open" ? "min-h-dvh bg-paper text-ink" : "min-h-dvh bg-ink text-paper"}>
-      <Header variant={project.visibility === "open" ? "light" : "dark"} />
+    <main className={isDark ? "min-h-dvh bg-ink text-paper" : "min-h-dvh bg-paper text-ink"}>
+      <Header variant={headerVariant} />
       <ProjectShowcase
-        backHref={project.visibility === "private" ? "/private" : project.visibility === "open" ? "/projects" : "/"}
-        backLabel={
-          project.visibility === "private"
-            ? "Back to control center"
-            : project.visibility === "open"
-              ? "Back to overview"
-              : "Back to site"
-        }
-        isDark={project.visibility !== "open"}
+        backHref={backHref}
+        backLabel={backLabel}
+        isDark={isDark}
         pathLabel={project.sharedPath}
         project={project}
       />
