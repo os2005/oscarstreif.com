@@ -49,8 +49,10 @@ function parseProjectFormData(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   const description = String(formData.get("description") ?? "");
   const previewImage = String(formData.get("previewImage") ?? "");
-  const accentColor = String(formData.get("accentColor") ?? "");
-  const secondaryColor = String(formData.get("secondaryColor") ?? "");
+  const accentColor = formData.has("accentColor") ? String(formData.get("accentColor") ?? "") : undefined;
+  const secondaryColor = formData.has("secondaryColor")
+    ? String(formData.get("secondaryColor") ?? "")
+    : undefined;
   const externalRedirectUrl = String(formData.get("externalRedirectUrl") ?? "");
   const tags = String(formData.get("tags") ?? "")
     .split(",")
