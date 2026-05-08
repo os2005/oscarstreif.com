@@ -39,6 +39,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   const access = await getAccessForRole("admin");
   const params = await searchParams;
   const initialSection = getInitialSection(params.section) ?? "projects";
+  const members = listMembers();
 
   if (!access) {
     return null;
@@ -56,8 +57,9 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
         initialAdminEmail={ADMIN_EMAIL}
         initialSection={initialSection}
         key={`${initialSection}:${params.project ?? ""}`}
-        members={listMembers()}
+        members={members}
         projects={listProjects()}
+        sharedAccounts={members.filter((member) => member.role === "shared")}
       />
     </main>
   );

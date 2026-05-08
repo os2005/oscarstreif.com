@@ -34,6 +34,7 @@ type PrivateAreaPanelProps = {
   initialSection?: PrivateAreaSectionParam;
   members: Member[];
   projects: ProjectRecord[];
+  sharedAccounts: Member[];
 };
 
 const topLevelSections: { id: ControlCenterTopLevelSection; label: string }[] = [
@@ -105,6 +106,7 @@ export function PrivateAreaPanel({
   initialSection = "projects",
   members,
   projects,
+  sharedAccounts,
 }: PrivateAreaPanelProps) {
   const initialState = getInitialState(initialSection);
   const [activeTopLevel, setActiveTopLevel] = useState<ControlCenterTopLevelSection>(initialState.activeTopLevel);
@@ -119,6 +121,9 @@ export function PrivateAreaPanel({
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-88px)] w-full max-w-7xl flex-col px-6 pb-12 pt-8 md:px-8">
       <div className="flex flex-wrap gap-2 rounded-full border border-paper/12 bg-black/24 p-1.5">
+        <div className="mr-3 flex items-center px-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46">Private Workspace</span>
+        </div>
         {topLevelSections.map((section) => {
           const isActive = activeTopLevel === section.id;
 
@@ -158,7 +163,7 @@ export function PrivateAreaPanel({
                 setActiveProjectsSection((current) => (current === "project-table" ? null : "project-table"))
               }
             >
-              <ProjectTableSection projects={projects} />
+              <ProjectTableSection projects={projects} sharedAccounts={sharedAccounts} />
             </ControlCenterAccordion>
           </div>
         ) : null}

@@ -27,6 +27,7 @@ export type StoredProject = {
   accentColor?: string;
   secondaryColor?: string;
   externalRedirectUrl?: string;
+  sharedWithUserIds: string[];
   tags: string[];
   status: ProjectStatus;
   mock?: ProjectMockData;

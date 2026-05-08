@@ -9,6 +9,7 @@ import {
   createProjectAction,
   deleteProjectAction,
   saveProjectAction,
+  updateProjectSharedAccessAction,
   type ProjectEditorActionState,
 } from "@/app/private/actions";
 import type { ProjectRecord } from "@/lib/project-types";
@@ -20,6 +21,13 @@ const initialState: ProjectEditorActionState = {};
 
 type ProjectManagementProps = {
   projects: ProjectRecord[];
+};
+
+type SharedAccount = {
+  id: string;
+  email: string;
+  role: "admin" | "shared";
+  createdAt: string;
 };
 
 export type ProjectsViewSection = "view-all-projects" | "project-table";
@@ -255,7 +263,66 @@ export function ViewAllProjectsSection({ projects }: ProjectManagementProps) {
   );
 }
 
-export function ProjectTableSection({ projects }: ProjectManagementProps) {
+function SharedAccessControl({
+  project,
+  sharedAccounts,
+}: {
+  project: ProjectRecord;
+  sharedAccounts: SharedAccount[];
+}) {
+  if (project.visibility !== "shared") {
+    return (
+      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/34">Only for shared projects</span>
+    );
+  }
+
+  return (
+    <details className="group relative">
+      <summary className="list-none">
+        <span className="inline-flex cursor-pointer rounded-full border border-paper/16 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper transition hover:border-paper/40 hover:bg-white/6">
+          Access
+        </span>
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 w-72 rounded-[1.25rem] border border-paper/12 bg-ink p-4 shadow-[0_24px_60px_rgba(0,0,0,0.3)]">
+        <form action={updateProjectSharedAccessAction} className="space-y-3">
+          <input name="projectId" type="hidden" value={project.id} />
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46">Freigabe</p>
+          {sharedAccounts.length ? (
+            <div className="space-y-2">
+              {sharedAccounts.map((account) => (
+                <label className="flex items-center gap-3 text-sm text-paper/78" key={account.id}>
+                  <input
+                    className="h-4 w-4 rounded border-paper/20 bg-black/30"
+                    defaultChecked={project.sharedWithUserIds.includes(account.id)}
+                    name="sharedWithUserIds"
+                    type="checkbox"
+                    value={account.id}
+                  />
+                  <span className="truncate">{account.email}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-paper/52">No shared accounts available.</p>
+          )}
+          <button
+            className="rounded-full border border-paper/16 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper transition hover:border-paper/40 hover:bg-white/6"
+            type="submit"
+          >
+            Save access
+          </button>
+        </form>
+      </div>
+    </details>
+  );
+}
+
+export function ProjectTableSection({
+  projects,
+  sharedAccounts,
+}: ProjectManagementProps & {
+  sharedAccounts: SharedAccount[];
+}) {
   return (
     <section>
       {projects.length ? (
@@ -265,6 +332,7 @@ export function ProjectTableSection({ projects }: ProjectManagementProps) {
               <tr className="border-b border-paper/10 text-left">
                 <th className="px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48">Title</th>
                 <th className="px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48">Visibility</th>
+                <th className="px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48">Freigabe</th>
                 <th className="px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/48">Actions</th>
               </tr>
             </thead>
@@ -281,6 +349,9 @@ export function ProjectTableSection({ projects }: ProjectManagementProps) {
                   </td>
                   <td className="whitespace-nowrap px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/62">
                     {project.visibility}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-4">
+                    <SharedAccessControl project={project} sharedAccounts={sharedAccounts} />
                   </td>
                   <td className="whitespace-nowrap px-5 py-4">
                     <div className="flex items-center gap-2">

@@ -1,3 +1,4 @@
+import type { SessionUser } from "./auth-types";
 import { randomUUID } from "crypto";
 import { updateProjectStore, readProjectStore } from "./project-store";
 import type { ProjectRecord, ProjectStatus, ProjectVisibility, StoredProject } from "./project-types";
@@ -11,6 +12,7 @@ type UpsertProjectInput = {
   accentColor?: string;
   secondaryColor?: string;
   externalRedirectUrl?: string;
+  sharedWithUserIds?: string[];
   tags: string[];
   status: ProjectStatus;
 };
@@ -89,6 +91,16 @@ export function listProjectsByVisibility(visibility: ProjectVisibility) {
   return listProjects().filter((project) => project.visibility === visibility && project.status === "active");
 }
 
+export function listSharedProjectsForUser(user: SessionUser) {
+  const projects = listProjectsByVisibility("shared");
+
+  if (user.role === "admin") {
+    return projects;
+  }
+
+  return projects.filter((project) => project.sharedWithUserIds.includes(user.id));
+}
+
 export function findProjectBySlug(slug: string) {
   const normalizedSlug = normalizeProjectSlug(slug);
   const project = readProjectStore().projects.find((entry) => entry.slug === normalizedSlug);
@@ -157,6 +169,7 @@ function validateProjectInput(input: UpsertProjectInput) {
       accentColor,
       secondaryColor,
       externalRedirectUrl,
+      sharedWithUserIds: input.sharedWithUserIds ?? [],
       tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
     },
   };
@@ -212,6 +225,7 @@ export function updateProject(projectId: string, input: UpsertProjectInput) {
     project.accentColor = validation.payload.accentColor;
     project.secondaryColor = validation.payload.secondaryColor;
     project.externalRedirectUrl = validation.payload.externalRedirectUrl;
+    project.sharedWithUserIds = validation.payload.sharedWithUserIds ?? project.sharedWithUserIds;
     project.tags = validation.payload.tags;
     project.status = validation.payload.status;
     project.updatedAt = new Date().toISOString();
@@ -229,6 +243,21 @@ export function deleteProject(projectId: string) {
     }
 
     store.projects = store.projects.filter((entry) => entry.id !== projectId);
+
+    return { ok: true as const, project: toProjectRecord(project) };
+  });
+}
+
+export function updateProjectSharedAccess(projectId: string, sharedWithUserIds: string[]) {
+  return updateProjectStore((store) => {
+    const project = store.projects.find((entry) => entry.id === projectId);
+
+    if (!project) {
+      return { ok: false as const, error: "Project not found." };
+    }
+
+    project.sharedWithUserIds = [...new Set(sharedWithUserIds.map((value) => value.trim()).filter(Boolean))];
+    project.updatedAt = new Date().toISOString();
 
     return { ok: true as const, project: toProjectRecord(project) };
   });

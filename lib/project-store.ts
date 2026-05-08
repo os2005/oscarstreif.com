@@ -63,6 +63,7 @@ function createSeedProject(input: {
     accentColor,
     secondaryColor,
     externalRedirectUrl: input.externalRedirectUrl,
+    sharedWithUserIds: [],
     tags: input.tags,
     status: "active",
     mock: input.mock,
@@ -215,6 +216,9 @@ function normalizeProject(project: Partial<StoredProject>): StoredProject {
         : typeof (project as StoredProject & { externalUrl?: string }).externalUrl === "string"
           ? (project as StoredProject & { externalUrl?: string }).externalUrl?.trim()
           : undefined,
+    sharedWithUserIds: Array.isArray(project.sharedWithUserIds)
+      ? project.sharedWithUserIds.map((value) => String(value).trim()).filter(Boolean)
+      : [],
     tags: Array.isArray(project.tags)
       ? project.tags
           .map((tag) => String(tag).trim())

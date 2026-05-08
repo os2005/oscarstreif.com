@@ -4,7 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { changeCurrentUserPassword, createInvitation, deleteMember, getAccessForRole, updateMemberRole } from "@/lib/auth";
 import type { Role } from "@/lib/auth-types";
-import { createProject, deleteProject, getProjectPath, getProjectSharedPath, updateProject } from "@/lib/projects";
+import {
+  createProject,
+  deleteProject,
+  getProjectPath,
+  getProjectSharedPath,
+  updateProject,
+  updateProjectSharedAccess,
+} from "@/lib/projects";
 import type { ProjectStatus, ProjectVisibility } from "@/lib/project-types";
 
 export type PasswordActionState = {
@@ -49,6 +56,12 @@ function parseProjectFormData(formData: FormData) {
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);
+  const sharedWithUserIds = formData.has("sharedWithUserIds")
+    ? formData
+        .getAll("sharedWithUserIds")
+        .map((value) => String(value).trim())
+        .filter(Boolean)
+    : undefined;
   const visibility = String(formData.get("visibility") ?? "open");
   const status = String(formData.get("status") ?? "draft");
 
@@ -70,6 +83,7 @@ function parseProjectFormData(formData: FormData) {
       accentColor,
       secondaryColor,
       externalRedirectUrl,
+      sharedWithUserIds,
       tags,
       visibility: visibility as ProjectVisibility,
       status: status as ProjectStatus,
@@ -242,4 +256,28 @@ export async function deleteProjectAction(formData: FormData) {
   }
 
   redirect("/private?section=existing-projects");
+}
+
+export async function updateProjectSharedAccessAction(formData: FormData) {
+  const access = await getAccessForRole("admin");
+  if (!access?.allowed) {
+    redirect("/private");
+  }
+
+  const projectId = String(formData.get("projectId") ?? "");
+  const sharedWithUserIds = formData
+    .getAll("sharedWithUserIds")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+
+  if (!projectId) {
+    redirect("/private?section=project-table");
+  }
+
+  const result = updateProjectSharedAccess(projectId, sharedWithUserIds);
+  if (result.ok) {
+    revalidateProjectSurfaces([result.project.path, result.project.sharedPath]);
+  }
+
+  redirect("/private?section=project-table");
 }
