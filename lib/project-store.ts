@@ -1,7 +1,10 @@
 import { randomUUID } from "crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import path from "path";
+import { writeFileAtomic } from "./atomic-file";
 import { APP_DATA_DIR } from "./auth-config";
+import { getSafeExternalRedirectUrl } from "./project-redirect-url";
+import { normalizeProjectSlug } from "./project-slug";
 import type { ProjectMockData, ProjectStore, ProjectStatus, ProjectVisibility, StoredProject } from "./project-types";
 
 const PROJECT_STORE_FILENAME = "project-store.json";
@@ -178,7 +181,7 @@ function ensureDataDir() {
 function createInitialStore(): ProjectStore {
   return {
     storeVersion: PROJECT_STORE_VERSION,
-    projects: createDemoProjects(),
+    projects: process.env.NODE_ENV === "production" ? [] : createDemoProjects(),
   };
 }
 
@@ -200,22 +203,26 @@ function normalizeStatus(status: string | undefined): ProjectStatus {
 
 function normalizeProject(project: Partial<StoredProject>): StoredProject {
   const now = new Date().toISOString();
+  const id = project.id ?? randomUUID();
+  const normalizedSlug = normalizeProjectSlug(String(project.slug ?? ""));
+  const normalizedTitleSlug = normalizeProjectSlug(String(project.title ?? ""));
 
   return {
-    id: project.id ?? randomUUID(),
+    id,
     title: String(project.title ?? "").trim(),
-    slug: String(project.slug ?? "").trim(),
+    slug: normalizedSlug || normalizedTitleSlug || `project-${id.slice(0, 8)}`,
     description: String(project.description ?? "").trim(),
     visibility: normalizeVisibility(project.visibility),
     previewImage: String(project.previewImage ?? "").trim(),
     accentColor: project.accentColor ? String(project.accentColor).trim() : undefined,
     secondaryColor: project.secondaryColor ? String(project.secondaryColor).trim() : undefined,
-    externalRedirectUrl:
+    externalRedirectUrl: getSafeExternalRedirectUrl(
       typeof project.externalRedirectUrl === "string"
-        ? project.externalRedirectUrl.trim()
+        ? project.externalRedirectUrl
         : typeof (project as StoredProject & { externalUrl?: string }).externalUrl === "string"
-          ? (project as StoredProject & { externalUrl?: string }).externalUrl?.trim()
-          : undefined,
+          ? (project as StoredProject & { externalUrl?: string }).externalUrl
+          : undefined
+    ),
     sharedWithUserIds: Array.isArray(project.sharedWithUserIds)
       ? project.sharedWithUserIds.map((value) => String(value).trim()).filter(Boolean)
       : [],
@@ -264,10 +271,6 @@ export function readProjectStore(): ProjectStore {
     projects: Array.isArray(parsedStore.projects) ? parsedStore.projects.map(normalizeProject) : [],
   };
 
-  if (!store.projects.length) {
-    store.projects = createDemoProjects();
-  }
-
   if (store.storeVersion !== PROJECT_STORE_VERSION) {
     store.storeVersion = PROJECT_STORE_VERSION;
   }
@@ -277,7 +280,7 @@ export function readProjectStore(): ProjectStore {
 
 export function writeProjectStore(store: ProjectStore) {
   ensureDataDir();
-  writeFileSync(getProjectStorePath(), JSON.stringify(store, null, 2), "utf8");
+  writeFileAtomic(getProjectStorePath(), JSON.stringify(store, null, 2));
 }
 
 export function updateProjectStore<T>(updater: (store: ProjectStore) => T): T {

@@ -45,3 +45,10 @@ export function canUserAccessProject(
 ) {
   return getProjectAccessDecision(project, user).kind === "allowed";
 }
+
+export function filterProjectsByAccess<T extends Pick<ProjectRecord, "sharedPath" | "sharedWithUserIds" | "visibility">>(
+  projects: T[],
+  user: SessionUser | null
+) {
+  return projects.filter((project) => canUserAccessProject(project, user));
+}

@@ -228,16 +228,26 @@ export async function updateMemberRoleAction(formData: FormData) {
   const memberId = String(formData.get("memberId") ?? "");
   const role = String(formData.get("role") ?? "shared");
 
-  await updateMemberRole(memberId, role === "admin" ? "admin" : "shared");
+  const result = await updateMemberRole(memberId, role === "admin" ? "admin" : "shared");
   revalidatePath("/private");
+
+  if (!result.ok) {
+    redirect(`/private?section=members&memberError=${encodeURIComponent(result.error)}`);
+  }
+
   redirect("/private?section=members");
 }
 
 export async function deleteMemberAction(formData: FormData) {
   const memberId = String(formData.get("memberId") ?? "");
 
-  await deleteMember(memberId);
+  const result = await deleteMember(memberId);
   revalidatePath("/private");
+
+  if (!result.ok) {
+    redirect(`/private?section=members&memberError=${encodeURIComponent(result.error)}`);
+  }
+
   redirect("/private?section=members");
 }
 

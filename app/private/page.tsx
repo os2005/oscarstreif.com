@@ -1,6 +1,7 @@
 import { AccessDenied } from "@/components/AccessDenied";
 import { Header } from "@/components/Header";
 import { PrivateAreaPanel, type PrivateAreaSectionParam } from "@/components/PrivateAreaPanel";
+import { redirect } from "next/navigation";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
 import { getAccessForRole, listMembers } from "@/lib/auth";
 import { listProjects } from "@/lib/projects";
@@ -11,6 +12,7 @@ export const metadata = {
 
 type PrivatePageProps = {
   searchParams: Promise<{
+    memberError?: string;
     project?: string;
     section?: string;
   }>;
@@ -42,7 +44,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   const members = listMembers();
 
   if (!access) {
-    return null;
+    redirect("/login?next=%2Fprivate");
   }
 
   if (!access.allowed) {
@@ -55,6 +57,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
       <PrivateAreaPanel
         focusedProjectId={params.project ?? null}
         initialAdminEmail={ADMIN_EMAIL}
+        initialMemberError={params.memberError ?? null}
         initialSection={initialSection}
         key={`${initialSection}:${params.project ?? ""}`}
         members={members}

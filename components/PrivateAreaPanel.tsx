@@ -31,6 +31,7 @@ export type PrivateAreaSectionParam =
 type PrivateAreaPanelProps = {
   focusedProjectId?: string | null;
   initialAdminEmail: string;
+  initialMemberError?: string | null;
   initialSection?: PrivateAreaSectionParam;
   members: Member[];
   projects: ProjectRecord[];
@@ -103,6 +104,7 @@ function getInitialState(section?: PrivateAreaSectionParam): {
 export function PrivateAreaPanel({
   focusedProjectId = null,
   initialAdminEmail,
+  initialMemberError = null,
   initialSection = "projects",
   members,
   projects,
@@ -207,6 +209,7 @@ export function PrivateAreaPanel({
           {activeTopLevel === "settings" ? (
             <AdminSettingsBox
               initialAdminEmail={initialAdminEmail}
+              initialMemberError={initialMemberError}
               initialSection={activeSettingsSection}
               members={members}
             />

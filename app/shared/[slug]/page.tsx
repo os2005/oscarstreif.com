@@ -7,6 +7,7 @@ import { ShaderGradientBackground } from "@/components/ShaderGradientBackground"
 import { getCurrentUser } from "@/lib/auth";
 import { getProjectAccessDecision } from "@/lib/project-access";
 import { resolveProjectModule } from "@/lib/project-modules/resolve-project-module";
+import { getSafeExternalRedirectUrl } from "@/lib/project-redirect-url";
 import { findProjectBySlug } from "@/lib/projects";
 
 type SharedProjectPageProps = {
@@ -58,12 +59,14 @@ export default async function SharedProjectPage({ params }: SharedProjectPagePro
     notFound();
   }
 
-  if (project.externalRedirectUrl) {
+  const externalRedirectUrl = getSafeExternalRedirectUrl(project.externalRedirectUrl);
+
+  if (externalRedirectUrl) {
     return (
       <main className="relative min-h-dvh overflow-hidden bg-black text-white">
         <ShaderGradientBackground />
         <Header variant="landing" />
-        <ProjectRedirectScreen externalUrl={project.externalRedirectUrl} projectTitle={project.title} />
+        <ProjectRedirectScreen externalUrl={externalRedirectUrl} projectTitle={project.title} />
       </main>
     );
   }

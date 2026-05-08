@@ -1,6 +1,7 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, readFileSync, existsSync } from "fs";
 import path from "path";
 import { randomBytes, scryptSync } from "crypto";
+import { writeFileAtomic } from "./atomic-file";
 import { ADMIN_EMAIL, ADMIN_PASSWORD, APP_DATA_DIR, AUTH_STORE_VERSION } from "./auth-config";
 import type { AuthStore, StoredSession, StoredUser } from "./auth-types";
 
@@ -98,7 +99,7 @@ export function readStore(): AuthStore {
 
   if (!existsSync(storePath)) {
     const initialStore = createInitialStore();
-    writeFileSync(storePath, JSON.stringify(initialStore, null, 2), "utf8");
+    writeFileAtomic(storePath, JSON.stringify(initialStore, null, 2));
     return initialStore;
   }
 
@@ -130,7 +131,7 @@ export function readStore(): AuthStore {
 
 export function writeStore(store: AuthStore) {
   ensureDataDir();
-  writeFileSync(getStorePath(), JSON.stringify(store, null, 2), "utf8");
+  writeFileAtomic(getStorePath(), JSON.stringify(store, null, 2));
 }
 
 export function updateStore<T>(updater: (store: AuthStore) => T): T {

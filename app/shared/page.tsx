@@ -1,6 +1,7 @@
 import { AccessDenied } from "@/components/AccessDenied";
 import { Header } from "@/components/Header";
 import { ProjectGrid } from "@/components/ProjectGrid";
+import { redirect } from "next/navigation";
 import { getAccessForRole } from "@/lib/auth";
 import { listSharedProjectsForUser } from "@/lib/projects";
 
@@ -12,7 +13,7 @@ export default async function SharedPage() {
   const access = await getAccessForRole("shared");
 
   if (!access) {
-    return null;
+    redirect("/login?next=%2Fshared");
   }
 
   if (!access.allowed) {

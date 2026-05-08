@@ -24,5 +24,6 @@ export type ProjectModuleDefinition = {
   requiredFeatures?: string[];
   moduleStatus?: "draft" | "ready";
   SharedPage: (props: ProjectModuleSharedPageProps) => JSX.Element;
+  // Future extension point only. AdminPanel is not yet rendered inside the Private Workspace.
   AdminPanel?: (props: ProjectModuleAdminPanelProps) => JSX.Element;
 };

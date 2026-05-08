@@ -1,5 +1,8 @@
 import type { SessionUser } from "./auth-types";
 import { randomUUID } from "crypto";
+import { canUserAccessProject } from "./project-access";
+import { getSafeExternalRedirectUrl, normalizeExternalRedirectUrl } from "./project-redirect-url";
+import { normalizeProjectSlug } from "./project-slug";
 import { updateProjectStore, readProjectStore } from "./project-store";
 import type { ProjectRecord, ProjectStatus, ProjectVisibility, StoredProject } from "./project-types";
 
@@ -16,14 +19,6 @@ type UpsertProjectInput = {
   tags: string[];
   status: ProjectStatus;
 };
-
-export function normalizeProjectSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export function getProjectPath(project: Pick<StoredProject, "visibility" | "slug">) {
   return `/project/${project.visibility}/${project.slug}`;
@@ -49,28 +44,6 @@ function normalizeColorValue(value?: string) {
   return colorPattern.test(normalized) ? normalized : null;
 }
 
-function normalizeExternalRedirectUrl(value?: string) {
-  const normalized = normalizeOptionalValue(value);
-
-  if (!normalized) {
-    return undefined;
-  }
-
-  const candidate = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(normalized) ? normalized : `https://${normalized}`;
-
-  try {
-    const parsed = new URL(candidate);
-
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null;
-    }
-
-    return parsed.toString();
-  } catch {
-    return null;
-  }
-}
-
 function toProjectRecord(project: StoredProject): ProjectRecord {
   return {
     ...project,
@@ -92,13 +65,7 @@ export function listProjectsByVisibility(visibility: ProjectVisibility) {
 }
 
 export function listSharedProjectsForUser(user: SessionUser) {
-  const projects = listProjectsByVisibility("shared");
-
-  if (user.role === "admin") {
-    return projects;
-  }
-
-  return projects.filter((project) => project.sharedWithUserIds.includes(user.id));
+  return listProjectsByVisibility("shared").filter((project) => canUserAccessProject(project, user));
 }
 
 export function findProjectBySlug(slug: string) {
@@ -128,7 +95,7 @@ function validateProjectInput(input: UpsertProjectInput) {
   const slug = normalizeProjectSlug(input.slug);
   const accentColor = normalizeColorValue(input.accentColor);
   const secondaryColor = normalizeColorValue(input.secondaryColor);
-  const externalRedirectUrl = normalizeExternalRedirectUrl(input.externalRedirectUrl);
+  const externalRedirectUrlResult = normalizeExternalRedirectUrl(input.externalRedirectUrl);
 
   if (!input.title.trim()) {
     return { ok: false as const, error: "Please provide a project title." };
@@ -154,7 +121,7 @@ function validateProjectInput(input: UpsertProjectInput) {
     return { ok: false as const, error: "Please provide a valid secondary color in hex format." };
   }
 
-  if (externalRedirectUrl === null) {
+  if (externalRedirectUrlResult.kind === "invalid") {
     return { ok: false as const, error: "Please provide a valid external URL starting with http or https." };
   }
 
@@ -168,7 +135,7 @@ function validateProjectInput(input: UpsertProjectInput) {
       previewImage: input.previewImage.trim(),
       accentColor,
       secondaryColor,
-      externalRedirectUrl,
+      externalRedirectUrl: getSafeExternalRedirectUrl(input.externalRedirectUrl),
       sharedWithUserIds: input.sharedWithUserIds ?? [],
       tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
     },

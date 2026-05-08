@@ -33,7 +33,7 @@ Stored in code under `projects/<slug>/`.
 This module controls the internal rendered project experience, for example:
 
 - custom shared page UI
-- optional project-specific admin panel
+- optional future project-specific admin panel
 - optional future server/data adapters
 - module documentation
 - project data namespace guidance
@@ -123,7 +123,10 @@ If a project later needs project-specific admin controls, add:
 
 and expose it from the module definition.
 
-The shared platform fields should stay in the main project record. Project-specific controls should only handle module-specific behavior.
+Important:
+
+- `AdminPanel` is part of the extension contract, but it is not currently rendered inside the Private Workspace.
+- The shared platform fields should stay in the main project record. Project-specific controls should only handle module-specific behavior once that extension point is wired live.
 
 ## 8. Project-specific data isolation
 

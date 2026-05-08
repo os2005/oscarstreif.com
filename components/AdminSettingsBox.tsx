@@ -17,6 +17,7 @@ type Member = {
 
 type AdminSettingsBoxProps = {
   initialAdminEmail: string;
+  initialMemberError?: string | null;
   initialSection?: SettingsSection | null;
   members: Member[];
 };
@@ -29,6 +30,7 @@ const settingsSections: { id: SettingsSection; label: string }[] = [
 
 export function AdminSettingsBox({
   initialAdminEmail,
+  initialMemberError = null,
   initialSection = null,
   members,
 }: AdminSettingsBoxProps) {
@@ -46,7 +48,11 @@ export function AdminSettingsBox({
           {section.id === "password" ? <PasswordChangeForm /> : null}
           {section.id === "invite" ? <InviteUserForm /> : null}
           {section.id === "members" ? (
-            <MemberManagement initialAdminEmail={initialAdminEmail} members={members} />
+            <MemberManagement
+              initialAdminEmail={initialAdminEmail}
+              initialError={initialMemberError}
+              members={members}
+            />
           ) : null}
         </ControlCenterAccordion>
       ))}
