@@ -223,5 +223,5 @@ export async function deleteProjectAction(formData: FormData) {
     revalidateProjectSurfaces(projectPath ? [projectPath] : []);
   }
 
-  redirect("/private?section=projects");
+  redirect("/private?section=all-projects");
 }

@@ -19,6 +19,8 @@ type ProjectManagementProps = {
   projects: ProjectRecord[];
 };
 
+export type ProjectSection = "create-project" | "all-projects";
+
 function PreviewFrame({ previewImage, title }: { previewImage: string; title: string }) {
   if (!previewImage) {
     return (
@@ -200,7 +202,7 @@ function ProjectEditor({ project }: { project: ProjectRecord }) {
   );
 }
 
-export function ProjectManagement({ projects }: ProjectManagementProps) {
+export function CreateProjectSection() {
   const [state, formAction, pending] = useActionState(createProjectAction, initialState);
   const router = useRouter();
 
@@ -211,43 +213,56 @@ export function ProjectManagement({ projects }: ProjectManagementProps) {
   }, [router, state.success]);
 
   return (
+    <section>
+      <div className="mb-5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/48">Create project</p>
+        <h3 className="mt-3 font-display text-4xl leading-none text-paper">New project</h3>
+      </div>
+      {state.error ? <FormMessage kind="error">{state.error}</FormMessage> : null}
+      {state.success ? <FormMessage kind="success">{state.success}</FormMessage> : null}
+      <form action={formAction} className="space-y-4">
+        <ProjectFields prefix="new-project" />
+        <button
+          className="rounded-full border border-paper/16 bg-paper px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={pending}
+          type="submit"
+        >
+          {pending ? "Creating..." : "Create project"}
+        </button>
+      </form>
+    </section>
+  );
+}
+
+export function AllProjectsSection({ projects }: ProjectManagementProps) {
+  return (
+    <section className="space-y-4">
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/48">Registry</p>
+        <h3 className="mt-3 font-display text-4xl leading-none text-paper">All projects</h3>
+      </div>
+      {projects.length ? (
+        projects.map((project) => <ProjectEditor key={project.id} project={project} />)
+      ) : (
+        <div className="rounded-[2rem] border border-paper/12 bg-white/[0.035] p-6">
+          <p className="font-display text-3xl leading-none text-paper">No projects yet</p>
+          <p className="mt-4 max-w-2xl leading-7 text-paper/66">
+            Create your first project here. Once it is active, it will automatically appear in the matching
+            visibility area.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function ProjectManagement({ projects }: ProjectManagementProps) {
+  return (
     <div className="space-y-8">
       <section className="rounded-[2rem] border border-paper/12 bg-black/20 p-5 md:p-6">
-        <div className="mb-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/48">Create project</p>
-          <h3 className="mt-3 font-display text-4xl leading-none text-paper">New project</h3>
-        </div>
-        {state.error ? <FormMessage kind="error">{state.error}</FormMessage> : null}
-        {state.success ? <FormMessage kind="success">{state.success}</FormMessage> : null}
-        <form action={formAction} className="space-y-4">
-          <ProjectFields prefix="new-project" />
-          <button
-            className="rounded-full border border-paper/16 bg-paper px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={pending}
-            type="submit"
-          >
-            {pending ? "Creating..." : "Create project"}
-          </button>
-        </form>
+        <CreateProjectSection />
       </section>
-
-      <section className="space-y-4">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/48">Registry</p>
-          <h3 className="mt-3 font-display text-4xl leading-none text-paper">All projects</h3>
-        </div>
-        {projects.length ? (
-          projects.map((project) => <ProjectEditor key={project.id} project={project} />)
-        ) : (
-          <div className="rounded-[2rem] border border-paper/12 bg-white/[0.035] p-6">
-            <p className="font-display text-3xl leading-none text-paper">No projects yet</p>
-            <p className="mt-4 max-w-2xl leading-7 text-paper/66">
-              Create your first project here. Once it is active, it will automatically appear in the matching
-              visibility area.
-            </p>
-          </div>
-        )}
-      </section>
+      <AllProjectsSection projects={projects} />
     </div>
   );
 }

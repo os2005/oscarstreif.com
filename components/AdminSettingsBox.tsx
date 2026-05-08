@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { ProjectRecord } from "@/lib/project-types";
 import { InviteUserForm } from "./InviteUserForm";
 import { MemberManagement } from "./MemberManagement";
 import { PasswordChangeForm } from "./PasswordChangeForm";
-import { ProjectManagement } from "./ProjectManagement";
 
-type AdminSection = "password" | "invite" | "members" | "projects";
+export type SettingsSection = "password" | "invite" | "members";
 
 type Member = {
   id: string;
@@ -18,68 +16,66 @@ type Member = {
 
 type AdminSettingsBoxProps = {
   initialAdminEmail: string;
-  initialSection?: AdminSection | null;
+  initialSection?: SettingsSection;
   members: Member[];
-  projects: ProjectRecord[];
 };
 
-const sections: { id: AdminSection; label: string }[] = [
+const settingsSections: { id: SettingsSection; label: string }[] = [
   { id: "password", label: "Change Password" },
   { id: "invite", label: "Create Invitation" },
   { id: "members", label: "Manage Members" },
-  { id: "projects", label: "Projects" },
 ];
+
+function AccordionItem({
+  children,
+  isOpen,
+  label,
+  onToggle,
+}: {
+  children: React.ReactNode;
+  isOpen: boolean;
+  label: string;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="overflow-hidden rounded-[1.5rem] border border-paper/12 bg-black/20">
+      <button
+        aria-expanded={isOpen}
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-white/[0.035] md:px-6"
+        onClick={onToggle}
+        type="button"
+      >
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-paper/72">{label}</span>
+        <span className="font-mono text-lg leading-none text-paper/54">{isOpen ? "-" : "+"}</span>
+      </button>
+      {isOpen ? <div className="border-t border-paper/10 px-5 py-5 md:px-6 md:py-6">{children}</div> : null}
+    </div>
+  );
+}
 
 export function AdminSettingsBox({
   initialAdminEmail,
-  initialSection = null,
+  initialSection = "password",
   members,
-  projects,
 }: AdminSettingsBoxProps) {
-  const [activeSection, setActiveSection] = useState<AdminSection | null>(initialSection);
+  const [activeSection, setActiveSection] = useState<SettingsSection | null>(initialSection);
 
   return (
-    <section className="mx-auto max-w-5xl rounded-[2rem] border border-paper/12 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur md:p-8">
-      <div className="flex flex-col gap-6">
-        <div>
-          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.24em] text-paper/45">Admin</p>
-          <h2 className="font-display text-5xl leading-none text-paper md:text-6xl">Settings</h2>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <div className="flex flex-wrap gap-2 rounded-full border border-paper/12 bg-black/24 p-1.5">
-          {sections.map((section) => {
-            const isActive = activeSection === section.id;
-
-            return (
-              <button
-                className={`rounded-full px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] transition ${
-                  isActive
-                    ? "bg-accent text-white shadow-[0_0_24px_rgba(20,92,255,0.24)]"
-                    : "text-paper/62 hover:bg-white/6 hover:text-paper"
-                }`}
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                type="button"
-              >
-                {section.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {activeSection ? (
-          <div className="mt-8 rounded-[1.5rem] border border-paper/10 bg-black/24 p-5 md:p-7">
-            {activeSection === "password" ? <PasswordChangeForm /> : null}
-            {activeSection === "invite" ? <InviteUserForm /> : null}
-            {activeSection === "members" ? (
-              <MemberManagement initialAdminEmail={initialAdminEmail} members={members} />
-            ) : null}
-            {activeSection === "projects" ? <ProjectManagement projects={projects} /> : null}
-          </div>
-        ) : null}
-      </div>
-    </section>
+    <div className="space-y-4">
+      {settingsSections.map((section) => (
+        <AccordionItem
+          isOpen={activeSection === section.id}
+          key={section.id}
+          label={section.label}
+          onToggle={() => setActiveSection((current) => (current === section.id ? null : section.id))}
+        >
+          {section.id === "password" ? <PasswordChangeForm /> : null}
+          {section.id === "invite" ? <InviteUserForm /> : null}
+          {section.id === "members" ? (
+            <MemberManagement initialAdminEmail={initialAdminEmail} members={members} />
+          ) : null}
+        </AccordionItem>
+      ))}
+    </div>
   );
 }

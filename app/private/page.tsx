@@ -1,5 +1,5 @@
 import { AccessDenied } from "@/components/AccessDenied";
-import { AdminSettingsBox } from "@/components/AdminSettingsBox";
+import { PrivateAreaPanel, type PrivateAreaSectionParam } from "@/components/PrivateAreaPanel";
 import { ProjectGrid } from "@/components/ProjectGrid";
 import { ProtectedContent } from "@/components/ProtectedContent";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
@@ -16,10 +16,16 @@ type PrivatePageProps = {
   }>;
 };
 
-type AdminSection = "password" | "invite" | "members" | "projects";
-
-function getInitialSection(section?: string): AdminSection | null {
-  if (section === "password" || section === "invite" || section === "members" || section === "projects") {
+function getInitialSection(section?: string): PrivateAreaSectionParam | null {
+  if (
+    section === "settings" ||
+    section === "projects" ||
+    section === "password" ||
+    section === "invite" ||
+    section === "members" ||
+    section === "create-project" ||
+    section === "all-projects"
+  ) {
     return section;
   }
 
@@ -29,7 +35,7 @@ function getInitialSection(section?: string): AdminSection | null {
 export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   const access = await getAccessForRole("admin");
   const params = await searchParams;
-  const initialSection = getInitialSection(params.section) ?? "password";
+  const initialSection = getInitialSection(params.section) ?? "settings";
 
   if (!access) {
     return null;
@@ -41,7 +47,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
 
   return (
     <ProtectedContent title="Private Area" label="Admin">
-      <AdminSettingsBox
+      <PrivateAreaPanel
         initialAdminEmail={ADMIN_EMAIL}
         initialSection={initialSection}
         members={listMembers()}
