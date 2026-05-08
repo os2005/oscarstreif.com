@@ -108,22 +108,17 @@ export function PrivateAreaPanel({
 }: PrivateAreaPanelProps) {
   const initialState = getInitialState(initialSection);
   const [activeTopLevel, setActiveTopLevel] = useState<ControlCenterTopLevelSection>(initialState.activeTopLevel);
-  const activeSettingsSection = initialState.activeSettingsSection;
   const [activeProjectsSection, setActiveProjectsSection] = useState<ProjectsViewSection | null>(
     initialState.activeProjectsSection
   );
   const [activeManageSection, setActiveManageSection] = useState<ManageProjectSection | null>(
     initialState.activeManageSection
   );
+  const activeSettingsSection = initialState.activeSettingsSection;
 
   return (
-    <section className="w-full rounded-[2rem] border border-paper/12 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur md:p-8">
-      <div>
-        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.24em] text-paper/45">Private Area</p>
-        <h2 className="font-display text-3xl leading-none text-paper md:text-4xl">Workspace modules</h2>
-      </div>
-
-      <div className="mt-8 flex flex-wrap gap-2 rounded-full border border-paper/12 bg-black/24 p-1.5">
+    <div className="mx-auto flex min-h-[calc(100dvh-88px)] w-full max-w-7xl flex-col px-6 pb-12 pt-8 md:px-8">
+      <div className="flex flex-wrap gap-2 rounded-full border border-paper/12 bg-black/24 p-1.5">
         {topLevelSections.map((section) => {
           const isActive = activeTopLevel === section.id;
 
@@ -144,16 +139,14 @@ export function PrivateAreaPanel({
         })}
       </div>
 
-      <div className="mt-8 rounded-[1.5rem] border border-paper/10 bg-black/24 p-5 md:p-7">
+      <div className="mt-8 flex-1">
         {activeTopLevel === "projects" ? (
           <div className="space-y-4">
             <ControlCenterAccordion
               isOpen={activeProjectsSection === "view-all-projects"}
               label="View All Projects"
               onToggle={() =>
-                setActiveProjectsSection((current) =>
-                  current === "view-all-projects" ? null : "view-all-projects"
-                )
+                setActiveProjectsSection((current) => (current === "view-all-projects" ? null : "view-all-projects"))
               }
             >
               <ViewAllProjectsSection projects={projects} />
@@ -188,7 +181,11 @@ export function PrivateAreaPanel({
                 setActiveManageSection((current) => (current === "existing-projects" ? null : "existing-projects"))
               }
             >
-              <ExistingProjectsSection focusedProjectId={focusedProjectId} projects={projects} />
+              <ExistingProjectsSection
+                focusedProjectId={focusedProjectId}
+                key={focusedProjectId ?? "projects"}
+                projects={projects}
+              />
             </ControlCenterAccordion>
           </div>
         ) : null}
@@ -201,6 +198,6 @@ export function PrivateAreaPanel({
           />
         ) : null}
       </div>
-    </section>
+    </div>
   );
 }

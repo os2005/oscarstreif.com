@@ -10,7 +10,7 @@ type UpsertProjectInput = {
   previewImage: string;
   accentColor?: string;
   secondaryColor?: string;
-  externalUrl?: string;
+  externalRedirectUrl?: string;
   tags: string[];
   status: ProjectStatus;
 };
@@ -47,15 +47,17 @@ function normalizeColorValue(value?: string) {
   return colorPattern.test(normalized) ? normalized : null;
 }
 
-function normalizeExternalUrl(value?: string) {
+function normalizeExternalRedirectUrl(value?: string) {
   const normalized = normalizeOptionalValue(value);
 
   if (!normalized) {
     return undefined;
   }
 
+  const candidate = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(normalized) ? normalized : `https://${normalized}`;
+
   try {
-    const parsed = new URL(normalized);
+    const parsed = new URL(candidate);
 
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       return null;
@@ -114,7 +116,7 @@ function validateProjectInput(input: UpsertProjectInput) {
   const slug = normalizeProjectSlug(input.slug);
   const accentColor = normalizeColorValue(input.accentColor);
   const secondaryColor = normalizeColorValue(input.secondaryColor);
-  const externalUrl = normalizeExternalUrl(input.externalUrl);
+  const externalRedirectUrl = normalizeExternalRedirectUrl(input.externalRedirectUrl);
 
   if (!input.title.trim()) {
     return { ok: false as const, error: "Please provide a project title." };
@@ -140,7 +142,7 @@ function validateProjectInput(input: UpsertProjectInput) {
     return { ok: false as const, error: "Please provide a valid secondary color in hex format." };
   }
 
-  if (externalUrl === null) {
+  if (externalRedirectUrl === null) {
     return { ok: false as const, error: "Please provide a valid external URL starting with http or https." };
   }
 
@@ -154,7 +156,7 @@ function validateProjectInput(input: UpsertProjectInput) {
       previewImage: input.previewImage.trim(),
       accentColor,
       secondaryColor,
-      externalUrl,
+      externalRedirectUrl,
       tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
     },
   };
@@ -207,6 +209,9 @@ export function updateProject(projectId: string, input: UpsertProjectInput) {
     project.description = validation.payload.description;
     project.visibility = validation.payload.visibility;
     project.previewImage = validation.payload.previewImage;
+    project.accentColor = validation.payload.accentColor;
+    project.secondaryColor = validation.payload.secondaryColor;
+    project.externalRedirectUrl = validation.payload.externalRedirectUrl;
     project.tags = validation.payload.tags;
     project.status = validation.payload.status;
     project.updatedAt = new Date().toISOString();

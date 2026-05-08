@@ -1,12 +1,12 @@
 import { AccessDenied } from "@/components/AccessDenied";
+import { Header } from "@/components/Header";
 import { PrivateAreaPanel, type PrivateAreaSectionParam } from "@/components/PrivateAreaPanel";
-import { ProtectedContent } from "@/components/ProtectedContent";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
 import { getAccessForRole, listMembers } from "@/lib/auth";
 import { listProjects } from "@/lib/projects";
 
 export const metadata = {
-  title: "Control Center",
+  title: "Private",
 };
 
 type PrivatePageProps = {
@@ -49,14 +49,16 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   }
 
   return (
-    <ProtectedContent description="Projects, public delivery surfaces and account controls are managed here centrally." title="Control Center" label="Private Area">
+    <main className="min-h-dvh bg-ink text-paper">
+      <Header variant="dark" />
       <PrivateAreaPanel
         focusedProjectId={params.project ?? null}
         initialAdminEmail={ADMIN_EMAIL}
         initialSection={initialSection}
+        key={`${initialSection}:${params.project ?? ""}`}
         members={listMembers()}
         projects={listProjects()}
       />
-    </ProtectedContent>
+    </main>
   );
 }

@@ -51,12 +51,12 @@ export default async function SharedProjectPage({ params }: SharedProjectPagePro
     }
   }
 
-  if (project.externalUrl) {
+  if (project.externalRedirectUrl) {
     return (
       <main className="relative min-h-dvh overflow-hidden bg-black text-white">
         <ShaderGradientBackground />
         <Header variant="landing" />
-        <ProjectRedirectScreen externalUrl={project.externalUrl} projectTitle={project.title} />
+        <ProjectRedirectScreen externalUrl={project.externalRedirectUrl} projectTitle={project.title} />
       </main>
     );
   }

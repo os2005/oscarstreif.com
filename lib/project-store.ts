@@ -45,7 +45,7 @@ function createSeedProject(input: {
   tags: string[];
   accentColor?: string;
   secondaryColor?: string;
-  externalUrl?: string;
+  externalRedirectUrl?: string;
   detail: string;
   mock: ProjectMockData;
 }): StoredProject {
@@ -62,7 +62,7 @@ function createSeedProject(input: {
     previewImage: createPreviewDataUri(input.title, accentColor, secondaryColor, input.detail),
     accentColor,
     secondaryColor,
-    externalUrl: input.externalUrl,
+    externalRedirectUrl: input.externalRedirectUrl,
     tags: input.tags,
     status: "active",
     mock: input.mock,
@@ -81,7 +81,7 @@ function createDemoProjects() {
       tags: ["lab", "monitoring", "demo"],
       accentColor: "#145cff",
       secondaryColor: "#6de0ff",
-      externalUrl: "https://coldlog.de",
+      externalRedirectUrl: "https://coldlog.de",
       detail: "Live logging dashboard",
       mock: {
         eyebrow: "Monitoring",
@@ -209,7 +209,12 @@ function normalizeProject(project: Partial<StoredProject>): StoredProject {
     previewImage: String(project.previewImage ?? "").trim(),
     accentColor: project.accentColor ? String(project.accentColor).trim() : undefined,
     secondaryColor: project.secondaryColor ? String(project.secondaryColor).trim() : undefined,
-    externalUrl: project.externalUrl ? String(project.externalUrl).trim() : undefined,
+    externalRedirectUrl:
+      typeof project.externalRedirectUrl === "string"
+        ? project.externalRedirectUrl.trim()
+        : typeof (project as StoredProject & { externalUrl?: string }).externalUrl === "string"
+          ? (project as StoredProject & { externalUrl?: string }).externalUrl?.trim()
+          : undefined,
     tags: Array.isArray(project.tags)
       ? project.tags
           .map((tag) => String(tag).trim())

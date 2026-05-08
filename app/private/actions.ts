@@ -44,7 +44,7 @@ function parseProjectFormData(formData: FormData) {
   const previewImage = String(formData.get("previewImage") ?? "");
   const accentColor = String(formData.get("accentColor") ?? "");
   const secondaryColor = String(formData.get("secondaryColor") ?? "");
-  const externalUrl = String(formData.get("externalUrl") ?? "");
+  const externalRedirectUrl = String(formData.get("externalRedirectUrl") ?? "");
   const tags = String(formData.get("tags") ?? "")
     .split(",")
     .map((tag) => tag.trim())
@@ -69,7 +69,7 @@ function parseProjectFormData(formData: FormData) {
       previewImage,
       accentColor,
       secondaryColor,
-      externalUrl,
+      externalRedirectUrl,
       tags,
       visibility: visibility as ProjectVisibility,
       status: status as ProjectStatus,

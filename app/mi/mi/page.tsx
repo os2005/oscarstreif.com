@@ -1,5 +1,5 @@
 import { SunPlaceholderPage } from "@/components/SunPlaceholderPage";
 
-export default function UppercaseCVPage() {
+export default function MiMiPage() {
   return <SunPlaceholderPage />;
 }
