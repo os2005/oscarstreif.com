@@ -1,7 +1,8 @@
 import { growSponsoringProjectModule } from "@/projects/grow-sponsoring/module";
+import { wgProjectDashboardModule } from "@/projects/wg-project-dashboard/module";
 import type { ProjectModuleDefinition } from "./types";
 
-const projectModules = [growSponsoringProjectModule] as const satisfies readonly ProjectModuleDefinition[];
+const projectModules = [growSponsoringProjectModule, wgProjectDashboardModule] as const satisfies readonly ProjectModuleDefinition[];
 
 const projectModuleRegistry = new Map<string, ProjectModuleDefinition>();
 

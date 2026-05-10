@@ -1,0 +1,184 @@
+{
+  "storeVersion": 1,
+  "projects": [
+    {
+      "id": "wg-powerbank-station",
+      "title": "Powerbank Charging Station",
+      "description": "A small shared station with permanently charged powerbanks for the flat, so someone can quickly grab one before leaving.",
+      "stage": "planned",
+      "shoppingItems": [
+        {
+          "id": "powerbank-1",
+          "name": "Additional 20,000 mAh powerbank",
+          "estimatedPrice": 28,
+          "quantity": "1",
+          "status": "still-needed"
+        },
+        {
+          "id": "power-strip-1",
+          "name": "Power strip",
+          "estimatedPrice": 8,
+          "quantity": "1",
+          "status": "still-needed"
+        },
+        {
+          "id": "charger-cable-set",
+          "name": "USB-C chargers and charging cables",
+          "estimatedPrice": 12,
+          "quantity": "1 set",
+          "status": "still-needed"
+        }
+      ],
+      "totalBudget": 48,
+      "currentSavings": 20,
+      "contributorNotes": "Shared budget pot currently has EUR 20 reserved from kitchen reimbursements.",
+      "researchScopeCompleted": true,
+      "checklistItems": [
+        {
+          "id": "powerbank-check-1",
+          "label": "Check existing powerbanks",
+          "completed": true
+        },
+        {
+          "id": "powerbank-buy-1",
+          "label": "Buy one additional powerbank",
+          "completed": false
+        },
+        {
+          "id": "power-strip-buy-1",
+          "label": "Buy power strip",
+          "completed": false
+        },
+        {
+          "id": "charging-location-1",
+          "label": "Set up fixed charging location",
+          "completed": false
+        },
+        {
+          "id": "cable-label-1",
+          "label": "Label cables and powerbanks",
+          "completed": false
+        }
+      ],
+      "notes": "Placement should stay near the front door but away from kitchen moisture. A small wall shelf may still be enough.",
+      "createdAt": "2026-05-10T09:00:00.000Z",
+      "updatedAt": "2026-05-10T09:00:00.000Z"
+    },
+    {
+      "id": "wg-cleaning-station",
+      "title": "Shared Cleaning Supply Station",
+      "description": "Centralize the most-used cleaning supplies in one visible spot so restocking and weekly cleaning are easier to coordinate.",
+      "stage": "funded",
+      "shoppingItems": [
+        {
+          "id": "cleaning-bins",
+          "name": "Stackable storage bins",
+          "estimatedPrice": 18,
+          "quantity": "2",
+          "status": "still-needed"
+        },
+        {
+          "id": "labels-pack",
+          "name": "Labels and marker set",
+          "estimatedPrice": 6,
+          "quantity": "1",
+          "status": "still-needed"
+        },
+        {
+          "id": "spray-bottles",
+          "name": "Reusable spray bottles",
+          "estimatedPrice": 10,
+          "quantity": "3",
+          "status": "already-owned"
+        }
+      ],
+      "totalBudget": 36,
+      "currentSavings": 36,
+      "contributorNotes": "Two flatmates already transferred their share. No further collection needed.",
+      "researchScopeCompleted": true,
+      "checklistItems": [
+        {
+          "id": "inventory-cleaning",
+          "label": "Inventory current supplies",
+          "completed": true
+        },
+        {
+          "id": "cabinet-measurements",
+          "label": "Measure cabinet and hallway storage space",
+          "completed": true
+        },
+        {
+          "id": "buy-bins",
+          "label": "Buy storage bins and labels",
+          "completed": false
+        },
+        {
+          "id": "assign-restocking",
+          "label": "Assign a simple restocking routine",
+          "completed": false
+        }
+      ],
+      "notes": "If the hallway shelf works, this project can move directly into implementation next grocery run.",
+      "createdAt": "2026-05-10T09:10:00.000Z",
+      "updatedAt": "2026-05-10T09:10:00.000Z"
+    },
+    {
+      "id": "wg-toolbox-corner",
+      "title": "Tool Box and Repair Corner",
+      "description": "Create a compact shared repair corner with the basic tools and spare materials needed for small fixes in the flat.",
+      "stage": "done",
+      "shoppingItems": [
+        {
+          "id": "toolbox-case",
+          "name": "Toolbox case",
+          "estimatedPrice": 22,
+          "quantity": "1",
+          "status": "already-owned"
+        },
+        {
+          "id": "screw-pack",
+          "name": "Mixed screws and wall plugs",
+          "estimatedPrice": 12,
+          "quantity": "1 pack",
+          "status": "already-owned"
+        },
+        {
+          "id": "basic-tools",
+          "name": "Shared hammer, pliers, and screwdrivers",
+          "estimatedPrice": 34,
+          "quantity": "1 set",
+          "status": "already-owned"
+        }
+      ],
+      "totalBudget": 68,
+      "currentSavings": 68,
+      "contributorNotes": "Covered through the shared maintenance budget in April.",
+      "researchScopeCompleted": true,
+      "checklistItems": [
+        {
+          "id": "repair-scope",
+          "label": "Define the essential tool set",
+          "completed": true
+        },
+        {
+          "id": "buy-tools",
+          "label": "Buy missing tools and consumables",
+          "completed": true
+        },
+        {
+          "id": "setup-corner",
+          "label": "Set up the repair corner",
+          "completed": true
+        },
+        {
+          "id": "label-storage",
+          "label": "Label drawers and spare parts",
+          "completed": true
+        }
+      ],
+      "notes": "The entry cupboard is now the permanent repair spot. Remaining improvement would be a printed inventory card.",
+      "createdAt": "2026-05-10T09:20:00.000Z",
+      "updatedAt": "2026-05-10T09:20:00.000Z"
+    }
+  ]
+}

@@ -10,6 +10,35 @@ import type { ProjectMockData, ProjectStore, ProjectStatus, ProjectVisibility, S
 const PROJECT_STORE_FILENAME = "project-store.json";
 const PROJECT_STORE_VERSION = 2;
 
+function createWgProjectDashboardSeed(): StoredProject {
+  const now = new Date().toISOString();
+
+  return {
+    id: "wg-project-dashboard-record",
+    title: "WG Project Dashboard",
+    slug: "wg-project-dashboard",
+    description: "A private dashboard for planning, funding, and tracking WG projects.",
+    visibility: "private",
+    previewImage: createPreviewDataUri(
+      "WG Project Dashboard",
+      "#245bff",
+      "#86d8ff",
+      "Private planning and funding board"
+    ),
+    accentColor: "#245bff",
+    secondaryColor: "#86d8ff",
+    sharedWithUserIds: [],
+    tags: ["private", "wg", "dashboard", "planning"],
+    status: "active",
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function getRequiredProjects() {
+  return [createWgProjectDashboardSeed()];
+}
+
 function createPreviewDataUri(title: string, accent: string, secondary: string, detail: string) {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760">
@@ -165,6 +194,7 @@ function createDemoProjects() {
         ],
       },
     }),
+    createWgProjectDashboardSeed(),
   ];
 }
 
@@ -257,12 +287,29 @@ function normalizeProject(project: Partial<StoredProject>): StoredProject {
   };
 }
 
+function ensureRequiredProjects(store: ProjectStore) {
+  let changed = false;
+
+  for (const requiredProject of getRequiredProjects()) {
+    const hasProject = store.projects.some((project) => project.slug === requiredProject.slug);
+
+    if (!hasProject) {
+      store.projects.push(requiredProject);
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
 export function readProjectStore(): ProjectStore {
   ensureDataDir();
   const storePath = getProjectStorePath();
 
   if (!existsSync(storePath)) {
-    return createInitialStore();
+    const initialStore = createInitialStore();
+    writeProjectStore(initialStore);
+    return initialStore;
   }
 
   const parsedStore = JSON.parse(readFileSync(storePath, "utf8")) as Partial<ProjectStore>;
@@ -273,6 +320,12 @@ export function readProjectStore(): ProjectStore {
 
   if (store.storeVersion !== PROJECT_STORE_VERSION) {
     store.storeVersion = PROJECT_STORE_VERSION;
+  }
+
+  const changed = ensureRequiredProjects(store);
+
+  if (changed) {
+    writeProjectStore(store);
   }
 
   return store;
