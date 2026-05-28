@@ -341,3 +341,50 @@ Nach erfolgreicher Verarbeitung werden Source-Datei und JSON-Metadaten aus `inbo
 Der Run aktualisiert außerdem den generierten Catalog in `wiki/index.md` und schreibt einen lokalen Processing-Eintrag in `wiki/log.md`.
 
 Voice-Transkription, AI-Synthese, Obsidian-Mirror und Website-Veröffentlichung bleiben spätere Schritte.
+
+## 11. Obsidian One-Way Mirror
+
+Der optionale Obsidian-Mirror wird mit einem separaten lokalen Befehl gesteuert:
+
+```bash
+npm run llm-wiki:sync-obsidian -- --dry-run
+```
+
+Der Dry-Run zeigt nur ungefährliche Metadaten: Quell-Wiki-Pfad, Zielpfad, Anzahl Markdown-Dateien, Anzahl sonstiger Dateien, geplante Kopien, geplante Updates und stale Dateien im Ziel. Dateiinhalte werden nicht ausgegeben.
+
+Der explizite Run kopiert die kanonische Wiki-Struktur nach Obsidian:
+
+```bash
+npm run llm-wiki:sync-obsidian -- --run
+```
+
+Ohne `--target` wird standardmäßig dieser lokale Zielpfad verwendet:
+
+```text
+C:\Users\ostre\Documents\Obsidian\LLM-Wiki-Mirror
+```
+
+Ein anderer Zielpfad kann explizit angegeben werden:
+
+```bash
+npm run llm-wiki:sync-obsidian -- --run --target "C:\Users\ostre\Documents\Obsidian\LLM-Wiki-Mirror"
+```
+
+Der Mirror kopiert rekursiv aus:
+
+```text
+.local-data/llm-wiki/wiki
+```
+
+in den Zielordner. Unterordnerstruktur und Markdown-Dateien bleiben unverändert. Zusätzlich wird im Ziel eine `README.md` geschrieben, die den Ordner als automatisch erzeugten One-Way-Mirror markiert.
+
+Sicherheitsregeln:
+
+- Der Zielpfad darf nicht leer sein.
+- Der Zielpfad darf nicht identisch mit der Quelle sein.
+- Der Zielpfad darf nicht innerhalb von `.local-data/llm-wiki` liegen.
+- Der Zielpfad darf nicht innerhalb des Website-Repos liegen.
+- Root-artige Zielpfade wie Laufwerksroot, Home-Root oder Repo-Root werden abgelehnt.
+- Stale Dateien im Ziel werden nur gemeldet, aber noch nicht gelöscht.
+
+Es gibt bewusst keine Rück-Synchronisierung aus Obsidian. Obsidian ist nur Viewer und Backup-Kopie; die kanonische private Wahrheit bleibt `.local-data/llm-wiki/wiki`. Manuelle Änderungen im Mirror können beim nächsten Sync überschrieben werden.

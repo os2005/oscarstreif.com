@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "llm-wiki:process": "node scripts/llm-wiki-process-local.mjs",
+    "llm-wiki:sync-obsidian": "node scripts/llm-wiki-sync-obsidian.mjs",
     "start": "next start",
     "lint": "eslint ."
   },
