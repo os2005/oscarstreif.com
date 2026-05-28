@@ -1,28 +1,17 @@
 import type { ProjectModuleSharedPageProps } from "@/lib/project-modules/types";
-import { readWgProjectDashboardStore } from "./data/store";
 import { WgProjectDashboardClient } from "./components/WgProjectDashboardClient";
+import { readWgProjectDashboardStore } from "./data/store";
 
-export function WgProjectDashboardSharedPage({
-  backHref,
-  backLabel,
-  isDark,
-  pathLabel,
-  project,
-  viewer,
-}: ProjectModuleSharedPageProps) {
+export function WgProjectDashboardSharedPage({ project, viewer }: ProjectModuleSharedPageProps) {
   const store = readWgProjectDashboardStore();
 
   return (
     <WgProjectDashboardClient
-      backHref={backHref}
-      backLabel={backLabel}
       initialProjects={store.projects}
-      isDark={isDark}
-      pathLabel={pathLabel}
       projectDescription={project.description}
       projectTitle={project.title}
+      projectVisibility={project.visibility}
       viewerEmail={viewer?.email ?? null}
-      viewerRole={viewer?.role ?? null}
     />
   );
 }

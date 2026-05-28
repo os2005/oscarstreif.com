@@ -3,9 +3,23 @@ import { NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME } from "./lib/auth-config";
 
 const protectedPrefixes = ["/private", "/settings", "/project/private"];
+const treffpunktHosts = new Set(["treffpunkt.oscarstreif.com", "treffpunkt.oskarstreif.com"]);
+const treffpunktNoStore = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0";
+
+function isTreffpunktHost(host: string) {
+  return treffpunktHosts.has(host.split(":")[0].toLowerCase());
+}
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  if (pathname === "/" && isTreffpunktHost(request.headers.get("host") ?? "")) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = "/treffpunkt";
+    const response = NextResponse.rewrite(rewriteUrl);
+    response.headers.set("Cache-Control", treffpunktNoStore);
+    return response;
+  }
 
   if (pathname === "/CV") {
     return NextResponse.redirect(new URL("/cv", request.url));
@@ -30,5 +44,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/private/:path*", "/shared", "/settings/:path*", "/project/private/:path*", "/CV"],
+  matcher: ["/", "/private/:path*", "/shared", "/settings/:path*", "/project/private/:path*", "/CV"],
 };

@@ -14,7 +14,8 @@
 - Create `projects/[slug]/SharedPage.tsx`
 - Add optional `components/`, `data/`, `server/`, or `README.md` only if needed
 - Register the module explicitly in `lib/project-modules/registry.ts`
-- Keep `/shared/[slug]` as the canonical route
+- Keep `/shared/[slug]` as the canonical project delivery route
+- Render the module as a standalone project website, not inside the oscarstreif.com shell
 - Keep runtime config in the JSON project record system
 - Do not expose the module without a matching JSON project record
 - Keep project-specific data isolated
@@ -25,7 +26,8 @@
 - Check that a matching JSON project record exists or clearly state that it must be created in the Private Workspace
 - Check that the module only renders when the platform route resolves it
 - Check that external redirect still wins over module rendering
-- Check that a project without a module still falls back to `ProjectShowcase`
+- Check that a project without a module does not render `ProjectShowcase`
+- Check that the project exit button is injected by the platform route
 - Check that access behavior still respects `open`, `shared`, and `private`
 - Check mobile layout
 - Run available checks from `package.json`

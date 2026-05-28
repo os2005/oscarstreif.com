@@ -1,0 +1,19 @@
+{
+  "name": "Hoodometer Karlsruhe",
+  "short_name": "Hoodometer",
+  "description": "Interaktive Karte zur Berechnung eines gewichteten Treffpunkts in Karlsruhe.",
+  "start_url": "/treffpunkt",
+  "scope": "/treffpunkt/",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#111111",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/treffpunkt/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

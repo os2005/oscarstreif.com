@@ -29,6 +29,33 @@ body {
   text-rendering: geometricPrecision;
 }
 
+[data-wgproduct-root="true"] {
+  min-height: 100dvh;
+  background: #eef3ee;
+  color: #14202b;
+  font-family:
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+[data-wgproduct-root="true"] + .grain-overlay {
+  display: none;
+}
+
+[data-project-site-root="true"] {
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+[data-project-site-root="true"] + .grain-overlay {
+  display: none;
+}
+
 a {
   color: inherit;
   text-decoration: none;

@@ -1,5 +1,9 @@
 import { SunPlaceholderPage } from "@/components/SunPlaceholderPage";
 
-export default function UppercaseCVPage() {
+export const metadata = {
+  title: "CV",
+};
+
+export default function CVPage() {
   return <SunPlaceholderPage />;
 }

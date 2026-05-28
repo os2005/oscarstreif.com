@@ -71,3 +71,5 @@ Examples:
 - `Visit` should always route to `/shared/[slug]`
 - `/shared/[slug]` decides whether to redirect or render internally
 - unsafe redirect protocols are not allowed
+- internally rendered project modules should render as standalone project websites without the oscarstreif.com shell
+- the platform injects the project exit button; modules should not implement their own platform back link

@@ -18,7 +18,9 @@ Rules:
 
 - The project must also exist in the JSON project store through the Private Workspace.
 - The JSON project record controls visibility, shared-user access, redirects and runtime metadata.
-- The project module controls the internal rendered experience for `/shared/[slug]`.
+- The project module controls the standalone rendered project website delivered through `/shared/[slug]`.
+- Do not render the oscarstreif.com header, navigation, PageShell, ProjectShowcase or grain overlay inside the module.
+- Do not add a platform back link inside the module; the platform route injects the project exit button.
 - `AdminPanel.tsx` is future-facing for now and is not yet rendered in the live Private Workspace.
 - Register the module explicitly in `lib/project-modules/registry.ts`.
 - Keep project-specific data namespaced by slug, for example `data/projects/<slug>/store.json`.

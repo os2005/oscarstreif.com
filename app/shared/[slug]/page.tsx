@@ -1,20 +1,47 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { Header } from "@/components/Header";
+import { ProjectExitButton } from "@/components/ProjectExitButton";
 import { ProjectRedirectScreen } from "@/components/ProjectRedirectScreen";
-import { ProjectShowcase } from "@/components/ProjectShowcase";
-import { ShaderGradientBackground } from "@/components/ShaderGradientBackground";
 import { getCurrentUser } from "@/lib/auth";
 import { getProjectAccessDecision } from "@/lib/project-access";
 import { resolveProjectModule } from "@/lib/project-modules/resolve-project-module";
 import { getSafeExternalRedirectUrl } from "@/lib/project-redirect-url";
 import { findProjectBySlug } from "@/lib/projects";
+import type { ProjectRecord } from "@/lib/project-types";
 
 type SharedProjectPageProps = {
   params: Promise<{
     slug: string;
   }>;
 };
+
+function getProjectExitHref(project: Pick<ProjectRecord, "visibility">) {
+  if (project.visibility === "private") {
+    return "/private";
+  }
+
+  if (project.visibility === "shared") {
+    return "/shared";
+  }
+
+  return "/projects";
+}
+
+function MissingProjectModulePage({ project }: { project: ProjectRecord }) {
+  return (
+    <main className="flex min-h-dvh items-center justify-center bg-neutral-950 px-6 py-20 text-neutral-100">
+      <section className="w-full max-w-xl border border-white/12 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Project runtime</p>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white">Project module missing</h1>
+        <p className="mt-4 text-sm leading-7 text-neutral-300">
+          The active project record for <span className="text-neutral-100">{project.title}</span> exists, but no
+          registered project module was found for the slug{" "}
+          <span className="text-neutral-100">{project.slug}</span>.
+        </p>
+      </section>
+    </main>
+  );
+}
 
 export async function generateMetadata({ params }: SharedProjectPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -60,57 +87,38 @@ export default async function SharedProjectPage({ params }: SharedProjectPagePro
   }
 
   const externalRedirectUrl = getSafeExternalRedirectUrl(project.externalRedirectUrl);
+  const exitHref = getProjectExitHref(project);
 
   if (externalRedirectUrl) {
     return (
-      <main className="relative min-h-dvh overflow-hidden bg-black text-white">
-        <ShaderGradientBackground />
-        <Header variant="landing" />
+      <div className="min-h-dvh bg-black text-white" data-project-site-root="true">
         <ProjectRedirectScreen externalUrl={externalRedirectUrl} projectTitle={project.title} />
-      </main>
+        <ProjectExitButton href={exitHref} />
+      </div>
     );
   }
 
   const projectModule = resolveProjectModule(project);
-  const isDark = project.visibility !== "open";
-  const headerVariant = isDark ? "dark" : "light";
-  const backHref =
-    project.visibility === "private" ? "/private" : project.visibility === "shared" ? "/shared" : "/projects";
-  const backLabel =
-    project.visibility === "private"
-      ? "Back to private workspace"
-      : project.visibility === "shared"
-        ? "Back to shared area"
-        : "Back to overview";
 
   if (projectModule) {
     const SharedPage = projectModule.SharedPage;
 
     return (
-      <main className={isDark ? "min-h-dvh bg-ink text-paper" : "min-h-dvh bg-paper text-ink"}>
-        <Header variant={headerVariant} />
-        <SharedPage
-          backHref={backHref}
-          backLabel={backLabel}
-          isDark={isDark}
-          pathLabel={project.sharedPath}
-          project={project}
-          viewer={user}
-        />
-      </main>
+      <div data-project-site-root="true">
+        <SharedPage project={project} viewer={user} />
+        <ProjectExitButton href={exitHref} />
+      </div>
     );
   }
 
+  if (user?.role !== "admin") {
+    notFound();
+  }
+
   return (
-    <main className={isDark ? "min-h-dvh bg-ink text-paper" : "min-h-dvh bg-paper text-ink"}>
-      <Header variant={headerVariant} />
-      <ProjectShowcase
-        backHref={backHref}
-        backLabel={backLabel}
-        isDark={isDark}
-        pathLabel={project.sharedPath}
-        project={project}
-      />
-    </main>
+    <div data-project-site-root="true">
+      <MissingProjectModulePage project={project} />
+      <ProjectExitButton href={exitHref} />
+    </div>
   );
 }

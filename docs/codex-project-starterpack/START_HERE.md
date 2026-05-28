@@ -8,7 +8,7 @@ What matters in this codebase:
 
 - JSON project record = runtime configuration
 - project module = code-level implementation
-- canonical project route = `/shared/[slug]`
+- canonical project delivery route = `/shared/[slug]`
 - visibility model = `open`, `shared`, `private`
 
 The runtime project record lives in the existing project store and controls:
@@ -22,14 +22,16 @@ The runtime project record lives in the existing project store and controls:
 - `sharedWithUserIds`
 - tags
 
-The project module lives under `projects/[slug]/` and controls the internal rendered experience for `/shared/[slug]`.
+The project module lives under `projects/[slug]/` and controls the standalone rendered project website delivered through `/shared/[slug]`.
 
 Important:
 
 - New work must integrate into the current platform.
-- Do not build a standalone website inside the repo.
+- Do not build a separate standalone app inside the repo.
 - Do not bypass `/shared/[slug]`.
 - Do not expose a module without a matching JSON project record.
+- Do not wrap project modules in the oscarstreif.com header, navigation, PageShell, ProjectShowcase or grain overlay.
+- The only visible platform UI on an internally rendered project page should be the injected project exit button.
 
 Recommended order for future Codex sessions:
 

@@ -7,7 +7,7 @@ export const wgProjectDashboardModule: ProjectModuleDefinition = {
   defaultDescription: "A private dashboard for planning, funding, and tracking WG projects.",
   documentationPath: "docs/project-platform.md",
   dataNamespace: "wg-project-dashboard",
-  requiredFeatures: ["shared-route", "private-access", "shared-access"],
+  requiredFeatures: ["shared-route", "private-access", "shared-access", "standalone-project-site"],
   moduleStatus: "ready",
   SharedPage: WgProjectDashboardSharedPage,
 };

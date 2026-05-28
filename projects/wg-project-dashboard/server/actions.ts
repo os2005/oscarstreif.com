@@ -2,9 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
-import { findProjectBySlug } from "@/lib/projects";
-import { getCurrentUser } from "@/lib/auth";
-import { getProjectAccessDecision } from "@/lib/project-access";
+import { getWgProjectDashboardAccessContext } from "./runtime-project";
 import {
   deleteWgProject,
   upsertWgProject,
@@ -25,19 +23,18 @@ export type WgProjectActionState = {
 function revalidateDashboardPaths() {
   revalidatePath("/shared");
   revalidatePath(`/shared/${WG_PROJECT_DASHBOARD_SLUG}`);
+  revalidatePath("/wgprojectdashboard");
+  revalidatePath("/apps/wg-project-dashboard");
 }
 
 async function ensureDashboardAccess() {
-  const project = findProjectBySlug(WG_PROJECT_DASHBOARD_SLUG);
-  const user = await getCurrentUser();
+  const { decision, project } = await getWgProjectDashboardAccessContext();
 
   if (!project) {
     return { ok: false as const, error: "The WG Project Dashboard runtime record is missing." };
   }
 
-  const decision = getProjectAccessDecision(project, user);
-
-  if (decision.kind !== "allowed") {
+  if (decision?.kind !== "allowed") {
     return { ok: false as const, error: "You are not allowed to change this dashboard." };
   }
 

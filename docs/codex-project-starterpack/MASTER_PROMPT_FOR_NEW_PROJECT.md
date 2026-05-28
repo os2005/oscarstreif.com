@@ -11,8 +11,8 @@ Important:
 - Then inspect the current platform files before changing anything.
 
 Core rule:
-Build this as a project module inside the existing oscarstreif.com platform.
-Do not create a standalone site, parallel auth system, parallel project registry, or separate routing layer.
+Build this as a standalone project website module inside the existing oscarstreif.com platform.
+Do not create a parallel auth system, parallel project registry, separate routing layer, or nested Next.js app.
 
 Project brief:
 - Project name: {{PROJECT_NAME}}
@@ -30,7 +30,7 @@ Required working method:
 3. Ask only essential clarifying questions if something is genuinely ambiguous or risky.
 4. Build the project as a module under `projects/{{PROJECT_SLUG}}/`.
 5. Register the module explicitly in the central registry.
-6. Keep `/shared/[slug]` as the canonical route.
+6. Keep `/shared/[slug]` as the canonical project delivery route.
 7. Keep runtime configuration in the existing JSON project record system.
 8. Respect the existing visibility model:
    - `open`
@@ -63,6 +63,8 @@ Inspect these existing files before implementation:
 Implementation expectations:
 - Create `projects/{{PROJECT_SLUG}}/module.ts`
 - Create `projects/{{PROJECT_SLUG}}/SharedPage.tsx`
+- Make `SharedPage.tsx` own the full visible project website: header, layout, colors, typography and interactions.
+- Do not use the oscarstreif.com Header, PageShell, ProjectShowcase, main navigation or grain overlay inside the project module.
 - Add any project-specific subfolders only if needed:
   - `components/`
   - `data/`
@@ -70,6 +72,7 @@ Implementation expectations:
   - `README.md`
 - Do not expose the module publicly unless a JSON project record exists and the route/access policy allows it.
 - If `externalRedirectUrl` is configured in the JSON project record, `/shared/{{PROJECT_SLUG}}` must still follow the existing redirect path rather than rendering the module.
+- Do not render a platform back link inside the module. The platform injects the project exit button on internally rendered project pages.
 
 Output requirements:
 - Explain the implementation approach briefly

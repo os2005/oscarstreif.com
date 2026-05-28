@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { AdminSettingsBox, type SettingsSection } from "./AdminSettingsBox";
 import { ControlCenterAccordion } from "./ControlCenterAccordion";
@@ -149,6 +150,12 @@ export function PrivateAreaPanel({
                   </button>
                 );
               })}
+              <Link
+                className="rounded-full px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/62 transition hover:bg-white/6 hover:text-paper"
+                href="/private/llm-wiki"
+              >
+                LLM Wiki
+              </Link>
             </div>
           </div>
         </div>
