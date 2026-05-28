@@ -306,3 +306,38 @@ Er gibt aus:
 Der Befehl liest keine Upload-, Text-, Voice- oder Raw-Dateiinhalte und schreibt nicht in `.local-data`. Pfade werden so geprüft, dass nur innerhalb von `.local-data/llm-wiki` gelesen wird.
 
 Wenn `.local-data/llm-wiki` oder `inbox/pending` fehlt, bricht der Befehl nicht mit einem Stacktrace ab, sondern meldet den fehlenden Bereich und verändert nichts.
+
+## 10. Lokaler Text-Import
+
+Der lokale Befehl unterstützt zusätzlich einen expliziten Run-Modus:
+
+```bash
+npm run llm-wiki:process -- --run
+```
+
+Standardmäßig verarbeitet der Run-Modus nur Items mit `status = pending`. Review-Fälle können bewusst einbezogen werden:
+
+```bash
+npm run llm-wiki:process -- --run --include-manual-review
+```
+
+Verarbeitet werden:
+
+- `kind = text`
+- `kind = file`, wenn die Datei textähnlich ist: `.txt`, `.md`, `.mdx`, `.csv`, `.json`, `.log`, `.html`, `.xml`, `.yaml`, `.yml`
+
+Übersprungen werden:
+
+- `kind = voice`, weil Audio-Transkription noch nicht implementiert ist
+- nicht-textuelle Datei-Uploads
+- kaputte Metadaten
+- Items mit nicht ausgewähltem Status
+- Items mit unsicheren oder fehlenden Pfaden
+
+Bei erfolgreichem Text-Import wird die Quelle unverändert nach `raw/inbox` kopiert. Anschließend wird eine Source-Page unter `wiki/sources` erzeugt oder aktualisiert. Diese Source-Page enthält sichere Metadaten, den relativen Raw-Pfad, einen begrenzten Textauszug und den Hinweis, dass noch keine AI-Synthese gelaufen ist.
+
+Nach erfolgreicher Verarbeitung werden Source-Datei und JSON-Metadaten aus `inbox/pending` nach `inbox/processed` verschoben. Die Metadaten erhalten `status = processed` und `processedAt`. Es wird nichts gelöscht.
+
+Der Run aktualisiert außerdem den generierten Catalog in `wiki/index.md` und schreibt einen lokalen Processing-Eintrag in `wiki/log.md`.
+
+Voice-Transkription, AI-Synthese, Obsidian-Mirror und Website-Veröffentlichung bleiben spätere Schritte.
