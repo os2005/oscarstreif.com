@@ -271,3 +271,38 @@ Website-Veröffentlichung:
 - Soll der Obsidian-Mirror vollständige Wiki-Dateien spiegeln oder zusätzlich Obsidian-spezifische Index-/README-Dateien erzeugen?
 - Wie wird später explizit markiert, welche Wiki-Inhalte auf der Website erscheinen dürfen?
 - Soll der VPS nur Uploads sammeln oder auch eine verschlüsselte/gesicherte Übergabe an den lokalen Rechner unterstützen?
+
+## 9. Lokaler Dry-Run-Befehl
+
+Der erste lokale Baustein ist ein read-only Dry-Run-CLI:
+
+```bash
+npm run llm-wiki:process -- --dry-run
+```
+
+Optional kann die Ausgabe als JSON erfolgen:
+
+```bash
+npm run llm-wiki:process -- --dry-run --json
+```
+
+Ohne Flags läuft der Befehl ebenfalls im Dry-Run-Modus. Das Default-Verhalten bleibt damit sicher und verändert keine Runtime-Daten.
+
+Der Befehl liest nur JSON-Metadaten aus:
+
+```text
+.local-data/llm-wiki/inbox/pending
+```
+
+Er gibt aus:
+
+- verwendeter LLM-Wiki-Root-Pfad
+- Anzahl erkannter pending Inbox-Items
+- Anzahl nach Art: `text`, `file`, `voice`
+- Anzahl nach Status: `pending`, `manual-review`, `failed`
+- ungültige Metadaten-Dateien mit Fehlermeldung
+- ungefährliche Item-Metadaten: `id`, `title`, `kind`, `status`, `createdAt`, `originalFilename`, `size`, `mimeType`
+
+Der Befehl liest keine Upload-, Text-, Voice- oder Raw-Dateiinhalte und schreibt nicht in `.local-data`. Pfade werden so geprüft, dass nur innerhalb von `.local-data/llm-wiki` gelesen wird.
+
+Wenn `.local-data/llm-wiki` oder `inbox/pending` fehlt, bricht der Befehl nicht mit einem Stacktrace ab, sondern meldet den fehlenden Bereich und verändert nichts.
