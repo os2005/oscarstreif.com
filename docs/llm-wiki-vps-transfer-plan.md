@@ -134,3 +134,53 @@ Wichtig: Kein `--delete`, keine Remote-Löschung, keine Verschiebung auf dem VPS
 - Keine privaten Upload-Inhalte im Terminal anzeigen.
 - Lokales Ziel muss innerhalb `.local-data/llm-wiki/inbox/pending` liegen.
 - `.local-data/` bleibt ignoriert und darf nicht committed werden.
+
+## 11. Echter Pull mit lokalem Manifest
+
+Der echte Pull ist konservativ implementiert und verändert den VPS nicht. Er listet remote nur lesend Dateien unter:
+
+```text
+/var/lib/oscarstreif/llm-wiki/inbox/pending
+```
+
+und lädt neue Dateien lokal nach:
+
+```text
+.local-data/llm-wiki/inbox/pending
+```
+
+Damit dieselben VPS-Dateien nicht bei jedem Pull erneut geladen werden, führt der lokale Rechner ein Runtime-Manifest:
+
+```text
+.local-data/llm-wiki/transfer/pulled-vps-inbox.json
+```
+
+Dieses Manifest wird nicht committed. Es speichert Host, Remote-Root, Aktualisierungszeit und pro gezogener Datei Metadaten wie Remote-Pfad, Dateiname, Größe, mtime, Pull-Zeitpunkt, lokalen Pfad und Transportmethode.
+
+Echter Pull:
+
+```bash
+npm run llm-wiki:pull-vps-inbox -- --run --host <ssh-host> --remote-root /var/lib/oscarstreif/llm-wiki --local-root .local-data/llm-wiki
+```
+
+Remote-Check ohne Download:
+
+```bash
+npm run llm-wiki:pull-vps-inbox -- --dry-run --check-remote --host <ssh-host> --remote-root /var/lib/oscarstreif/llm-wiki --local-root .local-data/llm-wiki
+```
+
+Bewusstes erneutes Berücksichtigen bereits manifestierter Remote-Dateien:
+
+```bash
+npm run llm-wiki:pull-vps-inbox -- --run --force --host <ssh-host> --remote-root /var/lib/oscarstreif/llm-wiki --local-root .local-data/llm-wiki
+```
+
+`--force` überschreibt keine lokalen Kollisionen. Wenn ein lokaler Zielname bereits existiert, wird die Datei übersprungen und im Summary gemeldet.
+
+Transport:
+
+- `ssh` wird für die Remote-Dateiliste benötigt.
+- `rsync` wird bevorzugt, falls lokal verfügbar.
+- falls `rsync` fehlt, wird `scp` als Fallback verwendet.
+
+Der Pull verwendet kein `--delete`, verschiebt keine Remote-Dateien und schreibt nichts auf dem VPS. Eine spätere Remote-Archivierung muss separat entworfen werden und darf erst nach erfolgreichem lokalen Import aktiviert werden.
