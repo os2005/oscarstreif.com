@@ -6,6 +6,9 @@
 ## PR status
 Draft PR exists manually on GitHub. Do not merge yet.
 
+## Codex workflow
+Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe issues, including generated-file resets, docs updates and ignored runtime-only local test records.
+
 ## Current issue
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
@@ -29,10 +32,11 @@ Draft PR exists manually on GitHub. Do not merge yet.
 - Do not deploy before manual checks.
 
 ## Remaining manual checks
-1. Admin login `/private/llm-wiki`
-2. WG Project Record / `/shared/wg-project-dashboard`
-3. Treffpunkt dummy POST/GET if allowed
-4. CV placeholder intentional?
+1. WG dashboard local Project Record
+2. Treffpunkt dummy POST/GET
+3. `/private/llm-wiki` redirect/admin gate
+4. `/cv` placeholder confirmation
+5. Reset `next-env.d.ts` if dev server flips it
 
 ## Next efficient step
 Reset/normalize `next-env.d.ts`, then run only targeted manual checks.

@@ -63,3 +63,15 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Do not run build after every small change.
 - Do not access VPS unless explicitly requested.
 - If `next-env.d.ts` flips after `next dev`, reset/normalize it at phase end, not after every check.
+
+## Autonomous problem solving
+- If a task reveals a small safe issue, fix it directly.
+- Safe fixes include: resetting generated files, updating docs, adding ignored runtime-only local test records, correcting obvious non-functional config drift.
+- Unsafe fixes require reporting only: auth changes, public API changes, deployment changes, VPS changes, database/runtime production changes, privacy/security behavior changes.
+- For each task, use an ID:
+  - Prompt-ID: `P-...`
+  - Response-ID: matching `A-...`
+- Reports must start with the matching Response-ID.
+- Prefer solving within the same task instead of asking for another prompt.
+- Use minimal validation after fixes.
+- Keep reports short.
