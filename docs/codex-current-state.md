@@ -9,6 +9,9 @@ Draft PR exists manually on GitHub. Do not merge yet.
 ## Codex workflow
 Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe issues, including generated-file resets, docs updates and ignored runtime-only local test records.
 
+## Handoff rule
+Default handoff is the Codex final chat report only. The user does not need to paste this file after every run. This file is only for recovery/resume if context is lost.
+
 ## Current issue
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 

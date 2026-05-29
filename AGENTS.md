@@ -75,3 +75,18 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Prefer solving within the same task instead of asking for another prompt.
 - Use minimal validation after fixes.
 - Keep reports short.
+
+## One-copy handoff
+- The user should only need to copy the final Codex chat report back to ChatGPT.
+- Do not require the user to also paste `docs/codex-current-state.md`.
+- Keep `docs/codex-current-state.md` updated internally when state changes.
+- Every final report must include enough state for ChatGPT to continue:
+  - Response-ID
+  - Result
+  - Changed files
+  - Commit / Push
+  - Current blockers
+  - Current next step
+  - Whether git is clean and synced
+- If a task updates state docs, summarize the relevant state in the final report.
+- If ChatGPT needs deeper context later, tell the user to paste only `docs/codex-current-state.md`, not both.
