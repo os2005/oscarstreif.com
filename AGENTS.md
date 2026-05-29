@@ -44,3 +44,22 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Report concise summaries.
 - Before commits, always check `git status` and ensure `.local-data/` and secrets are not staged.
 - If a task is only review/diagnosis, do not modify files.
+
+## Token-efficient workflow
+- Default mode is concise.
+- Do not repeat full safety rules in reports.
+- Use modes: CHECK, PATCH, VALIDATE.
+- CHECK: read only, no file changes.
+- PATCH: change only requested files.
+- VALIDATE: run `npm.cmd run lint`, `npx.cmd tsc --noEmit`, and build only when needed.
+- Prefer `rg`, `git diff --name-only`, and targeted file reads.
+- Do not scan the whole repo unless needed.
+- Do not print long file contents.
+- Reports must use:
+  - Result
+  - Changed files
+  - Blockers
+  - Next
+- Do not run build after every small change.
+- Do not access VPS unless explicitly requested.
+- If `next-env.d.ts` flips after `next dev`, reset/normalize it at phase end, not after every check.

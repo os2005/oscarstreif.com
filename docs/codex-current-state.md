@@ -7,7 +7,7 @@
 Draft PR exists manually on GitHub. Do not merge yet.
 
 ## Current issue
-`next-env.d.ts` is dirty after build and needs normalization/cleanup.
+`next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Completed
 - LLM-Wiki architecture docs
@@ -19,6 +19,7 @@ Draft PR exists manually on GitHub. Do not merge yet.
 - Draft PR created
 - PR checklist added
 - Local smoke checks passed: lint, tsc, build
+- Browser smoke mostly passed
 
 ## Known risks
 - Public Treffpunkt POST API has no auth/rate limit/cleanup.
@@ -27,5 +28,11 @@ Draft PR exists manually on GitHub. Do not merge yet.
 - CV is placeholder.
 - Do not deploy before manual checks.
 
-## Next likely step
-Normalize or reset `next-env.d.ts`, then continue manual PR checks.
+## Remaining manual checks
+1. Admin login `/private/llm-wiki`
+2. WG Project Record / `/shared/wg-project-dashboard`
+3. Treffpunkt dummy POST/GET if allowed
+4. CV placeholder intentional?
+
+## Next efficient step
+Reset/normalize `next-env.d.ts`, then run only targeted manual checks.
