@@ -31,6 +31,7 @@ function parseArgs(argv) {
     localRoot: null,
     remoteRoot: null,
     run: false,
+    transport: "auto",
     unknown: [],
   };
 
@@ -68,7 +69,7 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === "--host" || arg === "--remote-root" || arg === "--local-root") {
+    if (arg === "--host" || arg === "--remote-root" || arg === "--local-root" || arg === "--transport") {
       const value = argv[index + 1];
       if (!value || value.startsWith("--")) {
         options.unknown.push(`${arg} requires a value`);
@@ -76,6 +77,7 @@ function parseArgs(argv) {
         if (arg === "--host") options.host = value;
         if (arg === "--remote-root") options.remoteRoot = value;
         if (arg === "--local-root") options.localRoot = value;
+        if (arg === "--transport") options.transport = value;
         index += 1;
       }
       continue;
@@ -89,8 +91,8 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    "Usage: npm run llm-wiki:pull-vps-inbox -- --dry-run --host <ssh-host> --remote-root <path> [--local-root <path>] [--json]",
-    "       npm run llm-wiki:pull-vps-inbox -- --run --host <ssh-host> --remote-root <path> [--local-root <path>] [--force] [--json]",
+    "Usage: npm run llm-wiki:pull-vps-inbox -- --dry-run --host <ssh-host> --remote-root <path> [--local-root <path>] [--transport auto|scp|rsync] [--json]",
+    "       npm run llm-wiki:pull-vps-inbox -- --run --host <ssh-host> --remote-root <path> [--local-root <path>] [--transport auto|scp|rsync] [--force] [--json]",
     "",
     "Pulls only VPS llm-wiki/inbox/pending files into the local pending inbox.",
     "Dry-run does not connect to the remote host unless --check-remote is set.",
@@ -141,7 +143,21 @@ function commandAvailable(command) {
   return !result.error && result.status === 0;
 }
 
-function detectTransports() {
+function selectTransport(available, requestedTransport) {
+  if (requestedTransport === "scp") return available.scp ? "scp" : "none";
+  if (requestedTransport === "rsync") return available.rsync ? "rsync" : "none";
+
+  if (process.platform === "win32") {
+    return available.scp ? "scp" : available.rsync ? "rsync" : "none";
+  }
+
+  return {
+    available,
+    selected: available.rsync ? "rsync" : available.scp ? "scp" : "none",
+  }.selected;
+}
+
+function detectTransports(requestedTransport = "auto") {
   const available = {
     rsync: commandAvailable("rsync"),
     scp: commandAvailable("scp"),
@@ -150,13 +166,14 @@ function detectTransports() {
 
   return {
     available,
-    selected: available.rsync ? "rsync" : available.scp ? "scp" : "none",
+    selected: selectTransport(available, requestedTransport),
   };
 }
 
 function safeRemoteRelativePath(relativePath) {
   const normalized = toPosixPath(relativePath).replace(/^\.?\//, "");
   if (!normalized || normalized.startsWith("/") || normalized.includes("..")) return null;
+  if (!/^[A-Za-z0-9._/-]+$/.test(normalized)) return null;
 
   const segments = normalized.split("/");
   if (segments.some((segment) => !segment || EXCLUDED_REMOTE_NAMES.has(segment) || segment.startsWith(".env"))) {
@@ -176,12 +193,16 @@ function buildPlan(options) {
   const remoteRoot = options.remoteRoot ? sanitizeRemoteRoot(options.remoteRoot) : null;
   const remotePendingPath = remoteRoot ? `${remoteRoot}/inbox/pending` : null;
   const expectedLocalPendingRoot = path.join(wikiRoot, "inbox", "pending");
-  const transports = detectTransports();
+  const transports = detectTransports(options.transport);
   const errors = [];
   const warnings = [];
 
   if (!options.host) {
     errors.push("Missing --host. Provide an explicit SSH host alias.");
+  }
+
+  if (!["auto", "scp", "rsync"].includes(options.transport)) {
+    errors.push("--transport must be one of: auto, scp, rsync.");
   }
 
   if (!remoteRoot) {
@@ -210,7 +231,11 @@ function buildPlan(options) {
     }
 
     if (options.run && transports.selected === "none") {
-      errors.push("rsync or scp is required for run mode but neither was found locally.");
+      errors.push(
+        options.transport === "auto"
+          ? "rsync or scp is required for run mode but neither was found locally."
+          : `${options.transport} was requested but was not found locally.`
+      );
     }
   }
 
@@ -317,7 +342,7 @@ function localTargetPath(plan, remoteFile) {
 
 function pullWithScp(plan, remoteFile, targetPath) {
   mkdirSync(path.dirname(targetPath), { recursive: true });
-  return runCommand("scp", ["-p", `${plan.sshHost}:${posixQuote(remoteFile.remotePath)}`, targetPath]);
+  return runCommand("scp", ["-p", `${plan.sshHost}:${remoteFile.remotePath}`, targetPath]);
 }
 
 function pullWithRsync(plan, remoteFile, targetPath) {
@@ -389,13 +414,22 @@ function runPull(plan, options) {
 }
 
 function plannedCommand(plan) {
+  if (plan.transports.selected === "scp") {
+    return [
+      "scp",
+      "-p",
+      `${plan.sshHost ?? "<ssh-host>"}:${shellDisplayQuote(`${plan.remotePendingPath}/<file>`)}`,
+      shellDisplayQuote(path.join(plan.localPendingPath, "<file>")),
+    ].join(" ");
+  }
+
   return [
     "rsync",
-    "-av",
+    "-a",
     "--protect-args",
     "--ignore-existing",
-    `${plan.sshHost ?? "<ssh-host>"}:${shellDisplayQuote(`${plan.remotePendingPath}/`)}`,
-    shellDisplayQuote(`${plan.localPendingPath}${path.sep}`),
+    `${plan.sshHost ?? "<ssh-host>"}:${shellDisplayQuote(`${plan.remotePendingPath}/<file>`)}`,
+    shellDisplayQuote(path.join(plan.localPendingPath, "<file>")),
   ].join(" ");
 }
 
@@ -417,6 +451,7 @@ function publicSummary(plan, options, runResult = null) {
     skippedCollision: runResult?.skippedCollision?.length ?? 0,
     downloaded: runResult?.downloaded?.length ?? 0,
     transport: plan.transports.selected,
+    transportRequested: options.transport,
     transportAvailable: plan.transports.available,
     warnings: plan.warnings,
   };

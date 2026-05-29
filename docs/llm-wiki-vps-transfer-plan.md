@@ -180,7 +180,9 @@ npm run llm-wiki:pull-vps-inbox -- --run --force --host <ssh-host> --remote-root
 Transport:
 
 - `ssh` wird für die Remote-Dateiliste benötigt.
-- `rsync` wird bevorzugt, falls lokal verfügbar.
-- falls `rsync` fehlt, wird `scp` als Fallback verwendet.
+- `--transport auto|scp|rsync` kann den Transfer explizit steuern.
+- Unter Windows nutzt `auto` bevorzugt `scp`, weil Windows-`rsync`-Pfad-/Quoting-Verhalten je nach Installation fragil sein kann.
+- Auf Unix-artigen Systemen nutzt `auto` bevorzugt `rsync`, falls verfügbar; sonst `scp`.
+- Remote-Dateien werden einzeln mit Argument-Arrays übertragen, ohne `--delete`, ohne Remote-Move und ohne Remote-Schreibzugriff.
 
 Der Pull verwendet kein `--delete`, verschiebt keine Remote-Dateien und schreibt nichts auf dem VPS. Eine spätere Remote-Archivierung muss separat entworfen werden und darf erst nach erfolgreichem lokalen Import aktiviert werden.
