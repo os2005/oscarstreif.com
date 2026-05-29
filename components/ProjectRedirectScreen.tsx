@@ -34,7 +34,7 @@ export function ProjectRedirectScreen({
   }, [externalUrl]);
 
   return (
-    <section className="relative z-10 flex min-h-[calc(100dvh-88px)] items-center justify-center px-6 py-20">
+    <section className="relative z-10 flex min-h-dvh items-center justify-center px-6 py-20">
       <div className="w-full max-w-4xl rounded-[2.5rem] border border-paper/12 bg-white/[0.05] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-12">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/52">Shared project link</p>
         <div className="mt-8 max-w-3xl">

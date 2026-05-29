@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormMessage } from "@/components/FormMessage";
 import { deleteWgProjectAction, saveWgProjectAction, type WgProjectActionState } from "../server/actions";
 import type {
   WgChecklistItem,
@@ -14,15 +12,11 @@ import type {
 import { WG_PROJECT_STAGE_OPTIONS } from "../types";
 
 type WgProjectDashboardClientProps = {
-  backHref: string;
-  backLabel: string;
   initialProjects: WgDashboardProject[];
-  isDark: boolean;
-  pathLabel: string;
   projectDescription: string;
   projectTitle: string;
+  projectVisibility: "open" | "shared" | "private";
   viewerEmail: string | null;
-  viewerRole: "admin" | "shared" | null;
 };
 
 type DashboardTab = "active" | "done" | "all";
@@ -42,7 +36,6 @@ type ProjectDraft = {
 };
 
 type ProjectEditorDialogProps = {
-  isDark: boolean;
   isOpen: boolean;
   project: WgDashboardProject | null;
   onClose: () => void;
@@ -51,7 +44,11 @@ type ProjectEditorDialogProps = {
 const initialActionState: WgProjectActionState = {};
 
 function formatCurrency(value: number) {
-  return `EUR ${value.toFixed(0)}`;
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function formatDate(value: string) {
@@ -62,19 +59,8 @@ function formatDate(value: string) {
   });
 }
 
-function getStageLabel(stage: WgProjectStage) {
-  return WG_PROJECT_STAGE_OPTIONS.find((option) => option.value === stage)?.label ?? "Idea";
-}
-
-function getStageDescription(stage: WgProjectStage) {
-  return WG_PROJECT_STAGE_OPTIONS.find((option) => option.value === stage)?.description ?? "";
-}
-
-function getStageIndex(stage: WgProjectStage) {
-  return Math.max(
-    0,
-    WG_PROJECT_STAGE_OPTIONS.findIndex((option) => option.value === stage)
-  );
+function getStageMeta(stage: WgProjectStage) {
+  return WG_PROJECT_STAGE_OPTIONS.find((option) => option.value === stage) ?? WG_PROJECT_STAGE_OPTIONS[0];
 }
 
 function getFundingRatio(project: Pick<WgDashboardProject, "currentSavings" | "totalBudget">) {
@@ -101,7 +87,12 @@ function isDoneProject(project: Pick<WgDashboardProject, "stage">) {
 }
 
 function isFundedProject(project: Pick<WgDashboardProject, "currentSavings" | "totalBudget" | "stage">) {
-  return project.stage === "funded" || project.stage === "ready-for-implementation" || project.stage === "done" || getFundingRatio(project) >= 1;
+  return (
+    project.stage === "funded" ||
+    project.stage === "ready-for-implementation" ||
+    project.stage === "done" ||
+    getFundingRatio(project) >= 1
+  );
 }
 
 function isReadyForImplementation(
@@ -112,6 +103,28 @@ function isReadyForImplementation(
     project.stage === "done" ||
     (project.researchScopeCompleted && isFundedProject(project) && project.stage !== "idea")
   );
+}
+
+function getReadinessLabel(
+  project: Pick<WgDashboardProject, "currentSavings" | "researchScopeCompleted" | "stage" | "totalBudget">
+) {
+  if (project.stage === "done") {
+    return "Completed";
+  }
+
+  if (isReadyForImplementation(project)) {
+    return "Ready to execute";
+  }
+
+  if (!project.researchScopeCompleted) {
+    return "Scope still open";
+  }
+
+  if (!isFundedProject(project)) {
+    return "Funding in progress";
+  }
+
+  return "Planning in progress";
 }
 
 function createDraft(project: WgDashboardProject | null): ProjectDraft {
@@ -150,78 +163,71 @@ function createDraft(project: WgDashboardProject | null): ProjectDraft {
   };
 }
 
-function AuthorizationIntro({ isDark, phase }: { isDark: boolean; phase: "authorizing" | "confirmed" }) {
+function AppMessage({
+  children,
+  kind,
+}: {
+  children: React.ReactNode;
+  kind: "error" | "success";
+}) {
+  const styles =
+    kind === "error"
+      ? "border-rose-200 bg-rose-50 text-rose-700"
+      : "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+  return <div className={`rounded-2xl border px-4 py-3 text-sm ${styles}`}>{children}</div>;
+}
+
+function FieldLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor: string }) {
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/42 p-6 backdrop-blur-md">
-      <div
-        className={`w-full max-w-md rounded-[2rem] border px-8 py-10 text-center shadow-[0_24px_90px_rgba(0,0,0,0.38)] ${
-          isDark ? "border-paper/12 bg-ink/92 text-paper" : "border-ink/12 bg-paper/92 text-ink"
-        }`}
-      >
-        <div
-          className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full border transition-all duration-300 ${
-            phase === "confirmed"
-              ? "border-emerald-400/40 bg-emerald-400/12"
-              : isDark
-                ? "border-paper/16 bg-white/[0.04]"
-                : "border-ink/12 bg-ink/5"
-          }`}
-        >
-          {phase === "confirmed" ? (
-            <svg className="h-9 w-9 text-emerald-300" fill="none" viewBox="0 0 24 24">
-              <path d="M5 13.2 9.2 17 19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
-            </svg>
-          ) : (
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-transparent border-t-current border-r-current text-accent" />
-          )}
-        </div>
-        <p className={isDark ? "mt-6 font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46" : "mt-6 font-mono text-[11px] uppercase tracking-[0.22em] text-ink/46"}>
-          Secure entry
-        </p>
-        <h2 className="mt-4 font-display text-4xl leading-none">
-          {phase === "confirmed" ? "Access confirmed" : "Authorizing access"}
-        </h2>
-        <p className={isDark ? "mt-4 text-sm leading-7 text-paper/64" : "mt-4 text-sm leading-7 text-ink/64"}>
-          {phase === "confirmed"
-            ? "Opening the WG project dashboard."
-            : "Checking project access through the private or shared workspace rules."}
-        </p>
-      </div>
-    </div>
+    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500" htmlFor={htmlFor}>
+      {children}
+    </label>
   );
 }
 
-function StageRail({ isDark, stage }: { isDark: boolean; stage: WgProjectStage }) {
-  const stageIndex = getStageIndex(stage);
+function StagePill({ stage }: { stage: WgProjectStage }) {
+  const meta = getStageMeta(stage);
+  const tone =
+    stage === "done"
+      ? "border-emerald-300 bg-emerald-100 text-emerald-800"
+      : stage === "ready-for-implementation"
+        ? "border-sky-300 bg-sky-100 text-sky-800"
+        : stage === "funded"
+          ? "border-amber-300 bg-amber-100 text-amber-800"
+          : stage === "planned"
+            ? "border-violet-300 bg-violet-100 text-violet-800"
+            : "border-slate-300 bg-slate-100 text-slate-700";
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}>
+      {meta.label}
+    </span>
+  );
+}
+
+function StageTimeline({ stage }: { stage: WgProjectStage }) {
+  const activeIndex = Math.max(
+    0,
+    WG_PROJECT_STAGE_OPTIONS.findIndex((option) => option.value === stage)
+  );
 
   return (
     <div className="grid gap-3 sm:grid-cols-5">
       {WG_PROJECT_STAGE_OPTIONS.map((option, index) => {
-        const isComplete = index <= stageIndex;
+        const complete = index <= activeIndex;
 
         return (
-          <div className="flex items-start gap-3" key={option.value}>
-            <div className="mt-1 flex flex-col items-center">
+          <div className="rounded-2xl border border-slate-200 bg-white/75 px-3 py-3" key={option.value}>
+            <div className="flex items-center gap-3">
               <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-mono uppercase transition ${
-                  isComplete
-                    ? "border-emerald-400/45 bg-emerald-400/12 text-emerald-200"
-                    : isDark
-                      ? "border-paper/14 bg-white/[0.04] text-paper/42"
-                      : "border-ink/12 bg-ink/5 text-ink/46"
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                  complete ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {index + 1}
               </span>
-              {index < WG_PROJECT_STAGE_OPTIONS.length - 1 ? (
-                <span className={`mt-2 hidden h-8 w-px sm:block ${isComplete ? "bg-emerald-400/35" : isDark ? "bg-paper/10" : "bg-ink/10"}`} />
-              ) : null}
-            </div>
-            <div>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Step {index + 1}
-              </p>
-              <p className="mt-1 text-sm">{option.label}</p>
+              <span className="text-sm font-semibold text-slate-700">{option.label}</span>
             </div>
           </div>
         );
@@ -230,7 +236,38 @@ function StageRail({ isDark, stage }: { isDark: boolean; stage: WgProjectStage }
   );
 }
 
-function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditorDialogProps) {
+function AuthorizationIntro({ phase }: { phase: "authorizing" | "confirmed" }) {
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#eff3e8]/88 px-6 backdrop-blur-md">
+      <div className="w-full max-w-sm rounded-[28px] border border-slate-200 bg-white px-8 py-10 text-center shadow-[0_40px_100px_rgba(15,23,42,0.16)]">
+        <div
+          className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${
+            phase === "confirmed" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          {phase === "confirmed" ? (
+            <svg className="h-9 w-9" fill="none" viewBox="0 0 24 24">
+              <path d="M5 13.2 9.2 17 19 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+            </svg>
+          ) : (
+            <div className="h-9 w-9 animate-spin rounded-full border-2 border-slate-300 border-t-slate-800" />
+          )}
+        </div>
+        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">WG workspace</p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+          {phase === "confirmed" ? "Access confirmed" : "Authorizing access"}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          {phase === "confirmed"
+            ? "Opening the operational dashboard."
+            : "Verifying workspace permissions and loading the latest project state."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ProjectEditorDialog({ isOpen, onClose, project }: ProjectEditorDialogProps) {
   const router = useRouter();
   const [saveState, saveFormAction, savePending] = useActionState(saveWgProjectAction, initialActionState);
   const [deleteState, deleteFormAction, deletePending] = useActionState(deleteWgProjectAction, initialActionState);
@@ -248,19 +285,19 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/58 px-4 py-10 backdrop-blur-sm">
-      <div className={`w-full max-w-4xl rounded-[2rem] border shadow-[0_32px_100px_rgba(0,0,0,0.34)] ${isDark ? "border-paper/12 bg-ink text-paper" : "border-ink/12 bg-paper text-ink"}`}>
-        <div className={`flex items-center justify-between gap-4 border-b px-6 py-5 ${isDark ? "border-paper/10" : "border-ink/10"}`}>
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-950/35 px-4 py-8 backdrop-blur-sm">
+      <div className="w-full max-w-5xl rounded-[28px] border border-slate-200 bg-[#f8faf7] shadow-[0_32px_80px_rgba(15,23,42,0.18)]">
+        <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
           <div>
-            <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.22em] text-ink/46"}>
-              {project ? "Edit WG project" : "Create WG project"}
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {project ? "Edit project" : "Create project"}
             </p>
-            <h2 className="mt-3 font-display text-3xl leading-none">{project ? project.title : "New project"}</h2>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+              {project ? project.title : "New WG project"}
+            </h2>
           </div>
           <button
-            className={`rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-              isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-            }`}
+            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
             onClick={onClose}
             type="button"
           >
@@ -268,9 +305,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
           </button>
         </div>
 
-        <div className="px-6 py-6">
-          {saveState.error ? <FormMessage kind="error">{saveState.error}</FormMessage> : null}
-          {deleteState.error ? <FormMessage kind="error">{deleteState.error}</FormMessage> : null}
+        <div className="space-y-5 px-6 py-6">
+          {saveState.error ? <AppMessage kind="error">{saveState.error}</AppMessage> : null}
+          {deleteState.error ? <AppMessage kind="error">{deleteState.error}</AppMessage> : null}
 
           <form action={saveFormAction} className="space-y-6">
             <input name="projectId" type="hidden" value={draft.projectId ?? ""} />
@@ -279,11 +316,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-title">
-                  Title
-                </label>
+                <FieldLabel htmlFor="wg-title">Title</FieldLabel>
                 <input
-                  className={`w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-title"
                   name="title"
                   onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
@@ -293,11 +328,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                 />
               </div>
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-stage">
-                  Stage
-                </label>
+                <FieldLabel htmlFor="wg-stage">Stage</FieldLabel>
                 <select
-                  className={`w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-stage"
                   name="stage"
                   onChange={(event) => setDraft((current) => ({ ...current, stage: event.target.value as WgProjectStage }))}
@@ -313,11 +346,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
             </div>
 
             <div>
-              <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-description">
-                Description
-              </label>
+              <FieldLabel htmlFor="wg-description">Description</FieldLabel>
               <textarea
-                className={`min-h-28 w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                 id="wg-description"
                 name="description"
                 onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
@@ -328,11 +359,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-budget">
-                  Total budget
-                </label>
+                <FieldLabel htmlFor="wg-budget">Estimated total budget</FieldLabel>
                 <input
-                  className={`w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-budget"
                   inputMode="decimal"
                   name="totalBudget"
@@ -343,11 +372,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                 />
               </div>
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-savings">
-                  Current savings
-                </label>
+                <FieldLabel htmlFor="wg-savings">Current savings</FieldLabel>
                 <input
-                  className={`w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-savings"
                   inputMode="decimal"
                   name="currentSavings"
@@ -359,31 +386,25 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
               </div>
             </div>
 
-            <label className={`flex items-center gap-3 rounded-[1.2rem] border px-4 py-3 ${isDark ? "border-paper/12 bg-white/[0.03]" : "border-ink/10 bg-ink/5"}`}>
+            <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
               <input
                 checked={draft.researchScopeCompleted}
-                className="h-4 w-4 rounded"
+                className="h-4 w-4 rounded border-slate-300"
                 name="researchScopeCompleted"
                 onChange={(event) => setDraft((current) => ({ ...current, researchScopeCompleted: event.target.checked }))}
                 type="checkbox"
               />
-              <span className="text-sm">Research and scope work completed</span>
+              Research and scope work completed
             </label>
 
-            <div className={`rounded-[1.5rem] border p-4 ${isDark ? "border-paper/12 bg-white/[0.03]" : "border-ink/10 bg-ink/5"}`}>
+            <div className="rounded-[24px] border border-slate-200 bg-white p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                    Shopping list
-                  </p>
-                  <p className={isDark ? "mt-2 text-sm text-paper/64" : "mt-2 text-sm text-ink/64"}>
-                    Add required items, approximate prices, and whether they are still needed.
-                  </p>
+                  <p className="text-sm font-semibold text-slate-800">Shopping list</p>
+                  <p className="mt-1 text-sm text-slate-500">Track required items, rough prices, and whether they are still needed.</p>
                 </div>
                 <button
-                  className={`rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-                    isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-                  }`}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                   onClick={() =>
                     setDraft((current) => ({
                       ...current,
@@ -399,10 +420,10 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                 </button>
               </div>
               <div className="mt-4 space-y-3">
-                {draft.shoppingItems.map((item, index) => (
-                  <div className="grid gap-3 rounded-[1.2rem] border p-3 md:grid-cols-[minmax(0,2fr)_130px_130px_150px_auto] md:items-center" key={item.id}>
+                {draft.shoppingItems.map((item) => (
+                  <div className="grid gap-3 rounded-2xl border border-slate-200 bg-[#f8faf7] p-3 md:grid-cols-[minmax(0,2fr)_130px_130px_150px_auto] md:items-center" key={item.id}>
                     <input
-                      className={`rounded-[1rem] border px-3 py-2 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/80 text-ink focus:border-ink/34"}`}
+                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-slate-400"
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -416,7 +437,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                       value={item.name}
                     />
                     <input
-                      className={`rounded-[1rem] border px-3 py-2 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/80 text-ink focus:border-ink/34"}`}
+                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-slate-400"
                       inputMode="decimal"
                       onChange={(event) =>
                         setDraft((current) => ({
@@ -425,7 +446,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                             entry.id === item.id
                               ? {
                                   ...entry,
-                                  estimatedPrice: event.target.value.trim() ? Number.parseFloat(event.target.value.replace(",", ".")) : null,
+                                  estimatedPrice: event.target.value.trim()
+                                    ? Number.parseFloat(event.target.value.replace(",", "."))
+                                    : null,
                                 }
                               : entry
                           ),
@@ -436,7 +459,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                       value={item.estimatedPrice === null ? "" : String(item.estimatedPrice)}
                     />
                     <input
-                      className={`rounded-[1rem] border px-3 py-2 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/80 text-ink focus:border-ink/34"}`}
+                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-slate-400"
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -450,7 +473,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                       value={item.quantity}
                     />
                     <select
-                      className={`rounded-[1rem] border px-3 py-2 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/80 text-ink focus:border-ink/34"}`}
+                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-slate-400"
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -467,8 +490,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                       <option value="already-owned">Already owned</option>
                     </select>
                     <button
-                      aria-label={`Remove shopping item ${index + 1}`}
-                      className="rounded-full border border-red-400/28 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-red-100 transition hover:border-red-300/50 hover:bg-red-400/10"
+                      className="rounded-full border border-rose-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
                       onClick={() =>
                         setDraft((current) => ({
                           ...current,
@@ -487,20 +509,14 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
               </div>
             </div>
 
-            <div className={`rounded-[1.5rem] border p-4 ${isDark ? "border-paper/12 bg-white/[0.03]" : "border-ink/10 bg-ink/5"}`}>
+            <div className="rounded-[24px] border border-slate-200 bg-white p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                    Checklist
-                  </p>
-                  <p className={isDark ? "mt-2 text-sm text-paper/64" : "mt-2 text-sm text-ink/64"}>
-                    Track the concrete steps needed to move the project forward.
-                  </p>
+                  <p className="text-sm font-semibold text-slate-800">Checklist</p>
+                  <p className="mt-1 text-sm text-slate-500">Keep execution tasks visible and easy to update.</p>
                 </div>
                 <button
-                  className={`rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-                    isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-                  }`}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                   onClick={() =>
                     setDraft((current) => ({
                       ...current,
@@ -513,12 +529,12 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                 </button>
               </div>
               <div className="mt-4 space-y-3">
-                {draft.checklistItems.map((item, index) => (
-                  <div className="flex flex-col gap-3 rounded-[1.2rem] border p-3 md:flex-row md:items-center" key={item.id}>
-                    <label className={`flex min-w-0 flex-1 items-center gap-3 rounded-[1rem] border px-3 py-2 ${isDark ? "border-paper/12 bg-black/24" : "border-ink/10 bg-white/80"}`}>
+                {draft.checklistItems.map((item) => (
+                  <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-[#f8faf7] p-3 md:flex-row md:items-center" key={item.id}>
+                    <label className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
                       <input
                         checked={item.completed}
-                        className="h-4 w-4 rounded"
+                        className="h-4 w-4 rounded border-slate-300"
                         onChange={(event) =>
                           setDraft((current) => ({
                             ...current,
@@ -530,7 +546,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                         type="checkbox"
                       />
                       <input
-                        className={`min-w-0 flex-1 bg-transparent outline-none ${isDark ? "text-paper placeholder:text-paper/34" : "text-ink placeholder:text-ink/34"}`}
+                        className="min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
                         onChange={(event) =>
                           setDraft((current) => ({
                             ...current,
@@ -545,8 +561,7 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                       />
                     </label>
                     <button
-                      aria-label={`Remove checklist item ${index + 1}`}
-                      className="rounded-full border border-red-400/28 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-red-100 transition hover:border-red-300/50 hover:bg-red-400/10"
+                      className="rounded-full border border-rose-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
                       onClick={() =>
                         setDraft((current) => ({
                           ...current,
@@ -567,11 +582,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-contributor-notes">
-                  Contributor and payment notes
-                </label>
+                <FieldLabel htmlFor="wg-contributor-notes">Contributor and payment notes</FieldLabel>
                 <textarea
-                  className={`min-h-28 w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-contributor-notes"
                   name="contributorNotes"
                   onChange={(event) => setDraft((current) => ({ ...current, contributorNotes: event.target.value }))}
@@ -579,11 +592,9 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
                 />
               </div>
               <div>
-                <label className={isDark ? "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-paper/50" : "mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/50"} htmlFor="wg-notes">
-                  Research and scope notes
-                </label>
+                <FieldLabel htmlFor="wg-notes">Research and scope notes</FieldLabel>
                 <textarea
-                  className={`min-h-28 w-full rounded-[1.2rem] border px-4 py-3 outline-none transition ${isDark ? "border-paper/14 bg-black/28 text-paper focus:border-paper/38" : "border-ink/12 bg-white/75 text-ink focus:border-ink/34"}`}
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   id="wg-notes"
                   name="notes"
                   onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
@@ -592,19 +603,17 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
               </div>
             </div>
 
-            <div className={`flex flex-wrap items-center justify-between gap-3 border-t pt-5 ${isDark ? "border-paper/10" : "border-ink/10"}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5">
               <div className="flex flex-wrap gap-3">
                 <button
-                  className="rounded-full border border-paper/16 bg-paper px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={savePending}
                   type="submit"
                 >
                   {savePending ? "Saving..." : project ? "Save project" : "Create project"}
                 </button>
                 <button
-                  className={`rounded-full border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] transition ${
-                    isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-                  }`}
+                  className="rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                   onClick={onClose}
                   type="button"
                 >
@@ -615,10 +624,10 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
           </form>
 
           {project ? (
-            <form action={deleteFormAction} className={`mt-4 border-t pt-5 ${isDark ? "border-paper/10" : "border-ink/10"}`}>
+            <form action={deleteFormAction} className="border-t border-slate-200 pt-5">
               <input name="projectId" type="hidden" value={project.id} />
               <button
-                className="rounded-full border border-red-400/28 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-red-100 transition hover:border-red-300/50 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={deletePending}
                 type="submit"
               >
@@ -632,291 +641,109 @@ function ProjectEditorDialog({ isDark, isOpen, project, onClose }: ProjectEditor
   );
 }
 
-function ProjectDetailsDialog({
-  isDark,
-  isOpen,
-  onClose,
-  onEdit,
-  project,
+function SummaryCard({
+  eyebrow,
+  tone,
+  value,
 }: {
-  isDark: boolean;
-  isOpen: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  project: WgDashboardProject | null;
+  eyebrow: string;
+  tone: string;
+  value: string;
 }) {
-  if (!isOpen || !project) {
-    return null;
-  }
-
-  const checklist = getChecklistProgress(project);
-  const fundingRatio = getFundingRatio(project);
-
   return (
-    <div className="fixed inset-0 z-30 flex items-start justify-center overflow-y-auto bg-black/52 px-4 py-10 backdrop-blur-sm">
-      <div className={`w-full max-w-4xl rounded-[2rem] border shadow-[0_28px_90px_rgba(0,0,0,0.3)] ${isDark ? "border-paper/12 bg-ink text-paper" : "border-ink/12 bg-paper text-ink"}`}>
-        <div className={`flex items-center justify-between gap-4 border-b px-6 py-5 ${isDark ? "border-paper/10" : "border-ink/10"}`}>
-          <div>
-            <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.22em] text-ink/46"}>
-              WG project details
-            </p>
-            <h2 className="mt-3 font-display text-3xl leading-none">{project.title}</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="rounded-full border border-paper/16 bg-paper px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
-              onClick={onEdit}
-              type="button"
-            >
-              Edit
-            </button>
-            <button
-              className={`rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-                isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-              }`}
-              onClick={onClose}
-              type="button"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-6 px-6 py-6">
-          <div className="flex flex-wrap gap-2">
-            <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${isDark ? "border-paper/14 text-paper/58" : "border-ink/12 text-ink/56"}`}>
-              {getStageLabel(project.stage)}
-            </span>
-            <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${isDark ? "border-paper/14 text-paper/58" : "border-ink/12 text-ink/56"}`}>
-              Created {formatDate(project.createdAt)}
-            </span>
-            <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${isDark ? "border-paper/14 text-paper/58" : "border-ink/12 text-ink/56"}`}>
-              Updated {formatDate(project.updatedAt)}
-            </span>
-          </div>
-
-          <p className={isDark ? "max-w-3xl leading-7 text-paper/72" : "max-w-3xl leading-7 text-ink/72"}>{project.description}</p>
-
-          <StageRail isDark={isDark} stage={project.stage} />
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Budget progress
-              </p>
-              <p className="mt-4 font-display text-4xl leading-none">
-                {formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}
-              </p>
-            <div className={`mt-4 h-2.5 overflow-hidden rounded-full ${isDark ? "bg-white/[0.08]" : "bg-ink/10"}`}>
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-accent via-emerald-300 to-emerald-200"
-                  style={{ width: `${project.currentSavings > 0 ? Math.max(10, fundingRatio * 100) : 0}%` }}
-                />
-              </div>
-            </div>
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Checklist
-              </p>
-              <p className="mt-4 font-display text-4xl leading-none">
-                {checklist.completed}/{checklist.total || 0}
-              </p>
-              <p className={isDark ? "mt-3 text-sm text-paper/64" : "mt-3 text-sm text-ink/64"}>
-                Tasks completed
-              </p>
-            </div>
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Readiness
-              </p>
-              <p className="mt-4 font-display text-3xl leading-none">
-                {isReadyForImplementation(project) ? "Ready" : "In progress"}
-              </p>
-              <p className={isDark ? "mt-3 text-sm text-paper/64" : "mt-3 text-sm text-ink/64"}>
-                Scoped, funded, and clear enough to execute.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Shopping list
-              </p>
-              <div className="mt-4 space-y-3">
-                {project.shoppingItems.length ? (
-                  project.shoppingItems.map((item) => (
-                    <div className={`rounded-[1.15rem] border px-4 py-3 ${isDark ? "border-paper/10 bg-black/20" : "border-ink/10 bg-white/80"}`} key={item.id}>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm">{item.name}</p>
-                          <p className={isDark ? "mt-1 text-xs text-paper/54" : "mt-1 text-xs text-ink/54"}>
-                            {item.quantity ? `Quantity: ${item.quantity}` : "Quantity not specified"}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm">{item.estimatedPrice === null ? "No price" : formatCurrency(item.estimatedPrice)}</p>
-                          <p className={isDark ? "mt-1 text-xs text-paper/54" : "mt-1 text-xs text-ink/54"}>
-                            {item.status === "already-owned" ? "Already owned" : "Still needed"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className={isDark ? "text-sm text-paper/62" : "text-sm text-ink/62"}>No shopping items yet.</p>
-                )}
-              </div>
-            </div>
-
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Checklist
-              </p>
-              <div className="mt-4 space-y-3">
-                {project.checklistItems.length ? (
-                  project.checklistItems.map((item) => (
-                    <div className={`flex items-center gap-3 rounded-[1.15rem] border px-4 py-3 ${isDark ? "border-paper/10 bg-black/20" : "border-ink/10 bg-white/80"}`} key={item.id}>
-                      <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-[10px] ${item.completed ? "border-emerald-400/45 bg-emerald-400/12 text-emerald-200" : isDark ? "border-paper/14 text-paper/42" : "border-ink/12 text-ink/42"}`}>
-                        {item.completed ? "OK" : "..."}
-                      </span>
-                      <span className={item.completed ? (isDark ? "text-paper/86" : "text-ink/86") : isDark ? "text-paper/68" : "text-ink/68"}>
-                        {item.label}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className={isDark ? "text-sm text-paper/62" : "text-sm text-ink/62"}>No checklist items yet.</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Contributor and payment notes
-              </p>
-              <p className={isDark ? "mt-4 text-sm leading-7 text-paper/68" : "mt-4 text-sm leading-7 text-ink/68"}>
-                {project.contributorNotes || "No contributor or payment notes yet."}
-              </p>
-            </div>
-            <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-white/[0.035]" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Research and scope notes
-              </p>
-              <p className={isDark ? "mt-4 text-sm leading-7 text-paper/68" : "mt-4 text-sm leading-7 text-ink/68"}>
-                {project.notes || "No research notes yet."}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
+      <p className={`mt-4 text-4xl font-semibold tracking-tight ${tone}`}>{value}</p>
     </div>
   );
 }
 
 function ProjectCard({
-  isDark,
-  onEdit,
-  onViewDetails,
   project,
+  selected,
+  onSelect,
+  onEdit,
 }: {
-  isDark: boolean;
-  onEdit: () => void;
-  onViewDetails: () => void;
   project: WgDashboardProject;
+  selected: boolean;
+  onSelect: () => void;
+  onEdit: () => void;
 }) {
   const fundingRatio = getFundingRatio(project);
   const checklist = getChecklistProgress(project);
+  const readinessLabel = getReadinessLabel(project);
 
   return (
-    <article className={`rounded-[1.9rem] border p-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)] ${isDark ? "border-paper/12 bg-white/[0.045]" : "border-ink/12 bg-white/78"}`}>
+    <article
+      className={`rounded-[28px] border p-5 transition ${
+        selected
+          ? "border-slate-900 bg-slate-900 text-white shadow-[0_22px_60px_rgba(15,23,42,0.18)]"
+          : "border-slate-200 bg-white text-slate-900 shadow-[0_16px_40px_rgba(15,23,42,0.06)]"
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-            {getStageLabel(project.stage)}
-          </p>
-          <h3 className="mt-3 font-display text-3xl leading-none">{project.title}</h3>
+          <StagePill stage={project.stage} />
+          <h3 className="mt-4 text-2xl font-semibold tracking-tight">{project.title}</h3>
         </div>
-        <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${isDark ? "border-paper/14 text-paper/56" : "border-ink/12 text-ink/54"}`}>
-          {isDoneProject(project) ? "Done" : "Active"}
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            selected ? "bg-white/10 text-white" : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          {readinessLabel}
         </span>
       </div>
 
-      <p className={isDark ? "mt-5 text-sm leading-7 text-paper/68" : "mt-5 text-sm leading-7 text-ink/68"}>
-        {project.description}
-      </p>
+      <p className={`mt-4 text-sm leading-7 ${selected ? "text-slate-200" : "text-slate-600"}`}>{project.description}</p>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span>Budget progress</span>
-            <span className={isDark ? "text-paper/58" : "text-ink/58"}>
-              {formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}
-            </span>
+            <span className={selected ? "text-slate-300" : "text-slate-500"}>Funding</span>
+            <span>{formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}</span>
           </div>
-        <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${isDark ? "bg-white/[0.08]" : "bg-ink/10"}`}>
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-accent via-emerald-300 to-emerald-200"
-              style={{ width: `${project.currentSavings > 0 ? Math.max(8, fundingRatio * 100) : 0}%` }}
-            />
+          <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${selected ? "bg-white/10" : "bg-slate-200"}`}>
+            <div className="h-full rounded-full bg-emerald-400" style={{ width: `${project.currentSavings > 0 ? Math.max(8, fundingRatio * 100) : 0}%` }} />
           </div>
         </div>
-
         <div>
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span>Checklist</span>
-            <span className={isDark ? "text-paper/58" : "text-ink/58"}>
-              {checklist.completed}/{checklist.total || 0} tasks done
-            </span>
+            <span className={selected ? "text-slate-300" : "text-slate-500"}>Checklist</span>
+            <span>{checklist.completed}/{checklist.total || 0}</span>
           </div>
-        <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${isDark ? "bg-white/[0.08]" : "bg-ink/10"}`}>
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-300 via-accent to-indigo-300"
-              style={{ width: `${checklist.completed > 0 ? Math.max(8, checklist.ratio * 100) : 0}%` }}
-            />
+          <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${selected ? "bg-white/10" : "bg-slate-200"}`}>
+            <div className="h-full rounded-full bg-sky-400" style={{ width: `${checklist.completed > 0 ? Math.max(8, checklist.ratio * 100) : 0}%` }} />
           </div>
         </div>
+      </div>
 
-        <div className={`rounded-[1.2rem] border p-3 ${isDark ? "border-paper/10 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-          <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/44" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/44"}>
-            Required items
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {project.shoppingItems.length ? (
-              project.shoppingItems.slice(0, 3).map((item) => (
-                <span className={`rounded-full border px-3 py-1 text-xs ${isDark ? "border-paper/10 text-paper/62" : "border-ink/10 text-ink/62"}`} key={item.id}>
-                  {item.name}
-                </span>
-              ))
-            ) : (
-              <span className={isDark ? "text-sm text-paper/52" : "text-sm text-ink/52"}>No items yet</span>
-            )}
-          </div>
-        </div>
-
-        <div className={`rounded-[1.2rem] border p-3 ${isDark ? "border-paper/10 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-          <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/44" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/44"}>
-            Stage meaning
-          </p>
-          <p className={isDark ? "mt-3 text-sm leading-6 text-paper/64" : "mt-3 text-sm leading-6 text-ink/64"}>
-            {getStageDescription(project.stage)}
-          </p>
-        </div>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {project.shoppingItems.slice(0, 3).map((item) => (
+          <span
+            className={`rounded-full px-3 py-1 text-xs ${
+              selected ? "bg-white/10 text-slate-100" : "bg-slate-100 text-slate-600"
+            }`}
+            key={item.id}
+          >
+            {item.name}
+          </span>
+        ))}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <button
-          className="rounded-full border border-paper/16 bg-paper px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
-          onClick={onViewDetails}
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+            selected ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-700"
+          }`}
+          onClick={onSelect}
           type="button"
         >
           View details
         </button>
         <button
-          className={`rounded-full border px-4 py-3 font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-            isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
+          className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+            selected ? "border-white/20 text-white hover:bg-white/10" : "border-slate-300 text-slate-700 hover:bg-slate-100"
           }`}
           onClick={onEdit}
           type="button"
@@ -928,25 +755,159 @@ function ProjectCard({
   );
 }
 
+function EmptyState({ tabLabel }: { tabLabel: string }) {
+  return (
+    <div className="rounded-[28px] border border-dashed border-slate-300 bg-white/70 p-10 text-center">
+      <h3 className="text-2xl font-semibold tracking-tight text-slate-900">No projects in {tabLabel.toLowerCase()}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">
+        Create a new WG project to start tracking funding, tasks, and implementation readiness.
+      </p>
+    </div>
+  );
+}
+
+function ProjectDetailPanel({ project }: { project: WgDashboardProject | null }) {
+  if (!project) {
+    return (
+      <aside className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Project details</p>
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">Select a project</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600">
+          Choose an active or completed project to inspect budget, tasks, notes, and shopping items in one place.
+        </p>
+      </aside>
+    );
+  }
+
+  const checklist = getChecklistProgress(project);
+  const fundingRatio = getFundingRatio(project);
+  const readinessLabel = getReadinessLabel(project);
+
+  return (
+    <aside className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <StagePill stage={project.stage} />
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{readinessLabel}</span>
+      </div>
+
+      <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{project.title}</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{project.description}</p>
+
+      <div className="mt-6 space-y-4">
+        <div className="rounded-[22px] bg-slate-50 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-slate-500">Funding</span>
+            <span className="text-sm font-semibold text-slate-900">{formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}</span>
+          </div>
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+            <div className="h-full rounded-full bg-emerald-400" style={{ width: `${project.currentSavings > 0 ? Math.max(8, fundingRatio * 100) : 0}%` }} />
+          </div>
+        </div>
+
+        <div className="rounded-[22px] bg-slate-50 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-slate-500">Checklist</span>
+            <span className="text-sm font-semibold text-slate-900">{checklist.completed}/{checklist.total || 0}</span>
+          </div>
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+            <div className="h-full rounded-full bg-sky-400" style={{ width: `${checklist.completed > 0 ? Math.max(8, checklist.ratio * 100) : 0}%` }} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Stage timeline</p>
+        <div className="mt-3">
+          <StageTimeline stage={project.stage} />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Shopping list</p>
+        <div className="mt-3 space-y-3">
+          {project.shoppingItems.length ? (
+            project.shoppingItems.map((item) => (
+              <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3" key={item.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {item.quantity ? `Quantity: ${item.quantity}` : "Quantity not specified"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {item.estimatedPrice === null ? "No price" : formatCurrency(item.estimatedPrice)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {item.status === "already-owned" ? "Already owned" : "Still needed"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500">No shopping items yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Checklist</p>
+        <div className="mt-3 space-y-3">
+          {project.checklistItems.length ? (
+            project.checklistItems.map((item) => (
+              <div className="flex items-center gap-3 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3" key={item.id}>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                    item.completed ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"
+                  }`}
+                >
+                  {item.completed ? "OK" : "..."}
+                </span>
+                <span className={item.completed ? "text-slate-900" : "text-slate-600"}>{item.label}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500">No checklist items yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4">
+        <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Contributor and payment notes</p>
+          <p className="mt-3 text-sm leading-7 text-slate-600">{project.contributorNotes || "No contributor or payment notes yet."}</p>
+        </div>
+        <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Research and scope notes</p>
+          <p className="mt-3 text-sm leading-7 text-slate-600">{project.notes || "No research or scope notes yet."}</p>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3 text-xs text-slate-500">
+        <span>Created {formatDate(project.createdAt)}</span>
+        <span>Updated {formatDate(project.updatedAt)}</span>
+      </div>
+    </aside>
+  );
+}
+
 export function WgProjectDashboardClient({
-  backHref,
-  backLabel,
   initialProjects,
-  isDark,
-  pathLabel,
   projectDescription,
   projectTitle,
+  projectVisibility,
   viewerEmail,
-  viewerRole,
 }: WgProjectDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("active");
-  const [detailsProjectId, setDetailsProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialProjects[0]?.id ?? null);
   const [editorProjectId, setEditorProjectId] = useState<string | "new" | null>(null);
   const [authPhase, setAuthPhase] = useState<"authorizing" | "confirmed" | "done">("authorizing");
 
   useEffect(() => {
-    const confirmTimer = window.setTimeout(() => setAuthPhase("confirmed"), 520);
-    const doneTimer = window.setTimeout(() => setAuthPhase("done"), 1180);
+    const confirmTimer = window.setTimeout(() => setAuthPhase("confirmed"), 420);
+    const doneTimer = window.setTimeout(() => setAuthPhase("done"), 1040);
 
     return () => {
       window.clearTimeout(confirmTimer);
@@ -956,188 +917,175 @@ export function WgProjectDashboardClient({
 
   const activeProjects = initialProjects.filter((project) => !isDoneProject(project));
   const doneProjects = initialProjects.filter((project) => isDoneProject(project));
-  const allProjects = initialProjects;
   const visibleProjects =
-    activeTab === "active" ? activeProjects : activeTab === "done" ? doneProjects : allProjects;
+    activeTab === "active" ? activeProjects : activeTab === "done" ? doneProjects : initialProjects;
   const totalBudget = activeProjects.reduce((sum, project) => sum + project.totalBudget, 0);
   const totalSavings = activeProjects.reduce((sum, project) => sum + project.currentSavings, 0);
   const readyProjects = activeProjects.filter((project) => isReadyForImplementation(project)).length;
-  const selectedProject = detailsProjectId ? initialProjects.find((project) => project.id === detailsProjectId) ?? null : null;
+  const selectedProject = visibleProjects.find((project) => project.id === selectedProjectId)
+    ?? initialProjects.find((project) => project.id === selectedProjectId)
+    ?? visibleProjects[0]
+    ?? null;
   const editingProject =
     editorProjectId && editorProjectId !== "new"
       ? initialProjects.find((project) => project.id === editorProjectId) ?? null
       : null;
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-6 pb-24 pt-14 md:px-8 md:pt-20">
-      <div className="relative">
-        {authPhase !== "done" ? <AuthorizationIntro isDark={isDark} phase={authPhase === "confirmed" ? "confirmed" : "authorizing"} /> : null}
+    <main
+      className="min-h-dvh bg-[#edf3ef] text-slate-900"
+      data-wg-app-root
+      style={{
+        fontFamily:
+          "Aptos, 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
+      <div className="relative mx-auto max-w-[1680px] px-4 py-4 sm:px-6 lg:px-8">
+        {authPhase !== "done" ? <AuthorizationIntro phase={authPhase === "confirmed" ? "confirmed" : "authorizing"} /> : null}
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className={`rounded-[2.2rem] border p-6 md:p-8 ${isDark ? "border-paper/12 bg-white/[0.045] text-paper" : "border-ink/12 bg-white/75 text-ink"}`}>
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.22em] text-ink/46"}>
-                  Internal project dashboard
-                </p>
-                <h1 className="mt-4 max-w-4xl font-display text-[clamp(3rem,7vw,5.7rem)] leading-[0.92]">{projectTitle}</h1>
-                <p className={isDark ? "mt-5 max-w-3xl text-lg leading-8 text-paper/68" : "mt-5 max-w-3xl text-lg leading-8 text-ink/68"}>
-                  {projectDescription}
-                </p>
+        <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.08)]">
+          <div className="border-b border-slate-200 bg-[#f7faf8] px-5 py-5 sm:px-8 sm:py-6">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.2)]">
+                    WG
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Shared flat operations workspace</p>
+                    <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">{projectTitle}</h1>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    {projectVisibility} access
+                  </span>
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+                    {viewerEmail ?? "Authorized session"}
+                  </span>
+                </div>
               </div>
-              <div className={`rounded-[1.5rem] border px-4 py-4 ${isDark ? "border-paper/12 bg-black/18" : "border-ink/12 bg-ink/5"}`}>
-                <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                  Viewer
-                </p>
-                <p className="mt-2 text-sm">{viewerEmail ?? "Authorized visitor"}</p>
-                <p className={isDark ? "mt-1 text-xs uppercase tracking-[0.18em] text-paper/44" : "mt-1 text-xs uppercase tracking-[0.18em] text-ink/44"}>
-                  {viewerRole ?? "shared"}
-                </p>
+
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                <div className="rounded-[28px] border border-slate-200 bg-slate-900 px-5 py-5 text-white sm:px-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">Workspace overview</p>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-200 sm:text-[15px]">
+                    {projectDescription}
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100">Planning</span>
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100">Funding</span>
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-100">Execution readiness</span>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                  <SummaryCard eyebrow="Active projects" tone="text-slate-950" value={String(activeProjects.length)} />
+                  <SummaryCard eyebrow="Ready to implement" tone="text-emerald-700" value={String(readyProjects)} />
+                  <SummaryCard eyebrow="Tracked funding" tone="text-sky-700" value={`${formatCurrency(totalSavings)} / ${formatCurrency(totalBudget)}`} />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-                <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                  Active projects
-                </p>
-                <p className="mt-4 font-display text-5xl leading-none">{activeProjects.length}</p>
-              </div>
-              <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-                <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                  Ready to implement
-                </p>
-                <p className="mt-4 font-display text-5xl leading-none">{readyProjects}</p>
-              </div>
-              <div className={`rounded-[1.6rem] border p-5 ${isDark ? "border-paper/12 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-                <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                  Budget tracked
-                </p>
-                <p className="mt-4 font-display text-4xl leading-none">
-                  {formatCurrency(totalSavings)} / {formatCurrency(totalBudget)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className={`inline-flex w-fit flex-wrap gap-2 rounded-full border p-1.5 ${isDark ? "border-paper/12 bg-black/24" : "border-ink/10 bg-ink/5"}`}>
+          <div className="grid gap-6 px-5 py-5 sm:px-8 sm:py-8 xl:grid-cols-[260px_minmax(0,1fr)_390px]">
+            <aside className="rounded-[28px] border border-slate-200 bg-[#f8faf8] p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Navigation</p>
+              <div className="mt-4 grid gap-2">
                 {([
-                  { id: "active", label: `Active (${activeProjects.length})` },
-                  { id: "done", label: `Done (${doneProjects.length})` },
-                  { id: "all", label: `All (${allProjects.length})` },
+                  { id: "active", label: `Active projects`, count: activeProjects.length },
+                  { id: "done", label: `Completed`, count: doneProjects.length },
+                  { id: "all", label: `All tracked`, count: initialProjects.length },
                 ] as const).map((tab) => {
-                  const isActive = activeTab === tab.id;
+                  const active = activeTab === tab.id;
 
                   return (
                     <button
-                      className={`rounded-full px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] transition ${
-                        isActive
-                          ? "bg-accent text-white shadow-[0_0_24px_rgba(20,92,255,0.22)]"
-                          : isDark
-                            ? "text-paper/60 hover:bg-white/6 hover:text-paper"
-                            : "text-ink/62 hover:bg-ink/6 hover:text-ink"
+                      className={`flex items-center justify-between rounded-2xl px-4 py-3 text-left text-sm transition ${
+                        active
+                          ? "bg-slate-900 text-white shadow-[0_14px_32px_rgba(15,23,42,0.18)]"
+                          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                       }`}
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       type="button"
                     >
-                      {tab.label}
+                      <span className="font-medium">{tab.label}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-xs ${active ? "bg-white/10 text-white" : "bg-slate-100 text-slate-600"}`}>
+                        {tab.count}
+                      </span>
                     </button>
                   );
                 })}
               </div>
 
-              <button
-                className="rounded-full border border-paper/16 bg-paper px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink transition hover:bg-white"
-                onClick={() => setEditorProjectId("new")}
-                type="button"
-              >
-                Create new WG project
-              </button>
-            </div>
+              <div className="mt-5 rounded-[24px] border border-slate-200 bg-white p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Current focus</p>
+                <p className="mt-3 text-base font-semibold text-slate-900">
+                  {selectedProject ? selectedProject.title : "Choose a project"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Use the workspace to coordinate budgets, buying lists, and implementation readiness without exposing private WG data.
+                </p>
+              </div>
+            </aside>
 
-            <div className="mt-8">
-              {visibleProjects.length ? (
-                <div className="grid gap-5 xl:grid-cols-2">
-                  {visibleProjects.map((project) => (
+            <section className="min-w-0">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Project board</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                    {activeTab === "done" ? "Completed work" : activeTab === "all" ? "All WG projects" : "Active WG projects"}
+                  </h2>
+                </div>
+
+                <button
+                  className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                  onClick={() => setEditorProjectId("new")}
+                  type="button"
+                >
+                  Create project
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {visibleProjects.length ? (
+                  visibleProjects.map((project) => (
                     <ProjectCard
-                      isDark={isDark}
                       key={project.id}
                       onEdit={() => setEditorProjectId(project.id)}
-                      onViewDetails={() => setDetailsProjectId(project.id)}
+                      onSelect={() => setSelectedProjectId(project.id)}
                       project={project}
+                      selected={selectedProject?.id === project.id}
                     />
-                  ))}
-                </div>
-              ) : (
-                <div className={`rounded-[1.8rem] border p-8 text-center ${isDark ? "border-paper/12 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-                  <p className="font-display text-3xl leading-none">No projects in this view</p>
-                  <p className={isDark ? "mt-4 text-sm leading-7 text-paper/64" : "mt-4 text-sm leading-7 text-ink/64"}>
-                    Switch tabs or create a new WG project to start tracking shared work, budgets, and implementation tasks.
-                  </p>
-                </div>
-              )}
+                  ))
+                ) : (
+                  <EmptyState tabLabel={activeTab === "done" ? "Done" : activeTab === "all" ? "All projects" : "Active"} />
+                )}
+              </div>
+            </section>
+
+            <div className="xl:sticky xl:top-6 xl:self-start">
+              <ProjectDetailPanel project={selectedProject} />
             </div>
           </div>
 
-          <aside className={`rounded-[2.2rem] border p-6 ${isDark ? "border-paper/12 bg-white/[0.045] text-paper" : "border-ink/12 bg-white/75 text-ink"}`}>
-            <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.2em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.2em] text-ink/46"}>
-              Route and access
-            </p>
-            <p className="mt-4 text-sm leading-7">{pathLabel}</p>
-            <p className={isDark ? "mt-4 text-sm leading-7 text-paper/64" : "mt-4 text-sm leading-7 text-ink/64"}>
-              This module relies on the platform access rules before any dashboard data is loaded. The dashboard UI is only a visual layer on top of that protected route.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                className={`inline-flex rounded-full border px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] transition ${
-                  isDark ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6" : "border-ink/14 text-ink hover:border-ink/40 hover:bg-ink/5"
-                }`}
-                href={backHref}
-              >
-                {backLabel}
-              </Link>
+          <div className="border-t border-slate-200 bg-[#f7faf8] px-5 py-4 sm:px-8">
+            <div className="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+              <p>Standalone WG workspace under the existing access-controlled platform.</p>
+              <p>Project route: /shared/wg-project-dashboard</p>
             </div>
-
-            <div className={`mt-8 rounded-[1.5rem] border p-4 ${isDark ? "border-paper/12 bg-black/18" : "border-ink/10 bg-ink/5"}`}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Current stage guide
-              </p>
-              <div className="mt-4 space-y-4">
-                {WG_PROJECT_STAGE_OPTIONS.map((option) => (
-                  <div key={option.value}>
-                    <p className="text-sm">{option.label}</p>
-                    <p className={isDark ? "mt-1 text-xs leading-6 text-paper/58" : "mt-1 text-xs leading-6 text-ink/58"}>
-                      {option.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
-        </div>
+          </div>
+        </section>
       </div>
 
-      <ProjectDetailsDialog
-        isDark={isDark}
-        isOpen={Boolean(selectedProject)}
-        onClose={() => setDetailsProjectId(null)}
-        onEdit={() => {
-          if (selectedProject) {
-            setEditorProjectId(selectedProject.id);
-            setDetailsProjectId(null);
-          }
-        }}
-        project={selectedProject}
-      />
-
       <ProjectEditorDialog
-        key={editorProjectId ?? "editor-closed"}
-        isDark={isDark}
         isOpen={editorProjectId !== null}
+        key={editorProjectId ?? "editor-closed"}
         onClose={() => setEditorProjectId(null)}
         project={editorProjectId === "new" ? null : editingProject}
       />
-    </section>
+    </main>
   );
 }

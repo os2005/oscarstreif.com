@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "llm-wiki:process": "node scripts/llm-wiki-process-local.mjs",
+    "llm-wiki:pull-vps-inbox": "node scripts/llm-wiki-pull-vps-inbox.mjs",
+    "llm-wiki:sync-obsidian": "node scripts/llm-wiki-sync-obsidian.mjs",
     "start": "next start",
     "lint": "eslint ."
   },

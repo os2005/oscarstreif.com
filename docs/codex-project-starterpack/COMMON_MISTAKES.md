@@ -6,6 +6,9 @@ Future Codex sessions should avoid all of the following:
 - Do not create a second auth system.
 - Do not create a second project registry or parallel platform.
 - Do not bypass `/shared/[slug]`.
+- Do not wrap project modules in the oscarstreif.com Header, navigation, PageShell, ProjectShowcase, or grain overlay.
+- Do not render project-specific pages as branded oscarstreif.com showcase pages.
+- Do not add platform back buttons inside modules; use the injected project exit button.
 - Do not point `Visit` directly at an external URL.
 - Do not expose a module without a matching JSON project record.
 - Do not add Prisma, Drizzle, Supabase, or a database layer unless explicitly requested.

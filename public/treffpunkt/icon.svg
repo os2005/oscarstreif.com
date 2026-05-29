@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Hoodometer Karlsruhe Icon">
+  <rect width="512" height="512" rx="112" fill="#111111"/>
+  <circle cx="256" cy="256" r="142" fill="#f4f1ea" opacity="0.98"/>
+  <circle cx="256" cy="256" r="54" fill="#0e7a43"/>
+  <circle cx="145" cy="174" r="28" fill="#111111"/>
+  <circle cx="360" cy="171" r="28" fill="#111111"/>
+  <circle cx="161" cy="360" r="28" fill="#111111"/>
+  <circle cx="363" cy="354" r="28" fill="#111111"/>
+  <path d="M168 190 238 238M339 190 277 238M180 344 238 276M344 338 277 276" stroke="#111111" stroke-width="22" stroke-linecap="round" opacity="0.62"/>
+</svg>

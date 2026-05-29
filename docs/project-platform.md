@@ -1,6 +1,6 @@
 # Project Platform
 
-This codebase uses a two-layer project platform built into the existing Next.js app.
+This codebase uses a two-layer project platform inside the existing Next.js app.
 
 For future Codex project work, start with `docs/codex-project-starterpack/START_HERE.md`.
 
@@ -32,13 +32,14 @@ This record controls runtime configuration such as:
 
 Stored in code under `projects/<slug>/`.
 
-This module controls the internal rendered project experience, for example:
+This module controls the standalone rendered project website. It owns visible design decisions such as:
 
-- custom shared page UI
+- project-specific header and layout
+- typography, colors and visual language
+- project-specific interactions
 - optional future project-specific admin panel
-- optional future server/data adapters
+- optional server/data adapters
 - module documentation
-- project data namespace guidance
 
 The current type lives in:
 
@@ -52,20 +53,25 @@ The registry lives in:
 
 `/shared/[slug]` is the canonical project delivery route.
 
+The route is platform infrastructure, but it should not render the oscarstreif.com website shell around project content.
+
 Resolution order:
 
 1. Load the JSON project record from `lib/projects.ts`
 2. Enforce access server-side with `lib/project-access.ts`
-3. If `externalRedirectUrl` exists, render `components/ProjectRedirectScreen.tsx`
+3. If `externalRedirectUrl` exists, render the existing redirect handoff without the main site header
 4. Else resolve a registered project module by slug
-5. If a module exists, render its `SharedPage`
-6. Else render the generic fallback `components/ProjectShowcase.tsx`
+5. If a module exists, render its `SharedPage` as a standalone project site
+6. Add the global project exit button as the only visible platform UI
+7. If no module exists, show a neutral missing-module page to admins or `notFound()` for other users
 
 Important:
 
 - A project module alone is not public.
 - A JSON project record must exist and be active.
 - Access is controlled by the runtime project record, not by the module itself.
+- Project modules receive infrastructure data (`project`, `viewer`) but not main-site design props.
+- Project pages must not show the Oscar Streif header, main navigation, `PageShell`, `ProjectShowcase`, or grain overlay.
 
 ## 3. Access control
 
@@ -80,29 +86,48 @@ Access rules are enforced server-side in `lib/project-access.ts`.
 
 ## 4. External redirects
 
-All project visits should go through `/shared/[slug]`.
+All project visits should still go through `/shared/[slug]`.
 
 If `externalRedirectUrl` is set:
 
-- `/shared/[slug]` renders `components/ProjectRedirectScreen.tsx`
-- the page performs the branded redirect
+- `/shared/[slug]` renders the redirect handoff
+- the page performs the redirect
 - only `http` and `https` URLs are accepted
 - values like `example.com` are normalized to `https://example.com`
 
 If no external redirect exists:
 
-- the project renders internally through a module or the generic showcase fallback
+- the project renders internally through a registered standalone module
 
-## 5. How to add a new internal project module
+## 5. Project exit button
+
+The platform injects `components/ProjectExitButton.tsx` on internally rendered project pages.
+
+Behavior:
+
+- fixed bottom-right
+- first click arms the button
+- second click returns to the matching overview
+- Escape disarms the button
+
+Return targets:
+
+- `private` project: `/private`
+- `shared` project: `/shared`
+- `open` project: `/projects`
+
+Project modules should not render their own platform back button.
+
+## 6. How to add a new internal project module
 
 1. Copy `projects/_template/` to `projects/<slug>/`
-2. Implement `SharedPage.tsx`
+2. Implement `SharedPage.tsx` as a standalone project website
 3. Update `module.ts`
 4. Register the module in `lib/project-modules/registry.ts`
 5. Create the matching project record in the Private Workspace
 6. Set visibility, status and shared access in the Private Workspace
 
-## 6. Frontend-only project example
+## 7. Frontend-only project example
 
 Minimal module:
 
@@ -117,7 +142,7 @@ export const myToolProjectModule: ProjectModuleDefinition = {
 };
 ```
 
-## 7. Project with custom admin panel
+## 8. Project with custom admin panel
 
 If a project later needs project-specific admin controls, add:
 
@@ -130,7 +155,7 @@ Important:
 - `AdminPanel` is part of the extension contract, but it is not currently rendered inside the Private Workspace.
 - The shared platform fields should stay in the main project record. Project-specific controls should only handle module-specific behavior once that extension point is wired live.
 
-## 8. Project-specific data isolation
+## 9. Project-specific data isolation
 
 Do not put project-specific business data into the central project metadata object.
 
@@ -142,7 +167,7 @@ or
 
 Keep data namespaced by slug so projects cannot interfere with each other.
 
-## 9. Future database migration path
+## 10. Future database migration path
 
 When this platform moves to a real database, keep this split:
 
@@ -162,7 +187,7 @@ Project-specific tables:
 
 The current module boundary is designed so that JSON persistence can later be replaced without changing project route structure.
 
-## 10. Future Codex prompt guidance
+## 11. Future Codex prompt guidance
 
 When adding a new project with Codex, the prompt should explicitly say:
 
@@ -170,5 +195,6 @@ When adding a new project with Codex, the prompt should explicitly say:
 - register the module in the central registry
 - keep runtime config in the JSON project record
 - do not create parallel project routing or duplicate CRUD logic
-- keep `/shared/[slug]` as the canonical route
+- keep `/shared/[slug]` as the canonical delivery route
+- render the module as a standalone project website, not inside the oscarstreif.com shell
 - isolate project-specific data by slug

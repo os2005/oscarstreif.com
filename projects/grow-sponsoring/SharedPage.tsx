@@ -1,87 +1,88 @@
 /* eslint-disable @next/next/no-img-element */
 
-import Link from "next/link";
 import type { ProjectModuleSharedPageProps } from "@/lib/project-modules/types";
 
-export function GrowSponsoringSharedPage({
-  backHref,
-  backLabel,
-  isDark,
-  pathLabel,
-  project,
-  viewer,
-}: ProjectModuleSharedPageProps) {
-  const surface = isDark ? "border-paper/12 bg-white/[0.045] text-paper" : "border-ink/12 bg-white/70 text-ink";
-  const muted = isDark ? "text-paper/68" : "text-ink/68";
-  const pill = isDark ? "border-paper/14 text-paper/56" : "border-ink/12 text-ink/54";
-  const secondaryButton = isDark
-    ? "border-paper/16 text-paper hover:border-paper/40 hover:bg-white/6"
-    : "border-ink/14 text-ink hover:border-accent/40 hover:bg-accent/5";
-
+export function GrowSponsoringSharedPage({ project, viewer }: ProjectModuleSharedPageProps) {
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 pb-24 pt-14 md:px-8 md:pt-20">
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className={`rounded-[2.2rem] border p-8 md:p-10 ${surface}`}>
-          <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.22em] text-ink/46"}>
-            Internal project module
-          </p>
-          <h1 className="mt-5 max-w-4xl font-display text-[clamp(3.5rem,8vw,6.5rem)] leading-[0.92]">
-            {project.title}
-          </h1>
-          <p className={`mt-6 max-w-3xl text-lg leading-8 ${muted}`}>{project.description}</p>
+    <main
+      className="min-h-dvh bg-[#f6f1e5] text-[#172018]"
+      style={{
+        fontFamily:
+          "Aptos, 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
+      <header className="border-b border-[#172018]/10 bg-[#fbf7ed]/84 px-5 py-4 backdrop-blur md:px-8">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#172018] text-sm font-black text-[#d7ff71]">
+              GS
+            </span>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#65705f]">Sponsor cockpit</p>
+              <p className="text-base font-black tracking-tight">{project.title}</p>
+            </div>
+          </div>
+          <div className="hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#65705f] sm:flex">
+            <span>{project.visibility}</span>
+            <span className="h-1 w-1 rounded-full bg-[#9aaa91]" />
+            <span>{viewer?.email ?? "authorized"}</span>
+          </div>
+        </nav>
+      </header>
 
-          <div className="mt-8 flex flex-wrap gap-2">
-            <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${pill}`}>
-              {project.visibility}
-            </span>
-            <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${pill}`}>
-              {project.status}
-            </span>
-            {project.tags.map((tag) => (
-              <span className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${pill}`} key={tag}>
-                {tag}
-              </span>
-            ))}
+      <section className="mx-auto grid min-h-[calc(100dvh-73px)] w-full max-w-7xl gap-8 px-5 py-8 md:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-stretch">
+        <div className="flex flex-col justify-between rounded-[30px] bg-[#172018] p-6 text-white shadow-[0_28px_80px_rgba(23,32,24,0.18)] md:p-9">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#d7ff71]">Partnership operations</p>
+            <h1 className="mt-5 max-w-3xl text-[clamp(3rem,7vw,6.5rem)] font-black leading-[0.88] tracking-tight">
+              Sponsor work without the fog.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 md:text-lg">{project.description}</p>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            <article className={isDark ? "rounded-[1.6rem] border border-paper/10 bg-black/18 p-5" : "rounded-[1.6rem] border border-ink/10 bg-paper/70 p-5"}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Relationship flow
-              </p>
-              <p className={`mt-4 text-sm leading-7 ${muted}`}>
-                This module is the project-specific surface for sponsor pipeline context, materials and next-step clarity.
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            {[
+              ["24", "active leads"],
+              ["7", "warm intros"],
+              ["3", "decks updated"],
+            ].map(([value, label]) => (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4" key={label}>
+                <p className="text-3xl font-black text-[#d7ff71]">{value}</p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-white/48">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-5">
+          {project.previewImage ? (
+            <img
+              alt={`${project.title} preview`}
+              className="min-h-[260px] w-full rounded-[30px] object-cover shadow-[0_24px_70px_rgba(23,32,24,0.12)]"
+              src={project.previewImage}
+            />
+          ) : null}
+
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-1">
+            <article className="rounded-[26px] border border-[#172018]/10 bg-white/72 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#6f7b64]">Relationship flow</p>
+              <h2 className="mt-4 text-2xl font-black tracking-tight">Next move first.</h2>
+              <p className="mt-3 text-sm leading-7 text-[#4e5b4a]">
+                Every sponsor card should answer one question immediately: wait, follow up, ask for an intro, or send
+                material.
               </p>
             </article>
-            <article className={isDark ? "rounded-[1.6rem] border border-paper/10 bg-black/18 p-5" : "rounded-[1.6rem] border border-ink/10 bg-paper/70 p-5"}>
-              <p className={isDark ? "font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46" : "font-mono text-[10px] uppercase tracking-[0.18em] text-ink/46"}>
-                Shared access
-              </p>
-              <p className={`mt-4 text-sm leading-7 ${muted}`}>
-                {viewer ? `This visit is resolved for ${viewer.email}.` : "This project is currently being viewed through the shared project route."}
+
+            <article className="rounded-[26px] border border-[#172018]/10 bg-white/72 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#6f7b64]">Material readiness</p>
+              <h2 className="mt-4 text-2xl font-black tracking-tight">Pitch assets stay close.</h2>
+              <p className="mt-3 text-sm leading-7 text-[#4e5b4a]">
+                Tags, notes, deck status and context live in one sponsor surface instead of scattered message threads.
               </p>
             </article>
           </div>
         </div>
-
-        <aside className={`rounded-[2.2rem] border p-6 ${surface}`}>
-          <p className={isDark ? "font-mono text-[11px] uppercase tracking-[0.2em] text-paper/46" : "font-mono text-[11px] uppercase tracking-[0.2em] text-ink/46"}>
-            Module registry
-          </p>
-          <p className="mt-4 text-sm leading-7">{pathLabel}</p>
-          <div className="mt-6 space-y-3">
-            <Link
-              className={`inline-flex rounded-full border px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] transition ${secondaryButton}`}
-              href={backHref}
-            >
-              {backLabel}
-            </Link>
-          </div>
-          {project.previewImage ? (
-            <img alt={`${project.title} preview`} className="mt-8 rounded-[1.5rem] border border-paper/10 object-cover" src={project.previewImage} />
-          ) : null}
-        </aside>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }

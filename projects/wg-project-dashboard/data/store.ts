@@ -274,11 +274,12 @@ function normalizeProject(project: Partial<WgDashboardProject>): WgDashboardProj
 }
 
 function normalizeStore(store: Partial<WgDashboardStore>): WgDashboardStore {
-  const normalizedProjects = Array.isArray(store.projects) ? store.projects.map(normalizeProject) : [];
+  const projects = Array.isArray(store.projects) ? store.projects : null;
+  const normalizedProjects = projects ? projects.map(normalizeProject) : [];
 
   return {
     storeVersion: STORE_VERSION,
-    projects: normalizedProjects.length ? normalizedProjects : createDefaultProjects(),
+    projects: projects ? normalizedProjects : createDefaultProjects(),
   };
 }
 

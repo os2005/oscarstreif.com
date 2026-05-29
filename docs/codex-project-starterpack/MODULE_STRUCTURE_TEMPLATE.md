@@ -65,14 +65,18 @@ Typical fields:
 
 `SharedPage.tsx` receives:
 
-- `backHref`
-- `backLabel`
-- `isDark`
-- `pathLabel`
 - `project`
 - `viewer`
 
-It should render the internal project experience for `/shared/[slug]`.
+It should render the standalone project website delivered through `/shared/[slug]`.
+
+It owns visible project design:
+
+- project header
+- layout
+- colors
+- typography
+- interactions
 
 It should not:
 
@@ -80,6 +84,8 @@ It should not:
 - fetch unrelated platform data
 - assume it is public unless the platform already allowed access
 - replace the platform redirect logic
+- import or render the oscarstreif.com Header, PageShell, ProjectShowcase, main navigation or grain overlay
+- render a platform back button; the platform injects the shared project exit button
 
 ## Registration
 
@@ -111,7 +117,7 @@ export const exampleProjectModule: ProjectModuleDefinition = {
 import type { ProjectModuleSharedPageProps } from "@/lib/project-modules/types";
 
 export function ExampleSharedPage({ project }: ProjectModuleSharedPageProps) {
-  return <section>{project.title}</section>;
+  return <main className="min-h-dvh">{project.title}</main>;
 }
 ```
 
