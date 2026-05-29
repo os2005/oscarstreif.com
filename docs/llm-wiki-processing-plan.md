@@ -342,6 +342,8 @@ Der Run aktualisiert außerdem den generierten Catalog in `wiki/index.md` und sc
 
 Voice-Transkription, AI-Synthese, Obsidian-Mirror und Website-Veröffentlichung bleiben spätere Schritte.
 
+Kostenlose Voice-Transkription soll später lokal erfolgen, nicht serverseitig und nicht über einen verpflichtenden API-Key. Geeignete Kandidaten sind Whisper, Faster-Whisper oder whisper.cpp, idealerweise mit `ffmpeg` als Audio-Normalisierungsschritt. Bis diese lokale Transkriptionskette explizit eingerichtet ist, bleiben Voice-Items reviewbar und werden nicht als Fehler behandelt.
+
 ## 11. Obsidian One-Way Mirror
 
 Der optionale Obsidian-Mirror wird mit einem separaten lokalen Befehl gesteuert:

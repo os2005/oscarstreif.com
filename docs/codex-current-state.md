@@ -48,6 +48,9 @@ End-to-end live-to-local flow passed after deploy: remote pending was detected, 
 
 Windows VPS inbox pull is fixed on branch `fix/llm-wiki-windows-vps-pull`: `--transport auto|scp|rsync` is supported, and Windows auto mode prefers `scp`.
 
+## Ingest command state
+`ingest all` is added on branch `feature/llm-wiki-ingest-all-command` as a Codex shortcut backed by `npm.cmd run llm-wiki:ingest-all`. The npm command runs the deterministic technical pipeline only; Codex performs the AI organization pass locally when the shortcut is used.
+
 ## Final human decisions before merge
 - Confirm CV placeholder is acceptable for production.
 - Confirm public Treffpunkt POST API without auth/rate limit/cleanup is acceptable for first deploy, or decide to harden before merge.
