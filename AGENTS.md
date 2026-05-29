@@ -90,3 +90,26 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
   - Whether git is clean and synced
 - If a task updates state docs, summarize the relevant state in the final report.
 - If ChatGPT needs deeper context later, tell the user to paste only `docs/codex-current-state.md`, not both.
+
+## User shortcuts
+If the user writes exactly or approximately:
+
+`ingest all`
+
+then execute the playbook:
+
+`docs/codex-playbooks/ingest-all.md`
+
+Meaning:
+- Pull VPS pending inbox.
+- Process local pending items.
+- Run AI organization pass over new sources.
+- Update action tracker, decision log, open loops.
+- Sync Obsidian mirror.
+- Report concise summary only.
+- Do not deploy.
+- Do not publish private content.
+
+Optional shortcuts:
+- `ingest quick` = run technical pipeline only, no deep AI organization.
+- `ingest deep` = run technical pipeline plus deeper wiki synthesis.
