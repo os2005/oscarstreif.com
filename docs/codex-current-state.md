@@ -31,12 +31,18 @@ Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe i
 - CV is placeholder.
 - Do not deploy before manual checks.
 
-## Remaining manual checks
-1. WG dashboard local Project Record
-2. Treffpunkt dummy POST/GET
-3. `/private/llm-wiki` redirect/admin gate
-4. `/cv` placeholder confirmation
-5. Reset `next-env.d.ts` if dev server flips it
+## Latest smoke result
+Local smoke checks passed:
+- WG dashboard route no longer 404 after runtime-only local Project Record.
+- Treffpunkt dummy POST/GET passed.
+- `/private/llm-wiki` redirects to login without auth.
+- `/cv` loads with placeholder.
+- `next-env.d.ts` was reset after dev-server flip.
+- Git status clean and synced with origin.
 
-## Next efficient step
-Reset/normalize `next-env.d.ts`, then run only targeted manual checks.
+## Final human decisions before merge
+- Confirm CV placeholder is acceptable for production.
+- Confirm public Treffpunkt POST API without auth/rate limit/cleanup is acceptable for first deploy, or decide to harden before merge.
+
+## Recommended next step
+If both final human decisions are accepted: mark Draft PR ready for review, merge into `main`, then deploy carefully.
