@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { processPendingInboxAction, submitInboxItemAction } from "./server/actions";
+import { processPendingInboxAction, runWikiLintAction, submitInboxItemAction } from "./server/actions";
 import type { InboxItemSummary, InboxSnapshot } from "./server/wiki-store";
 
 type LlmWikiIngestWorkspaceProps = {
@@ -203,6 +203,20 @@ function VoiceCapture() {
   );
 }
 
+function MaintenancePanel() {
+  return (
+    <form action={runWikiLintAction} className="space-y-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/38">Maintenance</p>
+      <button
+        className="w-full border border-amber-300/30 bg-amber-300/10 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-amber-50 transition hover:bg-amber-300/16"
+        type="submit"
+      >
+        Run Lint
+      </button>
+    </form>
+  );
+}
+
 export function LlmWikiIngestWorkspace({ inbox }: LlmWikiIngestWorkspaceProps) {
   const [filename, setFilename] = useState<string | null>(null);
 
@@ -289,6 +303,10 @@ export function LlmWikiIngestWorkspace({ inbox }: LlmWikiIngestWorkspaceProps) {
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-paper/34">Processed</p>
               <p className="mt-1 text-2xl text-paper">{inbox.processedCount}</p>
             </div>
+          </section>
+
+          <section className="border border-paper/10 bg-black/20 p-4">
+            <MaintenancePanel />
           </section>
         </aside>
       </div>

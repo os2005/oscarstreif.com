@@ -18,6 +18,8 @@ Default handoff is the Codex final chat report only. The user does not need to p
 ## Current task
 P-LLMWIKI-043 is redesigning the private LLM-Wiki View workspace. The View page keeps the Ingest/View switch but removes embedded ingest/capture controls from the View, moves browsing/search/pages into a clearer workspace, and opens selected wiki entries in a large modal with the existing markdown edit/save flow preserved where supported.
 
+Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
+
 ## Completed
 - LLM-Wiki architecture docs
 - Local processing dry-run
