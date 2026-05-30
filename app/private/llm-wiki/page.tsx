@@ -10,6 +10,8 @@ export const metadata = {
   title: "LLM Wiki",
 };
 
+const LLM_WIKI_UI_VERSION = "view-redesign-2026-05-30";
+
 type LlmWikiPageProps = {
   searchParams: Promise<{
     file?: string;
@@ -34,7 +36,7 @@ export default async function LlmWikiPage({ searchParams }: LlmWikiPageProps) {
   const isWikiView = params.view === "wiki";
 
   return (
-    <main className="min-h-dvh bg-ink text-paper">
+    <main className="min-h-dvh bg-ink text-paper" data-llm-wiki-ui-version={LLM_WIKI_UI_VERSION}>
       <Header variant="dark" />
       {isWikiView ? (
         <LlmWikiWorkspace openEntryInModal={Boolean(params.file || params.kind)} snapshot={getWikiSnapshot(params)} />
