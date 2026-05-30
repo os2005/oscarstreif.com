@@ -41,6 +41,8 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Read only the files needed for the task.
 - Use `rg`/targeted file reads instead of broad tree scans.
 - Do not paste long file contents into reports.
+- Before LLM Wiki tasks, quickly scan `docs/codex-lessons-learned.md` for relevant known failure patterns.
+- After a task, append a concise lesson to `docs/codex-lessons-learned.md` only when a non-obvious reusable bug/root cause was found.
 - Report concise summaries.
 - Before commits, always check `git status` and ensure `.local-data/` and secrets are not staged.
 - If a task is only review/diagnosis, do not modify files.

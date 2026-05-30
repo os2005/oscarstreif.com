@@ -1,13 +1,14 @@
 # Current Codex State
 
 ## Branch
-`feature/llm-wiki-view-redesign`
+`main`
 
 ## PR status
-Draft PR exists manually on GitHub. Do not merge yet.
+LLM Wiki UI redesign and modal polish are merged to `main` and deployed.
 
 ## Codex workflow
 Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe issues, including generated-file resets, docs updates and ignored runtime-only local test records.
+Reusable project lessons live in `docs/codex-lessons-learned.md`. Scan it before LLM Wiki tasks and append concise lessons when a non-obvious reusable root cause is found.
 
 ## Handoff rule
 Default handoff is the Codex final chat report only. The user does not need to paste this file after every run. This file is only for recovery/resume if context is lost.
@@ -16,11 +17,13 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-043 is redesigning the private LLM-Wiki View workspace. The View page keeps the Ingest/View switch but removes embedded ingest/capture controls from the View, moves browsing/search/pages into a clearer workspace, and opens selected wiki entries in a large modal with the existing markdown edit/save flow preserved where supported.
+P-LLMWIKI-CODEX-LESSONS-044 is adding a lightweight lessons-learned system for recurring Codex/project mistakes.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
 Modal polish follow-up enlarged the LLM Wiki page-opening modal, made read/edit text colors explicit for the dark UI, added useful Copy Path / Copy Content / Edit / Cancel / Save / Close actions, and kept the queryparam modal route plus removed View-clutter rules intact.
+
+Lessons file follow-up records reusable fixes for stale production deploys, View/Ingest separation, and dark modal readability issues.
 
 ## Completed
 - LLM-Wiki architecture docs
