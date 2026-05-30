@@ -1,7 +1,7 @@
 # Current Codex State
 
 ## Branch
-`llm-wiki-upload-system`
+`feature/llm-wiki-view-redesign`
 
 ## PR status
 Draft PR exists manually on GitHub. Do not merge yet.
@@ -14,6 +14,9 @@ Default handoff is the Codex final chat report only. The user does not need to p
 
 ## Current issue
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
+
+## Current task
+P-LLMWIKI-043 is redesigning the private LLM-Wiki View workspace. The View page keeps the Ingest/View switch but removes embedded ingest/capture controls from the View, moves browsing/search/pages into a clearer workspace, and opens selected wiki entries in a large modal with the existing markdown edit/save flow preserved where supported.
 
 ## Completed
 - LLM-Wiki architecture docs

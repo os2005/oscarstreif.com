@@ -2,18 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
-import {
-  addRawSourceAction,
-  createWikiPageAction,
-  runWikiLintAction,
-  saveWikiEntryAction,
-} from "./server/actions";
+import { saveWikiEntryAction } from "./server/actions";
 import type { WikiFileSummary, WikiGraphNode, WikiSnapshot } from "./server/wiki-store";
 
 type LlmWikiWorkspaceProps = {
+  openEntryInModal: boolean;
   snapshot: WikiSnapshot;
 };
 
@@ -1041,235 +1037,106 @@ function KnowledgeWeb({ snapshot }: { snapshot: WikiSnapshot }) {
   );
 }
 
-function NewPageForm() {
-  return (
-    <form action={createWikiPageAction} className="space-y-3">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">New Page</h2>
-      <input
-        className="w-full border border-paper/12 bg-black/30 px-3 py-2 text-sm text-paper outline-none focus:border-paper/36"
-        name="title"
-        placeholder="Title"
-        type="text"
-      />
-      <input
-        className="w-full border border-paper/12 bg-black/30 px-3 py-2 font-mono text-xs text-paper outline-none focus:border-paper/36"
-        name="filePath"
-        placeholder="topics/example.md"
-        type="text"
-      />
-      <textarea
-        className="min-h-32 w-full resize-y border border-paper/12 bg-black/30 px-3 py-2 font-mono text-xs leading-6 text-paper outline-none focus:border-paper/36"
-        name="content"
-        placeholder="# Title"
-      />
-      <button
-        className="w-full border border-paper/16 bg-paper px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
-        type="submit"
-      >
-        Create Page
-      </button>
-    </form>
-  );
-}
+function SelectedEntryDialog({
+  open,
+  query,
+  selected,
+  wikiPaths,
+}: {
+  open: boolean;
+  query: string;
+  selected: WikiSnapshot["selected"];
+  wikiPaths: Set<string>;
+}) {
+  const router = useRouter();
+  const portalTarget = typeof document === "undefined" ? null : document.body;
 
-function RecordingCapture() {
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
-  const [recording, setRecording] = useState<{
-    blob: Blob;
-    durationSeconds: number;
-    title: string;
-    url: string;
-  } | null>(null);
-  const isRecording = recorder?.state === "recording";
+  useEffect(() => {
+    if (!open) return;
 
-  async function startRecording() {
-    setError(null);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setError("Audio recording is not available in this browser.");
-      return;
-    }
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const nextRecorder = new MediaRecorder(stream);
-      const startTime = Date.now();
-      chunksRef.current = [];
-      streamRef.current = stream;
-
-      nextRecorder.addEventListener("dataavailable", (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      });
-
-      nextRecorder.addEventListener("stop", () => {
-        const blob = new Blob(chunksRef.current, { type: nextRecorder.mimeType || "audio/webm" });
-        const durationSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000));
-        const created = new Date();
-        const title = `Voice Capture ${created.toLocaleString("de-DE", {
-          dateStyle: "short",
-          timeStyle: "short",
-        })}`;
-
-        stream.getTracks().forEach((track) => track.stop());
-        setRecording({
-          blob,
-          durationSeconds,
-          title,
-          url: URL.createObjectURL(blob),
-        });
-        setRecorder(null);
-      });
-
-      nextRecorder.start();
-      setRecorder(nextRecorder);
-    } catch {
-      setError("Microphone access was denied or failed.");
-    }
+  function closeDialog() {
+    const params = new URLSearchParams();
+    params.set("view", "wiki");
+    if (query) params.set("q", query);
+    router.push(`/private/llm-wiki?${params.toString()}`);
   }
 
-  function stopRecording() {
-    if (recorder?.state === "recording") {
-      recorder.stop();
-    }
-  }
+  if (!open || !portalTarget) return null;
 
-  function discardRecording() {
-    if (recording?.url) {
-      URL.revokeObjectURL(recording.url);
-    }
-
-    setRecording(null);
-    setError(null);
-  }
-
-  function uploadRecording() {
-    if (!recording) return;
-
-    const created = new Date();
-    const stamp = created.toISOString().replace(/[:.]/g, "-");
-    const formData = new FormData();
-    const file = new File([recording.blob], `voice-${stamp}.webm`, {
-      type: recording.blob.type || "audio/webm",
-    });
-
-    formData.set("title", recording.title);
-    formData.set("sourcePath", `voice/voice-${stamp}.webm`);
-    formData.set("sourceFile", file);
-    formData.set("sourceText", `Voice recording, ${recording.durationSeconds} seconds. Transcription pending.`);
-
-    startTransition(() => {
-      void addRawSourceAction(formData);
-    });
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <button
-          className={cx(
-            "flex-1 border px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] transition",
-            isRecording
-              ? "border-red-300/40 bg-red-400/12 text-red-50"
-              : "border-sky-300/30 bg-sky-300/10 text-sky-50 hover:bg-sky-300/16"
-          )}
-          onClick={isRecording ? stopRecording : startRecording}
-          type="button"
-        >
-          {isRecording ? "Stop Recording" : "Record"}
-        </button>
-        {recording ? (
-          <button
-            className="border border-paper/12 px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/56 hover:bg-white/6"
-            onClick={discardRecording}
-            type="button"
-          >
-            Clear
-          </button>
-        ) : null}
-      </div>
-      {recording ? (
-        <div className="border border-paper/10 bg-black/24 p-3">
-          <audio className="w-full" controls src={recording.url} />
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/42">
-            {recording.durationSeconds}s ready
-          </p>
-          <button
-            className="mt-3 w-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-300/16 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isPending}
-            onClick={uploadRecording}
-            type="button"
-          >
-            {isPending ? "Uploading..." : "Upload Recording"}
-          </button>
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex bg-black/72 p-2 backdrop-blur-sm md:p-5" role="dialog" aria-modal="true">
+      <div className="mx-auto flex max-h-full w-full max-w-6xl flex-col border border-paper/16 bg-ink shadow-2xl">
+        <div className="flex flex-col gap-3 border-b border-paper/10 bg-black/28 px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5">
+          <div className="min-w-0">
+            <p className="break-all font-mono text-[10px] uppercase tracking-[0.18em] text-paper/42">
+              {selected.kind} / {selected.path}
+            </p>
+            <h2 className="mt-2 break-words font-display text-3xl leading-tight text-paper md:text-4xl">
+              {selected.title}
+            </h2>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="border border-paper/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/48">
+              {formatBytes(selected.content.length)}
+            </span>
+            <button
+              className="border border-paper/16 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/72 transition hover:bg-white/6 hover:text-paper"
+              onClick={closeDialog}
+              type="button"
+            >
+              Close
+            </button>
+          </div>
         </div>
-      ) : null}
-      {error ? <p className="text-xs leading-5 text-red-100">{error}</p> : null}
-    </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
+          <div className="mx-auto max-w-4xl space-y-6">
+            <MarkdownPreview content={selected.content} wikiPaths={wikiPaths} />
+
+            {selected.canEdit && selected.kind !== "raw" ? (
+              <details className="border border-paper/10 bg-black/20">
+                <summary className="cursor-pointer px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/58">
+                  Edit Markdown
+                </summary>
+                <form action={saveWikiEntryAction} className="border-t border-paper/10 p-4">
+                  <input name="kind" type="hidden" value={selected.kind} />
+                  <input name="filePath" type="hidden" value={selected.path} />
+                  <textarea
+                    className="min-h-[50dvh] w-full resize-y border border-paper/12 bg-black/40 px-4 py-3 font-mono text-xs leading-6 text-paper outline-none focus:border-paper/36"
+                    defaultValue={selected.content}
+                    name="content"
+                  />
+                  <button
+                    className="mt-3 border border-paper/16 bg-paper px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
+                    type="submit"
+                  >
+                    Save Markdown
+                  </button>
+                </form>
+              </details>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>,
+    portalTarget
   );
 }
 
-function AddSourceForm() {
-  return (
-    <form action={addRawSourceAction} className="space-y-3" encType="multipart/form-data">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">Add Source</h2>
-      <input
-        className="w-full border border-paper/12 bg-black/30 px-3 py-2 text-sm text-paper outline-none focus:border-paper/36"
-        name="title"
-        placeholder="Source title"
-        type="text"
-      />
-      <input
-        className="w-full border border-paper/12 bg-black/30 px-3 py-2 font-mono text-xs text-paper outline-none focus:border-paper/36"
-        name="sourcePath"
-        placeholder="article-name.md"
-        type="text"
-      />
-      <input
-        className="block w-full border border-paper/12 bg-black/30 px-3 py-2 text-xs text-paper file:mr-3 file:border-0 file:bg-paper file:px-3 file:py-1.5 file:font-mono file:text-[10px] file:uppercase file:tracking-[0.16em] file:text-ink"
-        name="sourceFile"
-        type="file"
-      />
-      <textarea
-        className="min-h-36 w-full resize-y border border-paper/12 bg-black/30 px-3 py-2 font-mono text-xs leading-6 text-paper outline-none focus:border-paper/36"
-        name="sourceText"
-        placeholder="Paste text source"
-      />
-      <button
-        className="w-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-300/16"
-        type="submit"
-      >
-        Queue Source
-      </button>
-    </form>
-  );
-}
-
-function MaintenancePanel() {
-  return (
-    <form action={runWikiLintAction} className="space-y-3">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">Maintenance</h2>
-      <button
-        className="w-full border border-amber-300/30 bg-amber-300/10 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-amber-50 transition hover:bg-amber-300/16"
-        type="submit"
-      >
-        Run Lint
-      </button>
-    </form>
-  );
-}
-
-export function LlmWikiWorkspace({ snapshot }: LlmWikiWorkspaceProps) {
+export function LlmWikiWorkspace({ openEntryInModal, snapshot }: LlmWikiWorkspaceProps) {
   const wikiPaths = new Set(snapshot.files.map((file) => file.path));
   const selected = snapshot.selected;
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-12 pt-6 md:px-8">
+    <section className="mx-auto w-full max-w-[1500px] px-4 pb-12 pt-6 md:px-8">
       <div className="mb-4 flex flex-col gap-4 border border-paper/10 bg-white/[0.045] p-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/42">Private Tool</p>
@@ -1304,122 +1171,77 @@ export function LlmWikiWorkspace({ snapshot }: LlmWikiWorkspaceProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-4">
-          <form action="/private/llm-wiki" className="border border-paper/10 bg-black/20 p-3">
-            <input name="view" type="hidden" value="wiki" />
-            <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52" htmlFor="wiki-search">
-              Search
-            </label>
-            <div className="flex gap-2">
-              <input
-                className="min-w-0 flex-1 border border-paper/12 bg-black/35 px-3 py-2 text-sm text-paper outline-none focus:border-paper/36"
-                defaultValue={snapshot.query}
-                id="wiki-search"
-                name="q"
-                type="search"
-              />
-              <button className="border border-paper/16 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper hover:bg-white/6" type="submit">
-                Go
-              </button>
+      <div className="grid gap-4 xl:grid-cols-[minmax(360px,520px)_minmax(0,1fr)]">
+        <section className="space-y-4">
+          <div className="border border-paper/10 bg-white/[0.04]">
+            <div className="border-b border-paper/10 bg-black/18 px-4 py-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/38">Browse</p>
+              <h2 className="mt-1 font-display text-2xl leading-tight text-paper">Pages</h2>
             </div>
-          </form>
+            <div className="space-y-4 p-3 md:p-4">
+              <form action="/private/llm-wiki" className="space-y-2">
+                <input name="view" type="hidden" value="wiki" />
+                <label className="block font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52" htmlFor="wiki-search">
+                  Search
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    className="min-w-0 flex-1 border border-paper/12 bg-black/35 px-3 py-2 text-sm text-paper outline-none focus:border-paper/36"
+                    defaultValue={snapshot.query}
+                    id="wiki-search"
+                    name="q"
+                    type="search"
+                  />
+                  <button
+                    className="border border-paper/16 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper hover:bg-white/6"
+                    type="submit"
+                  >
+                    Go
+                  </button>
+                </div>
+              </form>
 
-          {snapshot.query ? (
-            <div>
-              <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">Results</h2>
-              <SearchResults results={snapshot.searchResults} />
+              <div className="grid grid-cols-3 gap-2">
+                <Link
+                  className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6"
+                  href="/private/llm-wiki?view=wiki&kind=wiki&file=index.md"
+                >
+                  Index
+                </Link>
+                <Link
+                  className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6"
+                  href="/private/llm-wiki?view=wiki&kind=wiki&file=log.md"
+                >
+                  Log
+                </Link>
+                <Link
+                  className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6"
+                  href="/private/llm-wiki?view=wiki&kind=schema&file=schema.md"
+                >
+                  Schema
+                </Link>
+              </div>
+
+              {snapshot.query ? (
+                <div>
+                  <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">Results</h2>
+                  <SearchResults results={snapshot.searchResults} />
+                </div>
+              ) : null}
             </div>
-          ) : null}
-
-          <div className="grid grid-cols-3 gap-2">
-            <Link className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6" href="/private/llm-wiki?view=wiki&kind=wiki&file=index.md">
-              Index
-            </Link>
-            <Link className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6" href="/private/llm-wiki?view=wiki&kind=wiki&file=log.md">
-              Log
-            </Link>
-            <Link className="border border-paper/10 bg-black/20 px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-paper/68 hover:bg-white/6" href="/private/llm-wiki?view=wiki&kind=schema&file=schema.md">
-              Schema
-            </Link>
           </div>
 
           <GroupedEntries entries={snapshot.files} selected={selected} title="Wiki Pages" />
           <GroupedEntries entries={snapshot.rawFiles} selected={selected} title="Raw Sources" />
-        </aside>
+        </section>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <main className="min-w-0 space-y-4">
-            <ForceDirectedGraph snapshot={snapshot} />
-            <KnowledgeWeb snapshot={snapshot} />
-
-            <article className="border border-paper/10 bg-white/[0.045]">
-              <div className="border-b border-paper/10 bg-black/18 px-4 py-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/38">
-                      {selected.kind} / {selected.path}
-                    </p>
-                    <h2 className="mt-2 truncate font-display text-3xl leading-tight text-paper">{selected.title}</h2>
-                  </div>
-                  <span className="shrink-0 border border-paper/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/48">
-                    {formatBytes(selected.content.length)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-6 p-4 md:p-6">
-                <MarkdownPreview content={selected.content} wikiPaths={wikiPaths} />
-
-                {selected.canEdit && selected.kind !== "raw" ? (
-                  <details className="border border-paper/10 bg-black/20">
-                    <summary className="cursor-pointer px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/58">
-                      Edit Markdown
-                    </summary>
-                    <form action={saveWikiEntryAction} className="border-t border-paper/10 p-4">
-                      <input name="kind" type="hidden" value={selected.kind} />
-                      <input name="filePath" type="hidden" value={selected.path} />
-                      <textarea
-                        className="min-h-[420px] w-full resize-y border border-paper/12 bg-black/40 px-4 py-3 font-mono text-xs leading-6 text-paper outline-none focus:border-paper/36"
-                        defaultValue={selected.content}
-                        name="content"
-                      />
-                      <button
-                        className="mt-3 border border-paper/16 bg-paper px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
-                        type="submit"
-                      >
-                        Save Markdown
-                      </button>
-                    </form>
-                  </details>
-                ) : null}
-              </div>
-            </article>
-          </main>
-
-          <aside className="space-y-4">
-            <div className="border border-paper/10 bg-black/20 p-4">
-              <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/52">Voice Capture</h2>
-              <RecordingCapture />
-            </div>
-            <div className="border border-paper/10 bg-black/20 p-4">
-              <NewPageForm />
-            </div>
-            <div className="border border-paper/10 bg-black/20 p-4">
-              <AddSourceForm />
-            </div>
-            <div className="border border-paper/10 bg-black/20 p-4">
-              <MaintenancePanel />
-            </div>
-            <Link
-              className="block border border-paper/10 bg-black/20 px-4 py-3 text-center font-mono text-[11px] uppercase tracking-[0.18em] text-paper/62 hover:bg-white/6"
-              href="/private"
-            >
-              Private Workspace
-            </Link>
-          </aside>
-        </div>
+        <main className="min-w-0 space-y-4">
+          <ForceDirectedGraph snapshot={snapshot} />
+          <KnowledgeWeb snapshot={snapshot} />
+        </main>
       </div>
+
+      <SelectedEntryDialog open={openEntryInModal} query={snapshot.query} selected={selected} wikiPaths={wikiPaths} />
     </section>
   );
 }

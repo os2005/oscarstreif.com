@@ -36,7 +36,11 @@ export default async function LlmWikiPage({ searchParams }: LlmWikiPageProps) {
   return (
     <main className="min-h-dvh bg-ink text-paper">
       <Header variant="dark" />
-      {isWikiView ? <LlmWikiWorkspace snapshot={getWikiSnapshot(params)} /> : <LlmWikiIngestWorkspace inbox={getInboxSnapshot()} />}
+      {isWikiView ? (
+        <LlmWikiWorkspace openEntryInModal={Boolean(params.file || params.kind)} snapshot={getWikiSnapshot(params)} />
+      ) : (
+        <LlmWikiIngestWorkspace inbox={getInboxSnapshot()} />
+      )}
     </main>
   );
 }
