@@ -33,3 +33,13 @@ Lightweight reusable notes for recurring Codex/project mistakes. Before starting
 - Correct fix: Explicitly set dark-theme foreground/background classes for markdown preview, headings, paragraphs, lists, code blocks, links, metadata, buttons, textarea, and edit mode.
 - Verification steps: Open wiki, raw, and schema entries and confirm text is readable without selecting in read mode and edit mode.
 - Related files/commands: `projects/llm-wiki/LlmWikiWorkspace.tsx`, `MarkdownPreview`, `SelectedEntryDialog`, `npm.cmd run lint`, `npx.cmd tsc --noEmit`, `npm.cmd run build` when UI/routing changed.
+
+### LLMWIKI-JSON-OUTPUT-PRIVACY
+
+- ID: `LLMWIKI-JSON-OUTPUT-PRIVACY`
+- Problem pattern: Direct LLM Wiki CLI JSON can include private runtime metadata such as local filenames, titles, or inbox item details.
+- Symptoms: A dry-run or processing command is useful for debugging, but its raw output is not safe to paste into reports.
+- Root cause: Low-level processing scripts are designed for local operation and diagnostics, not sanitized user-facing summaries.
+- Correct fix: Prefer wrapper summaries when possible, or parse/summarize only counts, statuses, and error classes. Never paste item arrays or `.local-data` paths/content into the final report.
+- Verification steps: Final reports contain aggregate counts and behavior only, with no private source filenames, titles, local data paths, env values, or source text.
+- Related files/commands: `scripts/llm-wiki-process-local.mjs`, `scripts/llm-wiki-ingest-all.mjs`, `npm.cmd run llm-wiki:ingest-all -- --json`, `npm.cmd run llm-wiki:process -- --dry-run --json`.
