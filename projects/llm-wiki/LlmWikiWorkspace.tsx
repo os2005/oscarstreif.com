@@ -125,7 +125,7 @@ function renderInline(text: string, wikiPaths: Set<string>): ReactNode[] {
     const code = part.match(/^`([^`]+)`$/);
     if (code) {
       return (
-        <code className="border border-paper/10 bg-white/8 px-1.5 py-0.5 font-mono text-[0.92em]" key={index}>
+        <code className="border border-paper/14 bg-white/[0.08] px-1.5 py-0.5 font-mono text-[0.92em] text-paper" key={index}>
           {code[1]}
         </code>
       );
@@ -191,7 +191,7 @@ function MarkdownPreview({ content, wikiPaths }: { content: string; wikiPaths: S
   function flushParagraph(keyPrefix: string) {
     if (!paragraph.length) return;
     blocks.push(
-      <p className="max-w-3xl text-sm leading-7 text-paper/72" key={`${keyPrefix}-${blocks.length}`}>
+      <p className="max-w-4xl text-[15px] leading-8 text-paper/78" key={`${keyPrefix}-${blocks.length}`}>
         {renderInline(paragraph.join(" "), wikiPaths)}
       </p>
     );
@@ -201,7 +201,7 @@ function MarkdownPreview({ content, wikiPaths }: { content: string; wikiPaths: S
   function flushList(keyPrefix: string) {
     if (!list.length) return;
     blocks.push(
-      <ul className="max-w-3xl list-disc space-y-2 pl-5 text-sm leading-7 text-paper/72" key={`${keyPrefix}-${blocks.length}`}>
+      <ul className="max-w-4xl list-disc space-y-2 pl-5 text-[15px] leading-8 text-paper/78 marker:text-paper/38" key={`${keyPrefix}-${blocks.length}`}>
         {list.map((item, index) => (
           <li key={index}>{renderInline(item, wikiPaths)}</li>
         ))}
@@ -214,7 +214,7 @@ function MarkdownPreview({ content, wikiPaths }: { content: string; wikiPaths: S
     if (line.startsWith("```")) {
       if (codeLines !== null) {
         blocks.push(
-          <pre className="overflow-x-auto border border-paper/10 bg-black/40 p-4 text-xs leading-6 text-paper/72" key={`code-${index}`}>
+          <pre className="overflow-x-auto border border-paper/14 bg-black/55 p-4 font-mono text-xs leading-6 text-paper/82 shadow-inner" key={`code-${index}`}>
             <code>{codeLines.join("\n")}</code>
           </pre>
         );
@@ -239,10 +239,10 @@ function MarkdownPreview({ content, wikiPaths }: { content: string; wikiPaths: S
       const level = heading[1].length;
       const className =
         level === 1
-          ? "font-display text-4xl leading-tight text-paper"
+          ? "font-display text-4xl leading-tight text-paper md:text-5xl"
           : level === 2
-            ? "pt-4 font-display text-2xl leading-tight text-paper"
-            : "pt-2 font-mono text-xs uppercase tracking-[0.18em] text-paper/58";
+            ? "pt-5 font-display text-2xl leading-tight text-paper md:text-3xl"
+            : "pt-3 font-mono text-xs uppercase tracking-[0.18em] text-paper/64";
       const content = renderInline(heading[2], wikiPaths);
       blocks.push(
         level === 1 ? (
@@ -283,13 +283,13 @@ function MarkdownPreview({ content, wikiPaths }: { content: string; wikiPaths: S
 
   if (codeLines !== null) {
     blocks.push(
-      <pre className="overflow-x-auto border border-paper/10 bg-black/40 p-4 text-xs leading-6 text-paper/72" key="code-final">
+      <pre className="overflow-x-auto border border-paper/14 bg-black/55 p-4 font-mono text-xs leading-6 text-paper/82 shadow-inner" key="code-final">
         <code>{codeLines.join("\n")}</code>
       </pre>
     );
   }
 
-  return <div className="space-y-5">{blocks}</div>;
+  return <div className="space-y-6 text-paper">{blocks}</div>;
 }
 
 function SearchResults({ results }: { results: WikiFileSummary[] }) {
@@ -1050,6 +1050,10 @@ function SelectedEntryDialog({
 }) {
   const router = useRouter();
   const portalTarget = typeof document === "undefined" ? null : document.body;
+  const [copied, setCopied] = useState<"content" | "path" | null>(null);
+  const [draftContent, setDraftContent] = useState(selected.content);
+  const [isEditing, setIsEditing] = useState(false);
+  const editFormId = "llm-wiki-entry-edit-form";
 
   useEffect(() => {
     if (!open) return;
@@ -1069,60 +1073,120 @@ function SelectedEntryDialog({
     router.push(`/private/llm-wiki?${params.toString()}`);
   }
 
+  async function copyValue(kind: "content" | "path", value: string) {
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(kind);
+      window.setTimeout(() => setCopied(null), 1400);
+    } catch {
+      setCopied(null);
+    }
+  }
+
+  function cancelEdit() {
+    setDraftContent(selected.content);
+    setIsEditing(false);
+  }
+
   if (!open || !portalTarget) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex bg-black/72 p-2 backdrop-blur-sm md:p-5" role="dialog" aria-modal="true">
-      <div className="mx-auto flex max-h-full w-full max-w-6xl flex-col border border-paper/16 bg-ink shadow-2xl">
-        <div className="flex flex-col gap-3 border-b border-paper/10 bg-black/28 px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5">
-          <div className="min-w-0">
-            <p className="break-all font-mono text-[10px] uppercase tracking-[0.18em] text-paper/42">
-              {selected.kind} / {selected.path}
-            </p>
-            <h2 className="mt-2 break-words font-display text-3xl leading-tight text-paper md:text-4xl">
-              {selected.title}
-            </h2>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="border border-paper/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/48">
-              {formatBytes(selected.content.length)}
-            </span>
-            <button
-              className="border border-paper/16 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/72 transition hover:bg-white/6 hover:text-paper"
-              onClick={closeDialog}
-              type="button"
-            >
-              Close
-            </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-3 text-paper backdrop-blur-sm md:p-6" role="dialog" aria-modal="true">
+      <div className="flex h-[min(900px,calc(100dvh-32px))] w-[min(1320px,calc(100vw-24px))] flex-col overflow-hidden border border-paper/18 bg-[#10100f] shadow-2xl md:h-[min(900px,calc(100dvh-48px))] md:w-[min(1320px,calc(100vw-48px))]">
+        <div className="sticky top-0 z-10 border-b border-paper/10 bg-black/42 px-4 py-4 backdrop-blur md:px-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="border border-paper/12 bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-paper/54">
+                  {selected.kind}
+                </span>
+                <span className="break-all font-mono text-[10px] text-paper/42">{selected.path}</span>
+              </div>
+              <h2 className="mt-3 break-words font-display text-4xl leading-none text-paper md:text-5xl">
+                {selected.title}
+              </h2>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <span className="border border-paper/10 bg-black/24 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/52">
+                {formatBytes(selected.content.length)}
+              </span>
+              <button
+                className="border border-paper/14 bg-white/[0.04] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/74 transition hover:border-paper/32 hover:bg-white/[0.08] hover:text-paper"
+                onClick={() => void copyValue("path", selected.path)}
+                type="button"
+              >
+                {copied === "path" ? "Copied Path" : "Copy Path"}
+              </button>
+              <button
+                className="border border-paper/14 bg-white/[0.04] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/74 transition hover:border-paper/32 hover:bg-white/[0.08] hover:text-paper"
+                onClick={() => void copyValue("content", selected.content)}
+                type="button"
+              >
+                {copied === "content" ? "Copied" : "Copy Content"}
+              </button>
+              {selected.canEdit && selected.kind !== "raw" && !isEditing ? (
+                <button
+                  className="border border-sky-200/24 bg-sky-200/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-sky-50 transition hover:border-sky-100/42 hover:bg-sky-200/16"
+                  onClick={() => {
+                    setDraftContent(selected.content);
+                    setIsEditing(true);
+                  }}
+                  type="button"
+                >
+                  Edit Page
+                </button>
+              ) : null}
+              {isEditing ? (
+                <>
+                  <button
+                    className="border border-paper/14 bg-white/[0.04] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-paper/74 transition hover:border-paper/32 hover:bg-white/[0.08] hover:text-paper"
+                    onClick={cancelEdit}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="border border-paper/18 bg-paper px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ink transition hover:bg-white"
+                    form={editFormId}
+                    type="submit"
+                  >
+                    Save
+                  </button>
+                </>
+              ) : null}
+              <button
+                className="border border-paper/22 bg-paper px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ink transition hover:bg-white"
+                onClick={closeDialog}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
-          <div className="mx-auto max-w-4xl space-y-6">
-            <MarkdownPreview content={selected.content} wikiPaths={wikiPaths} />
-
-            {selected.canEdit && selected.kind !== "raw" ? (
-              <details className="border border-paper/10 bg-black/20">
-                <summary className="cursor-pointer px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/58">
-                  Edit Markdown
-                </summary>
-                <form action={saveWikiEntryAction} className="border-t border-paper/10 p-4">
-                  <input name="kind" type="hidden" value={selected.kind} />
-                  <input name="filePath" type="hidden" value={selected.path} />
-                  <textarea
-                    className="min-h-[50dvh] w-full resize-y border border-paper/12 bg-black/40 px-4 py-3 font-mono text-xs leading-6 text-paper outline-none focus:border-paper/36"
-                    defaultValue={selected.content}
-                    name="content"
-                  />
-                  <button
-                    className="mt-3 border border-paper/16 bg-paper px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink transition hover:bg-white"
-                    type="submit"
-                  >
-                    Save Markdown
-                  </button>
-                </form>
-              </details>
-            ) : null}
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#11110f] px-4 py-6 text-paper md:px-8 md:py-8">
+          <div className="mx-auto max-w-5xl">
+            {isEditing && selected.canEdit && selected.kind !== "raw" ? (
+              <form action={saveWikiEntryAction} className="space-y-4" id={editFormId}>
+                <div className="border border-paper/12 bg-black/24 px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/52">Editing Markdown</p>
+                </div>
+                <input name="kind" type="hidden" value={selected.kind} />
+                <input name="filePath" type="hidden" value={selected.path} />
+                <textarea
+                  className="h-[min(650px,calc(100dvh-260px))] min-h-[420px] w-full resize-none border border-paper/14 bg-black/55 px-5 py-4 font-mono text-sm leading-7 text-paper shadow-inner outline-none selection:bg-sky-200/25 selection:text-paper placeholder:text-paper/36 focus:border-sky-200/36"
+                  name="content"
+                  onChange={(event) => setDraftContent(event.target.value)}
+                  value={draftContent}
+                />
+              </form>
+            ) : (
+              <article className="border border-paper/10 bg-black/18 px-5 py-6 text-paper shadow-inner md:px-8 md:py-8">
+                <MarkdownPreview content={selected.content} wikiPaths={wikiPaths} />
+              </article>
+            )}
           </div>
         </div>
       </div>
@@ -1241,7 +1305,13 @@ export function LlmWikiWorkspace({ openEntryInModal, snapshot }: LlmWikiWorkspac
         </main>
       </div>
 
-      <SelectedEntryDialog open={openEntryInModal} query={snapshot.query} selected={selected} wikiPaths={wikiPaths} />
+      <SelectedEntryDialog
+        key={`${selected.kind}:${selected.path}`}
+        open={openEntryInModal}
+        query={snapshot.query}
+        selected={selected}
+        wikiPaths={wikiPaths}
+      />
     </section>
   );
 }

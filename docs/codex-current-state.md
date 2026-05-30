@@ -20,6 +20,8 @@ P-LLMWIKI-043 is redesigning the private LLM-Wiki View workspace. The View page 
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
+Modal polish follow-up enlarged the LLM Wiki page-opening modal, made read/edit text colors explicit for the dark UI, added useful Copy Path / Copy Content / Edit / Cancel / Save / Close actions, and kept the queryparam modal route plus removed View-clutter rules intact.
+
 ## Completed
 - LLM-Wiki architecture docs
 - Local processing dry-run
