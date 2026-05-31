@@ -2,7 +2,7 @@
 
 ## Goal
 
-The LLM Wiki is a private Second-Brain system for collecting uploads, speech captures, notes, and files from the website without immediately publishing or automatically processing them.
+The LLM Wiki is a private Second-Brain system for collecting uploads, text captures, notes, and files from the website without immediately publishing or automatically processing them.
 
 The website is the capture surface. The configured private runtime filesystem is the data layer. Codex is used later to run a deliberate processing step that reads pending inbox items, normalizes supported sources, preserves source material, and updates the maintained Markdown wiki.
 
@@ -29,13 +29,13 @@ Website upload or text capture
   -> optional explicitly approved website output
 ```
 
-Uploads and voice files should remain in the inbox until a local processing step is intentionally run. Processing is not expected to happen automatically just because a file was uploaded.
+Uploads should remain in the inbox until a deliberate processing step is intentionally run. Processing is not expected to happen automatically just because a file was uploaded.
 
 ## Folder Roles
 
 `.local-data/llm-wiki` is the private technical data root for the system.
 
-`.local-data/llm-wiki/inbox/pending` stores newly submitted text, file, and speech uploads awaiting local processing.
+`.local-data/llm-wiki/inbox/pending` stores newly submitted text and file uploads awaiting processing. Unsupported input types remain pending for manual review.
 
 `.local-data/llm-wiki/inbox/processing` may be used by processing scripts while work is in progress.
 
@@ -82,7 +82,7 @@ The evening processing step should run locally when the PC is available. It shou
 The local processor should:
 
 1. Read pending inbox metadata and source files.
-2. Transcribe speech files when needed.
+2. Leave unsupported input types pending for manual review.
 3. Normalize text and file captures into durable source records.
 4. Move or copy immutable source material into `raw`.
 5. Create or update source pages in `wiki/sources`.

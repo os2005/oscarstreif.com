@@ -33,7 +33,7 @@ When Codex is local, retain the pull/local/mirror flow:
 2. Process pending local text/file items:
    `npm.cmd run llm-wiki:process -- --dry-run`
    `npm.cmd run llm-wiki:process -- --run --include-manual-review`
-3. Skip voice items if transcription is not configured. Treat this as a non-blocking pending transcription state.
+3. Skip voice items as unsupported. Treat this as a non-blocking pending manual-review state.
 4. Ensure these private wiki files exist:
    - `wiki/action-tracker.md`
    - `wiki/decision-log.md`

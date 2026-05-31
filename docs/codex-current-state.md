@@ -1,7 +1,7 @@
 # Current Codex State
 
 ## Branch
-`main`
+`feature/llm-wiki-knowledge-architecture-rebuild`
 
 ## PR status
 Direct VPS ingest workflow is merged to `main` and deployed.
@@ -63,6 +63,8 @@ Local synthetic validation passed for direct dry-run, processed archiving, core 
 Live VPS validation passed from a temporary `/tmp` checkout without deploy or Production-repo changes. Direct ingest archived two supported pending items into the canonical VPS runtime, left one PDF pending as a non-blocking skip because PDF extraction was not enabled and `pdftotext` was unavailable, and created the expected source pages plus core wiki files. The temporary checkout was removed safely after verification.
 
 Post-deploy direct-ingest dry-run passed: one PDF remains pending, two items are processed, two source pages exist, metadata is valid, and `pdftotext` is still unavailable.
+
+P-LLMWIKI-051 additive VPS runtime initialization passed from a temporary checkout without deploy: `wiki/main` now contains six curated working documents, `wiki/system` contains three architecture documents, the existing two source pages remain intact, and the single pending PDF remains unchanged.
 
 ## Recommended next step
 Install and validate `pdftotext` on the VPS only when PDF extraction is intentionally enabled, then run direct ingest with `--extract-pdf`.

@@ -245,7 +245,7 @@ function chooseAction(item, options, pdfExtractorAvailable) {
   }
 
   if (!existsSync(item.sourceAbsolutePath)) return { ok: false, reason: "source file missing" };
-  if (item.kind === "voice") return { ok: false, reason: "voice skipped: transcription not configured" };
+  if (item.kind === "voice") return { ok: false, reason: "voice skipped: unsupported" };
 
   const extension = extensionFor(item);
   if (extension === ".pdf") {
