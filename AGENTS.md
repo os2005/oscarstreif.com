@@ -15,13 +15,15 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 
 ## Important private runtime paths
 - Local runtime data: `.local-data/`
+- Direct VPS runtime data: `/var/lib/oscarstreif/llm-wiki`
 - LLM Wiki root: `.local-data/llm-wiki`
 - LLM Wiki inbox: `.local-data/llm-wiki/inbox/pending`
 - LLM Wiki raw sources: `.local-data/llm-wiki/raw`
 - LLM Wiki private wiki: `.local-data/llm-wiki/wiki`
 
 ## LLM Wiki canonical model
-- Canonical private truth: `.local-data/llm-wiki/wiki`
+- Canonical private truth on VPS: `APP_DATA_DIR/llm-wiki/wiki`
+- Local fallback truth: `.local-data/llm-wiki/wiki`
 - Website captures uploads into inbox.
 - Local Codex processing imports text sources.
 - Obsidian is only a one-way mirror, not the backend.
@@ -33,6 +35,7 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Build: `npm.cmd run build`
 - LLM Wiki dry run: `npm.cmd run llm-wiki:process -- --dry-run`
 - LLM Wiki text import: `npm.cmd run llm-wiki:process -- --run`
+- LLM Wiki direct VPS import: `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`
 - Obsidian mirror: `npm.cmd run llm-wiki:sync-obsidian -- --run`
 - VPS inbox check: `npm.cmd run llm-wiki:pull-vps-inbox -- --dry-run --check-remote --host <host> --remote-root /var/lib/oscarstreif/llm-wiki --local-root .local-data/llm-wiki`
 
@@ -103,8 +106,9 @@ then execute the playbook:
 `docs/codex-playbooks/ingest-all.md`
 
 Meaning:
-- Pull VPS pending inbox.
-- Process local pending items.
+- Prefer direct VPS ingest when `/var/lib/oscarstreif/llm-wiki` exists or Remote SSH is detected.
+- Otherwise use the pull/local/mirror fallback flow.
+- Process website-visible pending items in the canonical VPS runtime when direct mode is available.
 - Run AI organization pass over new sources.
 - Update action tracker, decision log, open loops.
 - Sync Obsidian mirror.

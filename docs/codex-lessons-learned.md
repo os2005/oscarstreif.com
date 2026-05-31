@@ -43,3 +43,12 @@ Lightweight reusable notes for recurring Codex/project mistakes. Before starting
 - Correct fix: Prefer wrapper summaries when possible, or parse/summarize only counts, statuses, and error classes. Never paste item arrays or `.local-data` paths/content into the final report.
 - Verification steps: Final reports contain aggregate counts and behavior only, with no private source filenames, titles, local data paths, env values, or source text.
 - Related files/commands: `scripts/llm-wiki-process-local.mjs`, `scripts/llm-wiki-ingest-all.mjs`, `npm.cmd run llm-wiki:ingest-all -- --json`, `npm.cmd run llm-wiki:process -- --dry-run --json`.
+
+### LLMWIKI-LOCAL-REMOTE-PENDING-SPLIT
+
+- ID: `LLMWIKI-LOCAL-REMOTE-PENDING-SPLIT`
+- Problem pattern: Local processing succeeds, but the production website still shows the same pending items.
+- Root cause: The website reads the VPS `APP_DATA_DIR/llm-wiki` runtime while the pull/local processor archives only a local copy.
+- Correct fix: Prefer direct ingest inside the Remote-SSH VPS workspace so successful items move from VPS `inbox/pending` to VPS `inbox/processed`. Keep pull/local/mirror as the local fallback.
+- Verification steps: Compare pending and processed counts before and after direct ingest without printing filenames or private contents.
+- Related files/commands: `scripts/llm-wiki-ingest-direct.mjs`, `docs/codex-playbooks/ingest-all.md`, `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`.
