@@ -25,7 +25,9 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - Canonical private truth on VPS: `APP_DATA_DIR/llm-wiki/wiki`
 - Local fallback truth: `.local-data/llm-wiki/wiki`
 - Website captures uploads into inbox.
-- Local Codex processing imports text sources.
+- Direct ingest creates durable source pages under `wiki/sources`.
+- Codex organization maintains the primary working surface under `wiki/main`.
+- Every durable item in a main document or tracker links back to one or more source pages.
 - Obsidian is only a one-way mirror, not the backend.
 - No automatic public publishing from raw/wiki/inbox.
 
@@ -111,6 +113,7 @@ Meaning:
 - Otherwise use the pull/local/mirror fallback flow.
 - Process website-visible pending items in the canonical VPS runtime when direct mode is available.
 - Run AI organization pass over new sources.
+- Maintain curated `wiki/main/*.md` working documents and `wiki/system/source-map.md`.
 - Update action tracker, decision log, open loops.
 - Sync Obsidian mirror.
 - Report concise summary only.

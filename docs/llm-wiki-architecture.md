@@ -2,14 +2,14 @@
 
 ## Goal
 
-The LLM Wiki is a private Second-Brain system for collecting uploads, speech captures, notes, and files from the website without immediately publishing or automatically processing them.
+The LLM Wiki is a private Second-Brain system for collecting uploads, text captures, notes, and files from the website without immediately publishing or automatically processing them.
 
-The website is the capture surface. The local filesystem is the private data layer. Codex is used later, on the local machine, to run a deliberate processing step that reads pending inbox items, transcribes or normalizes them, preserves source material, and updates the maintained Markdown wiki.
+The website is the capture surface. The configured private runtime filesystem is the data layer. Codex is used later to run a deliberate processing step that reads pending inbox items, normalizes supported sources, preserves source material, and updates the maintained Markdown wiki.
 
 The primary source of truth is:
 
 ```text
-.local-data/llm-wiki/wiki
+APP_DATA_DIR/llm-wiki/wiki
 ```
 
 Obsidian is an optional local mirror and viewer for this Markdown knowledge base. It is not the technical backend.
@@ -19,22 +19,23 @@ Obsidian is an optional local mirror and viewer for this Markdown knowledge base
 The intended flow is:
 
 ```text
-Website upload or speech capture
-  -> .local-data/llm-wiki/inbox/pending
-  -> local evening processing with Codex
-  -> .local-data/llm-wiki/raw
-  -> .local-data/llm-wiki/wiki
+Website upload or text capture
+  -> APP_DATA_DIR/llm-wiki/inbox/pending
+  -> deliberate direct ingest and Codex organization pass
+  -> APP_DATA_DIR/llm-wiki/raw
+  -> APP_DATA_DIR/llm-wiki/wiki/sources
+  -> APP_DATA_DIR/llm-wiki/wiki/main
   -> optional one-way mirror to local Obsidian vault
   -> optional explicitly approved website output
 ```
 
-Uploads and voice files should remain in the inbox until a local processing step is intentionally run. Processing is not expected to happen automatically just because a file was uploaded.
+Uploads should remain in the inbox until a deliberate processing step is intentionally run. Processing is not expected to happen automatically just because a file was uploaded.
 
 ## Folder Roles
 
 `.local-data/llm-wiki` is the private technical data root for the system.
 
-`.local-data/llm-wiki/inbox/pending` stores newly submitted text, file, and speech uploads awaiting local processing.
+`.local-data/llm-wiki/inbox/pending` stores newly submitted text and file uploads awaiting processing. Unsupported input types remain pending for manual review.
 
 `.local-data/llm-wiki/inbox/processing` may be used by processing scripts while work is in progress.
 
@@ -44,7 +45,13 @@ Uploads and voice files should remain in the inbox until a local processing step
 
 `.local-data/llm-wiki/raw` stores immutable source material. Files in this folder are the evidence layer and should not be edited during wiki maintenance.
 
-`.local-data/llm-wiki/wiki` stores the AI-maintained Markdown knowledge base. This includes source notes, topics, entities, decisions, questions, project notes, and maintenance reports.
+`APP_DATA_DIR/llm-wiki/wiki/sources` stores durable source pages. Keep these pages as evidence and never delete them during organization passes.
+
+`APP_DATA_DIR/llm-wiki/wiki/main` stores the curated primary working documents: current projects, problems, mentoring notes and todos. Every durable item links back to one or more source pages.
+
+`APP_DATA_DIR/llm-wiki/wiki/system` stores taxonomy, source mapping and ingest rules.
+
+`APP_DATA_DIR/llm-wiki/wiki/action-tracker.md`, `decision-log.md`, and `open-loops.md` store concise cross-cutting registers with source backlinks.
 
 `.local-data/llm-wiki/schema.md` defines operating rules for the wiki itself, including page conventions and maintenance workflows.
 
@@ -75,11 +82,11 @@ The evening processing step should run locally when the PC is available. It shou
 The local processor should:
 
 1. Read pending inbox metadata and source files.
-2. Transcribe speech files when needed.
+2. Leave unsupported input types pending for manual review.
 3. Normalize text and file captures into durable source records.
 4. Move or copy immutable source material into `raw`.
 5. Create or update source pages in `wiki/sources`.
-6. Update related topic, entity, project, question, decision, and open-loop pages.
+6. Update relevant curated `wiki/main` documents and cross-cutting trackers with source backlinks.
 7. Update `wiki/index.md` and `wiki/log.md`.
 8. Leave failed or ambiguous items in a reviewable state.
 
@@ -87,7 +94,7 @@ Codex should treat `raw` as immutable evidence and `wiki` as the maintained synt
 
 ## VPS Role
 
-The VPS hosts the website and can accept uploads into its configured runtime data directory. The VPS should not be treated as the canonical long-term Second-Brain authoring environment unless that is explicitly decided later.
+The VPS hosts the website and accepts uploads into its configured runtime data directory. For the direct-ingest workflow, `APP_DATA_DIR/llm-wiki/wiki` is the canonical private wiki runtime.
 
 The VPS may hold temporary private runtime data required for the website to function, but private data should remain outside Git. Any transfer from VPS inbox data to the local machine must preserve privacy and avoid exposing raw uploads or generated private wiki content in the repository.
 

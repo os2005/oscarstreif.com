@@ -33,7 +33,7 @@ When Codex is local, retain the pull/local/mirror flow:
 2. Process pending local text/file items:
    `npm.cmd run llm-wiki:process -- --dry-run`
    `npm.cmd run llm-wiki:process -- --run --include-manual-review`
-3. Skip voice items if transcription is not configured. Treat this as a non-blocking pending transcription state.
+3. Skip voice items as unsupported. Treat this as a non-blocking pending manual-review state.
 4. Ensure these private wiki files exist:
    - `wiki/action-tracker.md`
    - `wiki/decision-log.md`
@@ -50,18 +50,28 @@ npm.cmd run llm-wiki:ingest-all
 ## AI Organization Pass
 The npm script itself does not perform LLM analysis. It is deterministic and does not require an OpenAI API key.
 
-When Codex executes `ingest all`, Codex performs the AI organization pass using the active Codex agent context:
+When Codex executes `ingest all`, Codex performs the AI organization pass using the active Codex agent context. Source pages remain the evidence layer. The maintained `wiki/main/*.md` files are the primary working surface.
 
 - Review newly created or updated source pages.
-- Update relevant topic, entity, system and project pages.
+- Update only the relevant curated main documents:
+  - `wiki/main/current-projects.md`
+  - `wiki/main/problems.md`
+  - `wiki/main/mentoring-onepager.md`
+  - `wiki/main/mentoring-knowledge-base.md`
+  - `wiki/main/todos.md`
+- Link every durable claim, decision, task or open loop back to one or more `wiki/sources/*.md` pages.
+- Update `wiki/system/source-map.md` with the source-to-main-document filing map.
+- Refine `wiki/system/taxonomy.md` and `wiki/system/ingest-rules.md` only when the knowledge architecture itself changes.
 - Update `wiki/action-tracker.md`.
 - Update `wiki/decision-log.md`.
 - Update `wiki/open-loops.md`.
+- Keep `wiki/main/index.md` as the curated entry point.
 - Update `wiki/index.md`.
 - Append a short entry to `wiki/log.md`.
 - Do not invent facts.
 - Mark uncertain items as unresolved.
-- Keep source links and backlinks.
+- Do not delete or overwrite source pages.
+- Do not copy entire source pages into main documents; synthesize concise durable knowledge.
 
 A website button on the VPS cannot directly run this Codex synthesis unless a separate local agent/poller is designed and approved later.
 

@@ -1,7 +1,7 @@
 # Current Codex State
 
 ## Branch
-`main`
+`feature/llm-wiki-knowledge-architecture-rebuild`
 
 ## PR status
 Direct VPS ingest workflow is merged to `main` and deployed.
@@ -17,7 +17,7 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-049R merged and deployed the direct VPS ingest workflow. The preferred `ingest all` path now processes `/var/lib/oscarstreif/llm-wiki` in place so website-visible pending items are archived in the canonical VPS runtime. Local pull/process/mirror remains the fallback.
+P-LLMWIKI-051 rebuilds the LLM-Wiki knowledge architecture. Source pages remain durable evidence, while `wiki/main/*.md` becomes the curated primary working surface maintained by Codex during `ingest all`. `wiki/system/*.md` stores taxonomy, source mapping and ingest rules.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
@@ -63,6 +63,8 @@ Local synthetic validation passed for direct dry-run, processed archiving, core 
 Live VPS validation passed from a temporary `/tmp` checkout without deploy or Production-repo changes. Direct ingest archived two supported pending items into the canonical VPS runtime, left one PDF pending as a non-blocking skip because PDF extraction was not enabled and `pdftotext` was unavailable, and created the expected source pages plus core wiki files. The temporary checkout was removed safely after verification.
 
 Post-deploy direct-ingest dry-run passed: one PDF remains pending, two items are processed, two source pages exist, metadata is valid, and `pdftotext` is still unavailable.
+
+P-LLMWIKI-051 additive VPS runtime initialization passed from a temporary checkout without deploy: `wiki/main` now contains six curated working documents, `wiki/system` contains three architecture documents, the existing two source pages remain intact, and the single pending PDF remains unchanged.
 
 ## Recommended next step
 Install and validate `pdftotext` on the VPS only when PDF extraction is intentionally enabled, then run direct ingest with `--extract-pdf`.
