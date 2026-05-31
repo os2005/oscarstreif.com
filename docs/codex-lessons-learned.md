@@ -52,3 +52,12 @@ Lightweight reusable notes for recurring Codex/project mistakes. Before starting
 - Correct fix: Prefer direct ingest inside the Remote-SSH VPS workspace so successful items move from VPS `inbox/pending` to VPS `inbox/processed`. Keep pull/local/mirror as the local fallback.
 - Verification steps: Compare pending and processed counts before and after direct ingest without printing filenames or private contents.
 - Related files/commands: `scripts/llm-wiki-ingest-direct.mjs`, `docs/codex-playbooks/ingest-all.md`, `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`.
+
+### GIT-MERGE-WITHOUT-GH
+
+- ID: `GIT-MERGE-WITHOUT-GH`
+- Problem pattern: An approved merge/deploy task stops only because GitHub CLI `gh` is unavailable.
+- Root cause: PR tooling was treated as mandatory even when a normal Git merge and push were explicitly approved and branch protection allowed them.
+- Correct fix: Fetch origin, update local `main` with `git pull --ff-only origin main`, merge the pushed remote feature branch with `git merge --no-ff origin/<branch>`, run required checks, and push `main`. Stop on conflicts or a rejected push.
+- Verification steps: Confirm feature branch sync before merge, clean worktree, passing checks, accepted `git push origin main`, clean VPS preflight, successful production fast-forward pull, build, restart, and smoke checks.
+- Related commands: `git fetch origin`, `git switch main`, `git pull --ff-only origin main`, `git merge --no-ff origin/<branch>`, `git push origin main`.

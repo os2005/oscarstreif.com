@@ -48,6 +48,7 @@ Next.js 16 / React 19 personal website with private project areas, shared projec
 - After a task, append a concise lesson to `docs/codex-lessons-learned.md` only when a non-obvious reusable bug/root cause was found.
 - Report concise summaries.
 - Before commits, always check `git status` and ensure `.local-data/` and secrets are not staged.
+- If `gh` is unavailable for an explicitly approved merge, use normal Git safely: fetch, update local `main` with `--ff-only`, merge the pushed remote feature branch with `--no-ff`, validate, then push `main`. Stop if conflicts or branch protection reject the push.
 - If a task is only review/diagnosis, do not modify files.
 
 ## Token-efficient workflow

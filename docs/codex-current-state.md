@@ -1,10 +1,10 @@
 # Current Codex State
 
 ## Branch
-`feature/llm-wiki-direct-vps-ingest`
+`main`
 
 ## PR status
-LLM Wiki UI redesign and modal polish are merged to `main` and deployed.
+Direct VPS ingest workflow is merged to `main` and deployed.
 
 ## Codex workflow
 Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe issues, including generated-file resets, docs updates and ignored runtime-only local test records.
@@ -17,7 +17,7 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-046R adds a direct VPS ingest workflow for Remote-SSH Codex sessions. The preferred `ingest all` path now processes `/var/lib/oscarstreif/llm-wiki` in place so website-visible pending items are archived in the canonical VPS runtime. Local pull/process/mirror remains the fallback.
+P-LLMWIKI-049R merged and deployed the direct VPS ingest workflow. The preferred `ingest all` path now processes `/var/lib/oscarstreif/llm-wiki` in place so website-visible pending items are archived in the canonical VPS runtime. Local pull/process/mirror remains the fallback.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
@@ -45,13 +45,10 @@ Lessons file follow-up records reusable fixes for stale production deploys, View
 - Do not deploy before manual checks.
 
 ## Latest smoke result
-Local smoke checks passed:
-- WG dashboard route no longer 404 after runtime-only local Project Record.
-- Treffpunkt dummy POST/GET passed.
-- `/private/llm-wiki` redirects to login without auth.
-- `/cv` loads with placeholder.
-- `next-env.d.ts` was reset after dev-server flip.
-- Git status clean and synced with origin.
+Production deploy smoke checks passed after direct-ingest merge:
+- `/`, `/login`, `/treffpunkt`, and `/cv` return `200`.
+- `/private/llm-wiki` and `/private/llm-wiki?view=wiki` return `307` to login without auth.
+- Production repo stayed clean and `oscarstreif.service` is active after restart.
 
 ## Latest LLM-Wiki runtime result
 End-to-end live-to-local flow passed after deploy: remote pending was detected, local pull succeeded, one text item was imported, the voice item remained skipped pending transcription support, and the Obsidian mirror was updated.
@@ -65,9 +62,7 @@ Local synthetic validation passed for direct dry-run, processed archiving, core 
 
 Live VPS validation passed from a temporary `/tmp` checkout without deploy or Production-repo changes. Direct ingest archived two supported pending items into the canonical VPS runtime, left one PDF pending as a non-blocking skip because PDF extraction was not enabled and `pdftotext` was unavailable, and created the expected source pages plus core wiki files. The temporary checkout was removed safely after verification.
 
-## Final human decisions before merge
-- Confirm CV placeholder is acceptable for production.
-- Confirm public Treffpunkt POST API without auth/rate limit/cleanup is acceptable for first deploy, or decide to harden before merge.
+Post-deploy direct-ingest dry-run passed: one PDF remains pending, two items are processed, two source pages exist, metadata is valid, and `pdftotext` is still unavailable.
 
 ## Recommended next step
-If both final human decisions are accepted: mark Draft PR ready for review, merge into `main`, then deploy carefully.
+Install and validate `pdftotext` on the VPS only when PDF extraction is intentionally enabled, then run direct ingest with `--extract-pdf`.
