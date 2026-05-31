@@ -1,7 +1,7 @@
 # Current Codex State
 
 ## Branch
-`main`
+`feature/llm-wiki-direct-vps-ingest`
 
 ## PR status
 LLM Wiki UI redesign and modal polish are merged to `main` and deployed.
@@ -17,7 +17,7 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-CODEX-LESSONS-044 is adding a lightweight lessons-learned system for recurring Codex/project mistakes.
+P-LLMWIKI-046R adds a direct VPS ingest workflow for Remote-SSH Codex sessions. The preferred `ingest all` path now processes `/var/lib/oscarstreif/llm-wiki` in place so website-visible pending items are archived in the canonical VPS runtime. Local pull/process/mirror remains the fallback.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
@@ -59,7 +59,11 @@ End-to-end live-to-local flow passed after deploy: remote pending was detected, 
 Windows VPS inbox pull is fixed on branch `fix/llm-wiki-windows-vps-pull`: `--transport auto|scp|rsync` is supported, and Windows auto mode prefers `scp`.
 
 ## Ingest command state
-`ingest all` is added on branch `feature/llm-wiki-ingest-all-command` as a Codex shortcut backed by `npm.cmd run llm-wiki:ingest-all`. The npm command runs the deterministic technical pipeline only; Codex performs the AI organization pass locally when the shortcut is used.
+`ingest all` prefers `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review` in a VPS or Remote-SSH workspace. The direct command is deterministic and requires no OpenAI API key. Local sessions retain the pull/process/mirror fallback.
+
+Local synthetic validation passed for direct dry-run, processed archiving, core wiki page creation, PDF skip handling without `pdftotext`, `APP_DATA_DIR` resolution and `--no-archive`.
+
+Live VPS validation passed from a temporary `/tmp` checkout without deploy or Production-repo changes. Direct ingest archived two supported pending items into the canonical VPS runtime, left one PDF pending as a non-blocking skip because PDF extraction was not enabled and `pdftotext` was unavailable, and created the expected source pages plus core wiki files. The temporary checkout was removed safely after verification.
 
 ## Final human decisions before merge
 - Confirm CV placeholder is acceptable for production.

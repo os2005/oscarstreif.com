@@ -1,25 +1,33 @@
 # Ingest All Playbook
 
 ## Purpose
-Run the complete private LLM-Wiki ingest workflow from VPS inbox capture to local wiki organization and Obsidian mirror.
+Run the complete private LLM-Wiki ingest workflow. Prefer direct VPS processing so website-visible pending items are archived in the same private runtime the website reads.
 
 Use this playbook when the user asks approximately `ingest all`. Use `ingest quick` for the technical pipeline only and `ingest deep` for the same pipeline plus a deeper synthesis pass.
 
 ## Safety
 - Never print secrets, `.env` values, private upload contents, raw source contents, wiki page contents, inbox filenames, or private runtime data.
 - Never commit `.local-data/`.
-- Never delete, move, or archive VPS files.
+- Never delete VPS files. Direct mode may move successfully processed inbox files from `pending` to `processed`.
 - Never publish private raw/wiki/inbox content to the website, CDN, or public export.
 - Public/CDN export requires a separate explicit approval feature later.
 
-## Allowed Runtime Reads/Writes
-- Read and write local runtime data only under `.local-data/llm-wiki`.
-- Pull remote files only from `/var/lib/oscarstreif/llm-wiki/inbox/pending`.
-- Write local source imports under `.local-data/llm-wiki/raw/inbox`.
-- Write private wiki pages under `.local-data/llm-wiki/wiki`.
-- Update the local Obsidian one-way mirror.
+## Preferred Direct VPS Pipeline
+When Codex runs in a VPS or Remote-SSH workspace and `/var/lib/oscarstreif/llm-wiki` exists:
 
-## Technical Pipeline
+1. Dry-run the direct private runtime:
+   `npm.cmd run llm-wiki:ingest-direct -- --dry-run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`
+2. Process supported items and archive successful imports:
+   `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`
+3. Add `--extract-pdf` when local `pdftotext` extraction is desired.
+4. Run the Codex AI organization pass against new private source pages.
+5. Do not sync the VPS runtime back into a complete local copy.
+
+The website reads this same private root, so processed items stop appearing as pending after archiving.
+
+## Local Fallback Pipeline
+When Codex is local, retain the pull/local/mirror flow:
+
 1. Pull VPS inbox:
    `npm.cmd run llm-wiki:pull-vps-inbox -- --run --host <saved-alias> --remote-root /var/lib/oscarstreif/llm-wiki --local-root .local-data/llm-wiki`
 2. Process pending local text/file items:
@@ -33,7 +41,7 @@ Use this playbook when the user asks approximately `ingest all`. Use `ingest qui
 5. Sync Obsidian:
    `npm.cmd run llm-wiki:sync-obsidian -- --run`
 
-The shortcut may use the wrapper command:
+The local fallback shortcut may use the wrapper command:
 
 ```bash
 npm.cmd run llm-wiki:ingest-all
@@ -42,7 +50,7 @@ npm.cmd run llm-wiki:ingest-all
 ## AI Organization Pass
 The npm script itself does not perform LLM analysis. It is deterministic and does not require an OpenAI API key.
 
-When Codex executes `ingest all`, Codex performs the AI organization pass locally using the current ChatGPT Plus/Codex agent context:
+When Codex executes `ingest all`, Codex performs the AI organization pass using the active Codex agent context:
 
 - Review newly created or updated source pages.
 - Update relevant topic, entity, system and project pages.
