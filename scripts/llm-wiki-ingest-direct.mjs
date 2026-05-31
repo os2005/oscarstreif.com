@@ -19,10 +19,25 @@ const TEXT_EXTENSIONS = new Set([".csv", ".html", ".json", ".log", ".md", ".mdx"
 const CATALOG_START = "<!-- llm-wiki:catalog:start -->";
 const CATALOG_END = "<!-- llm-wiki:catalog:end -->";
 const FORBIDDEN_SEGMENTS = new Set([".env", "auth-store.json", "sessions", "session", "secrets", "credentials"]);
-const CORE_WIKI_FILES = [
-  ["action-tracker.md", "Action Tracker", "Tracked actions extracted during Codex organization passes. Do not invent items; link back to source pages."],
-  ["decision-log.md", "Decision Log", "Durable decisions extracted during Codex organization passes. Preserve uncertainty and cite source pages."],
-  ["open-loops.md", "Open Loops", "Open questions, unresolved follow-ups and pending review items. Mark uncertain items as unresolved."],
+const WIKI_STRUCTURE_FILES = [
+  ["action-tracker.md", "Action Tracker", "Tracked actions extracted during Codex organization passes. Keep entries concise and link each item back to one or more source pages."],
+  ["decision-log.md", "Decision Log", "Durable decisions extracted during Codex organization passes. Preserve uncertainty and link each decision back to one or more source pages."],
+  ["open-loops.md", "Open Loops", "Open questions, unresolved follow-ups and pending review items. Mark uncertainty clearly and link each item back to one or more source pages."],
+  ["main/index.md", "Main Workspace", "Use these curated documents as the primary LLM-Wiki working surface.", [
+    "- [[main/current-projects.md|Current Projects]]",
+    "- [[main/problems.md|Problems]]",
+    "- [[main/mentoring-onepager.md|Mentoring Onepager]]",
+    "- [[main/mentoring-knowledge-base.md|Mentoring Knowledge Base]]",
+    "- [[main/todos.md|Todos]]",
+  ]],
+  ["main/current-projects.md", "Current Projects", "Maintain active projects, goals, status, next steps and relevant context. Every durable claim must link back to one or more source pages."],
+  ["main/problems.md", "Problems", "Maintain recurring problems, frictions, constraints and unresolved technical or personal issues. Every durable claim must link back to one or more source pages."],
+  ["main/mentoring-onepager.md", "Mentoring Onepager", "Maintain a concise mentoring preparation page with current priorities, questions and talking points. Link each item back to one or more source pages."],
+  ["main/mentoring-knowledge-base.md", "Mentoring Knowledge Base", "Maintain durable mentoring insights, patterns and learnings. Link each insight back to one or more source pages."],
+  ["main/todos.md", "Todos", "Maintain actionable tasks extracted from new inputs. Keep items concise, preserve uncertainty and link each item back to one or more source pages."],
+  ["system/taxonomy.md", "Taxonomy", "Define the small set of maintained main documents and the rules for filing durable knowledge into them."],
+  ["system/source-map.md", "Source Map", "Map each processed source page to the curated main documents and trackers it informed. Do not copy raw source content into this map."],
+  ["system/ingest-rules.md", "Ingest Rules", "During each Codex organization pass: review new source pages, update only relevant curated main documents, add source backlinks for every durable claim, update trackers when applicable, refresh the source map, and append a concise log entry."],
 ];
 
 function parseArgs(argv) {
@@ -299,6 +314,8 @@ function sourcePageContent(context, item, rawAbsolutePath, extract, type) {
     "- [[action-tracker.md|Action Tracker]]",
     "- [[decision-log.md|Decision Log]]",
     "- [[open-loops.md|Open Loops]]",
+    "- [[main/index.md|Main Workspace]]",
+    "- [[system/source-map.md|Source Map]]",
     "",
   ].join("\n");
 }
@@ -365,14 +382,17 @@ function appendLog(context, processed, skipped, failed) {
   writeAtomic(logPath, `${current}${entry}\n`);
 }
 
-function ensureCoreWiki(context) {
+function ensureWikiStructure(context) {
   ensureDir(context.wikiDir);
   ensureDir(context.wikiSourcesDir);
   let created = 0;
-  for (const [filename, title, body] of CORE_WIKI_FILES) {
+  for (const [filename, title, body, links = []] of WIKI_STRUCTURE_FILES) {
     const target = assertAllowedPath(context.wikiRoot, path.join(context.wikiDir, filename));
     if (!existsSync(target)) {
-      writeAtomic(target, [`# ${title}`, "", body, "", "## Items", "", "- None recorded yet.", ""].join("\n"));
+      writeAtomic(
+        target,
+        [`# ${title}`, "", body, "", "## Items", "", links.length ? links.join("\n") : "- None recorded yet.", ""].join("\n")
+      );
       created += 1;
     }
   }
@@ -437,7 +457,7 @@ function summarize(options) {
   const listed = listPendingItems(context);
   const pdfExtractorAvailable = commandAvailable("pdftotext");
   const summary = {
-    coreWikiFilesCreated: 0,
+    wikiStructureFilesCreated: 0,
     dryRun: !options.run,
     failed: 0,
     invalidMetadata: listed.invalid,
@@ -450,7 +470,7 @@ function summarize(options) {
   };
 
   if (!options.run || listed.missing) return { context, listed, pdfExtractorAvailable, summary };
-  summary.coreWikiFilesCreated = ensureCoreWiki(context);
+  summary.wikiStructureFilesCreated = ensureWikiStructure(context);
 
   for (const item of listed.items) {
     const action = chooseAction(item, options, pdfExtractorAvailable);
@@ -468,7 +488,7 @@ function summarize(options) {
     }
   }
 
-  if (summary.processed || summary.coreWikiFilesCreated) refreshCatalog(context);
+  if (summary.processed || summary.wikiStructureFilesCreated) refreshCatalog(context);
   if (summary.processed) appendLog(context, summary.processed, summary.skipped, summary.failed);
   return { context, listed, pdfExtractorAvailable, summary };
 }
