@@ -63,6 +63,8 @@ Windows VPS inbox pull is fixed on branch `fix/llm-wiki-windows-vps-pull`: `--tr
 
 Local synthetic validation passed for direct dry-run, processed archiving, core wiki page creation, PDF skip handling without `pdftotext`, `APP_DATA_DIR` resolution and `--no-archive`.
 
+Live VPS validation passed from a temporary `/tmp` checkout without deploy or Production-repo changes. Direct ingest archived two supported pending items into the canonical VPS runtime, left one PDF pending as a non-blocking skip because PDF extraction was not enabled and `pdftotext` was unavailable, and created the expected source pages plus core wiki files. The temporary checkout was removed safely after verification.
+
 ## Final human decisions before merge
 - Confirm CV placeholder is acceptable for production.
 - Confirm public Treffpunkt POST API without auth/rate limit/cleanup is acceptable for first deploy, or decide to harden before merge.
