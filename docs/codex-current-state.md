@@ -1,10 +1,10 @@
 # Current Codex State
 
 ## Branch
-`feature/llm-wiki-knowledge-architecture-rebuild`
+`main`
 
 ## PR status
-Direct VPS ingest workflow is merged to `main` and deployed.
+Direct VPS ingest workflow and curated knowledge architecture are merged to `main`. The VPS Production repo is synchronized without a rebuild or restart because the architecture merge changed only scripts, docs and `AGENTS.md`.
 
 ## Codex workflow
 Prompts now use Prompt-ID / Response-ID. Codex may autonomously fix small safe issues, including generated-file resets, docs updates and ignored runtime-only local test records.
@@ -17,7 +17,7 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-051 rebuilds the LLM-Wiki knowledge architecture. Source pages remain durable evidence, while `wiki/main/*.md` becomes the curated primary working surface maintained by Codex during `ingest all`. `wiki/system/*.md` stores taxonomy, source mapping and ingest rules.
+P-LLMWIKI-052 merged the LLM-Wiki knowledge architecture and completed the first private VPS curation pass. Source pages remain durable evidence, while `wiki/main/*.md` is the curated primary working surface maintained during `ingest all`. `wiki/system/*.md` stores taxonomy, source mapping and ingest rules.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
@@ -65,6 +65,8 @@ Live VPS validation passed from a temporary `/tmp` checkout without deploy or Pr
 Post-deploy direct-ingest dry-run passed: one PDF remains pending, two items are processed, two source pages exist, metadata is valid, and `pdftotext` is still unavailable.
 
 P-LLMWIKI-051 additive VPS runtime initialization passed from a temporary checkout without deploy: `wiki/main` now contains six curated working documents, `wiki/system` contains three architecture documents, the existing two source pages remain intact, and the single pending PDF remains unchanged.
+
+P-LLMWIKI-052 first private curation pass completed additively: both existing source pages are linked from the Main Workspace and Source Map, relevant Main Documents and trackers received source-linked entries, one curation log entry was appended, and the pending PDF remains unchanged.
 
 ## Recommended next step
 Install and validate `pdftotext` on the VPS only when PDF extraction is intentionally enabled, then run direct ingest with `--extract-pdf`.
