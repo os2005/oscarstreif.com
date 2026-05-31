@@ -53,11 +53,11 @@ Lightweight reusable notes for recurring Codex/project mistakes. Before starting
 - Verification steps: Compare pending and processed counts before and after direct ingest without printing filenames or private contents.
 - Related files/commands: `scripts/llm-wiki-ingest-direct.mjs`, `docs/codex-playbooks/ingest-all.md`, `npm.cmd run llm-wiki:ingest-direct -- --run --root /var/lib/oscarstreif/llm-wiki --include-manual-review`.
 
-### GIT-MERGE-WITHOUT-GH
+### GITHUB-CLI-MISSING-NOT-A-MERGE-BLOCKER
 
-- ID: `GIT-MERGE-WITHOUT-GH`
-- Problem pattern: An approved merge/deploy task stops only because GitHub CLI `gh` is unavailable.
-- Root cause: PR tooling was treated as mandatory even when a normal Git merge and push were explicitly approved and branch protection allowed them.
-- Correct fix: Fetch origin, update local `main` with `git pull --ff-only origin main`, merge the pushed remote feature branch with `git merge --no-ff origin/<branch>`, run required checks, and push `main`. Stop on conflicts or a rejected push.
+- ID: `GITHUB-CLI-MISSING-NOT-A-MERGE-BLOCKER`
+- Problem pattern: An approved PR/merge task stops only because GitHub CLI `gh` is unavailable.
+- Root cause: Missing PR tooling was treated as an automatic blocker even when a normal Git merge and push were explicitly approved and branch protection allowed them.
+- Correct fix: Fetch origin, check out `main`, update it with `git pull --ff-only origin main`, merge the pushed remote feature branch with `git merge --no-ff origin/<feature-branch>`, run required tests, and push `main`. A direct Git merge is valid when `main` is not protected and all checks pass. Stop for manual GitHub merge only on conflicts, missing push rights, or branch protection.
 - Verification steps: Confirm feature branch sync before merge, clean worktree, passing checks, accepted `git push origin main`, clean VPS preflight, successful production fast-forward pull, build, restart, and smoke checks.
 - Related commands: `git fetch origin`, `git switch main`, `git pull --ff-only origin main`, `git merge --no-ff origin/<branch>`, `git push origin main`.
