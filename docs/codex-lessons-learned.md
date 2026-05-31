@@ -61,3 +61,10 @@ Lightweight reusable notes for recurring Codex/project mistakes. Before starting
 - Correct fix: Fetch origin, check out `main`, update it with `git pull --ff-only origin main`, merge the pushed remote feature branch with `git merge --no-ff origin/<feature-branch>`, run required tests, and push `main`. A direct Git merge is valid when `main` is not protected and all checks pass. Stop for manual GitHub merge only on conflicts, missing push rights, or branch protection.
 - Verification steps: Confirm feature branch sync before merge, clean worktree, passing checks, accepted `git push origin main`, clean VPS preflight, successful production fast-forward pull, build, restart, and smoke checks.
 - Related commands: `git fetch origin`, `git switch main`, `git pull --ff-only origin main`, `git merge --no-ff origin/<branch>`, `git push origin main`.
+
+### LLMWIKI-CONSOLIDATE-WITHOUT-DELETING
+
+- ID: `LLMWIKI-CONSOLIDATE-WITHOUT-DELETING`
+- Problem pattern: The private wiki becomes cluttered with thin or superseded pages, but runtime knowledge must not be deleted.
+- Correct fix: Keep `wiki/main` limited to the concise overview and four deeply curated master documents. Move superseded pages into `wiki/legacy`, preserve Source Pages unchanged, and update the generated catalog.
+- Verification steps: Confirm five active main pages, preserved legacy page counts, Source Page counts unchanged, source backlinks in the master documents, and a clean Production repo.

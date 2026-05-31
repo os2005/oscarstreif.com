@@ -47,7 +47,17 @@ Uploads should remain in the inbox until a deliberate processing step is intenti
 
 `APP_DATA_DIR/llm-wiki/wiki/sources` stores durable source pages. Keep these pages as evidence and never delete them during organization passes.
 
-`APP_DATA_DIR/llm-wiki/wiki/main` stores the curated primary working documents: current projects, problems, mentoring notes and todos. Every durable item links back to one or more source pages.
+`APP_DATA_DIR/llm-wiki/wiki/main` stores the concise overview and exactly four canonical master documents:
+
+- `00-overview.md`
+- `01-projects.md`
+- `02-problems.md`
+- `03-mentoring.md`
+- `04-todos-actions.md`
+
+Every durable item links back to one or more source pages. Prefer deep updates to these master documents over empty categories, thin mini-articles or folder growth.
+
+When consolidating an older structure, move superseded wiki pages into `wiki/legacy` instead of deleting them. Keep the active `wiki/main` folder limited to the overview and four master documents.
 
 `APP_DATA_DIR/llm-wiki/wiki/system` stores taxonomy, source mapping and ingest rules.
 
@@ -86,7 +96,7 @@ The local processor should:
 3. Normalize text and file captures into durable source records.
 4. Move or copy immutable source material into `raw`.
 5. Create or update source pages in `wiki/sources`.
-6. Update relevant curated `wiki/main` documents and cross-cutting trackers with source backlinks.
+6. Deeply synthesize relevant knowledge into the four curated `wiki/main` master documents and cross-cutting trackers with source backlinks.
 7. Update `wiki/index.md` and `wiki/log.md`.
 8. Leave failed or ambiguous items in a reviewable state.
 

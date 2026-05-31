@@ -50,28 +50,30 @@ npm.cmd run llm-wiki:ingest-all
 ## AI Organization Pass
 The npm script itself does not perform LLM analysis. It is deterministic and does not require an OpenAI API key.
 
-When Codex executes `ingest all`, Codex performs the AI organization pass using the active Codex agent context. Source pages remain the evidence layer. The maintained `wiki/main/*.md` files are the primary working surface.
+When Codex executes `ingest all`, Codex performs the AI organization pass using the active Codex agent context. Source pages remain the evidence layer. The four master documents are the primary working surface.
 
 - Review newly created or updated source pages.
-- Update only the relevant curated main documents:
-  - `wiki/main/current-projects.md`
-  - `wiki/main/problems.md`
-  - `wiki/main/mentoring-onepager.md`
-  - `wiki/main/mentoring-knowledge-base.md`
-  - `wiki/main/todos.md`
+- Deeply synthesize relevant details, relationships, risks, uncertainty, priority and next steps into only the relevant master documents:
+  - `wiki/main/01-projects.md`
+  - `wiki/main/02-problems.md`
+  - `wiki/main/03-mentoring.md`
+  - `wiki/main/04-todos-actions.md`
+- Keep `wiki/main/00-overview.md` concise and navigational.
+- Update existing master-document entries instead of duplicating them.
+- Do not create new topic pages or thin mini-articles unless the user explicitly requests them.
 - Link every durable claim, decision, task or open loop back to one or more `wiki/sources/*.md` pages.
 - Update `wiki/system/source-map.md` with the source-to-main-document filing map.
 - Refine `wiki/system/taxonomy.md` and `wiki/system/ingest-rules.md` only when the knowledge architecture itself changes.
 - Update `wiki/action-tracker.md`.
 - Update `wiki/decision-log.md`.
 - Update `wiki/open-loops.md`.
-- Keep `wiki/main/index.md` as the curated entry point.
+- Preserve completed tasks in `wiki/main/04-todos-actions.md` with a completed status instead of deleting them.
 - Update `wiki/index.md`.
 - Append a short entry to `wiki/log.md`.
 - Do not invent facts.
 - Mark uncertain items as unresolved.
 - Do not delete or overwrite source pages.
-- Do not copy entire source pages into main documents; synthesize concise durable knowledge.
+- Do not copy entire source pages into main documents and do not reduce curation to link lists; synthesize concise durable knowledge.
 
 A website button on the VPS cannot directly run this Codex synthesis unless a separate local agent/poller is designed and approved later.
 

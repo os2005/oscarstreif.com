@@ -1,7 +1,7 @@
 # Current Codex State
 
 ## Branch
-`main`
+`feature/llm-wiki-four-master-docs`
 
 ## PR status
 Direct VPS ingest workflow and curated knowledge architecture are merged to `main`. The VPS Production repo is synchronized without a rebuild or restart because the architecture merge changed only scripts, docs and `AGENTS.md`.
@@ -17,7 +17,7 @@ Default handoff is the Codex final chat report only. The user does not need to p
 `next-env.d.ts` flips between dev/build route type refs. Treat it as a known artifact.
 
 ## Current task
-P-LLMWIKI-052 merged the LLM-Wiki knowledge architecture and completed the first private VPS curation pass. Source pages remain durable evidence, while `wiki/main/*.md` is the curated primary working surface maintained during `ingest all`. `wiki/system/*.md` stores taxonomy, source mapping and ingest rules.
+P-LLMWIKI-053 consolidates the LLM-Wiki working surface into a concise overview and exactly four deep master documents: projects, problems, mentoring, and todos/actions. Source pages remain durable evidence and legacy main pages remain preserved.
 
 Follow-up cleanup confirmed the working branch was correct, but the running `next dev` server had stale `.next/dev` Turbopack chunks that still contained the removed View sidebar/action UI. The dev cache was cleared and the local dev server was restarted. Maintenance / Run Lint now lives in the Ingest workspace only.
 
@@ -67,6 +67,8 @@ Post-deploy direct-ingest dry-run passed: one PDF remains pending, two items are
 P-LLMWIKI-051 additive VPS runtime initialization passed from a temporary checkout without deploy: `wiki/main` now contains six curated working documents, `wiki/system` contains three architecture documents, the existing two source pages remain intact, and the single pending PDF remains unchanged.
 
 P-LLMWIKI-052 first private curation pass completed additively: both existing source pages are linked from the Main Workspace and Source Map, relevant Main Documents and trackers received source-linked entries, one curation log entry was appended, and the pending PDF remains unchanged.
+
+P-LLMWIKI-053 deep consolidation completed on the private VPS runtime without deleting data: `wiki/main` now contains only `00-overview.md` plus four source-linked master documents. Six superseded main pages and three previous system files were preserved under `wiki/legacy`. Both Source Pages remain intact and mapped; the pending PDF remains unchanged.
 
 ## Recommended next step
 Install and validate `pdftotext` on the VPS only when PDF extraction is intentionally enabled, then run direct ingest with `--extract-pdf`.
