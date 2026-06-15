@@ -47,6 +47,8 @@ Lessons file follow-up records reusable fixes for stale production deploys, View
 ## Latest smoke result
 P-CV-002 restored historical CV from Git commit `076adf3`; local lint, typecheck and build passed.
 
+P-CV-003 removes the current KIT grade average, ECTS count and transcript footnote from the public CV.
+
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
 - `oscarstreif.service` was active after restart.

@@ -24,11 +24,7 @@ const education: CVEntry[] = [
     organization: "Karlsruhe Institute of Technology (KIT)",
     bullets: [
       "4th semester, within the standard period of study",
-      "66 of 180 ECTS credits*",
-      "Current grade average: 2.1*",
     ],
-    note:
-      "* Preliminary status; an updated transcript will be submitted by the deadline on 30 June after module completion or after the pending final module examination in May.",
   },
   {
     date: "2015 - 2023",
