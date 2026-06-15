@@ -51,7 +51,7 @@ P-CV-003 removes the current KIT grade average, ECTS count and transcript footno
 
 P-PAGES-001 adds admin-controlled public page visibility switches for `/me`, `/projects`, and `/cv`; default runtime visibility is Me hidden, Projects hidden, CV visible.
 
-P-HOME-001 adds animated black-and-white film noise to the landing page background.
+P-HOME-002 removes animated film noise again; the landing page keeps only static photo-like grain.
 
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
