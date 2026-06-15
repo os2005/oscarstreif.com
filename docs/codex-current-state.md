@@ -41,15 +41,16 @@ Lessons file follow-up records reusable fixes for stale production deploys, View
 - Public Treffpunkt POST API has no auth/rate limit/cleanup.
 - WG dashboard depends on production project record.
 - Shared project routes changed to standalone rendering.
-- CV route is public and visible with a concise profile/CV page.
+- CV route is public and visible with the restored historical CV page from Git commit `076adf3`.
 - Do not deploy before manual checks.
 
 ## Latest smoke result
+P-CV-002 restored historical CV from Git commit `076adf3`; local lint, typecheck and build passed.
+
 P-CV-001 live CV deploy passed on `main`:
-- Commit `6c7e3cd` is deployed on `/var/www/oscarstreif.com/current`.
-- `oscarstreif.service` is active after restart.
-- `https://oscarstreif.com/cv` returns `200` and contains the new public CV content.
-- In-app Browser visual check was unavailable in this Codex session; HTML/live route smoke passed.
+- Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
+- `oscarstreif.service` was active after restart.
+- `https://oscarstreif.com/cv` returned `200`.
 
 Production deploy smoke checks passed after direct-ingest merge:
 - `/`, `/login`, `/treffpunkt`, and `/cv` return `200`.
