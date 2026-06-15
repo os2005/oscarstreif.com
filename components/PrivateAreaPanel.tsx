@@ -13,6 +13,7 @@ import {
   type ProjectsViewSection,
 } from "./ProjectManagement";
 import type { ProjectRecord } from "@/lib/project-types";
+import type { PublicPageSettings } from "@/lib/public-page-settings";
 
 type Member = {
   id: string;
@@ -36,6 +37,7 @@ type PrivateAreaPanelProps = {
   initialSection?: PrivateAreaSectionParam;
   members: Member[];
   projects: ProjectRecord[];
+  publicPageSettings: PublicPageSettings;
   sharedAccounts: Member[];
 };
 
@@ -71,6 +73,7 @@ function getInitialState(section?: PrivateAreaSectionParam): {
     case "password":
     case "invite":
     case "members":
+    case "public-pages":
       return {
         activeTopLevel: "settings",
         activeProjectsSection: null,
@@ -109,6 +112,7 @@ export function PrivateAreaPanel({
   initialSection = "projects",
   members,
   projects,
+  publicPageSettings,
   sharedAccounts,
 }: PrivateAreaPanelProps) {
   const initialState = getInitialState(initialSection);
@@ -219,6 +223,7 @@ export function PrivateAreaPanel({
               initialMemberError={initialMemberError}
               initialSection={activeSettingsSection}
               members={members}
+              publicPageSettings={publicPageSettings}
             />
           ) : null}
         </div>

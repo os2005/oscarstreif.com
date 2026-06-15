@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
 import { getAccessForRole, listMembers } from "@/lib/auth";
 import { listProjects } from "@/lib/projects";
+import { readPublicPageSettings } from "@/lib/public-page-settings";
 
 export const metadata = {
   title: "Private",
@@ -26,6 +27,7 @@ function getInitialSection(section?: string): PrivateAreaSectionParam | null {
     section === "password" ||
     section === "invite" ||
     section === "members" ||
+    section === "public-pages" ||
     section === "view-all-projects" ||
     section === "project-table" ||
     section === "create-project" ||
@@ -62,6 +64,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
         key={`${initialSection}:${params.project ?? ""}`}
         members={members}
         projects={listProjects()}
+        publicPageSettings={readPublicPageSettings()}
         sharedAccounts={members.filter((member) => member.role === "shared")}
       />
     </main>

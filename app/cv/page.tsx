@@ -1,4 +1,6 @@
 import { PageShell } from "@/components/PageShell";
+import { SunPlaceholderPage } from "@/components/SunPlaceholderPage";
+import { readPublicPageSettings } from "@/lib/public-page-settings";
 
 export const metadata = {
   title: "CV",
@@ -184,6 +186,12 @@ function CVLineBlock({ item }: { item: CVLine }) {
 }
 
 export default function CVPage() {
+  const settings = readPublicPageSettings();
+
+  if (!settings.cv) {
+    return <SunPlaceholderPage />;
+  }
+
   return (
     <PageShell eyebrow="Curriculum vitae" title="CV" quiet>
       <div className="mx-auto max-w-5xl">

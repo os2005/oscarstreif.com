@@ -5,8 +5,10 @@ import { ControlCenterAccordion } from "./ControlCenterAccordion";
 import { InviteUserForm } from "./InviteUserForm";
 import { MemberManagement } from "./MemberManagement";
 import { PasswordChangeForm } from "./PasswordChangeForm";
+import { PublicPageSettingsForm } from "./PublicPageSettingsForm";
+import type { PublicPageSettings } from "@/lib/public-page-settings";
 
-export type SettingsSection = "password" | "invite" | "members";
+export type SettingsSection = "password" | "invite" | "members" | "public-pages";
 
 type Member = {
   id: string;
@@ -20,12 +22,14 @@ type AdminSettingsBoxProps = {
   initialMemberError?: string | null;
   initialSection?: SettingsSection | null;
   members: Member[];
+  publicPageSettings: PublicPageSettings;
 };
 
 const settingsSections: { id: SettingsSection; label: string }[] = [
   { id: "password", label: "Change Password" },
   { id: "invite", label: "Create Invitation" },
   { id: "members", label: "Manage Members" },
+  { id: "public-pages", label: "Public Pages" },
 ];
 
 export function AdminSettingsBox({
@@ -33,6 +37,7 @@ export function AdminSettingsBox({
   initialMemberError = null,
   initialSection = null,
   members,
+  publicPageSettings,
 }: AdminSettingsBoxProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection | null>(initialSection);
 
@@ -54,6 +59,7 @@ export function AdminSettingsBox({
               members={members}
             />
           ) : null}
+          {section.id === "public-pages" ? <PublicPageSettingsForm settings={publicPageSettings} /> : null}
         </ControlCenterAccordion>
       ))}
     </div>

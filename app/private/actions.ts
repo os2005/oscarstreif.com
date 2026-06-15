@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { changeCurrentUserPassword, createInvitation, deleteMember, getAccessForRole, updateMemberRole } from "@/lib/auth";
 import type { Role } from "@/lib/auth-types";
+import { writePublicPageSettings } from "@/lib/public-page-settings";
 import {
   createProject,
   deleteProject,
@@ -30,6 +31,11 @@ export type InviteActionState = {
 };
 
 export type ProjectEditorActionState = {
+  error?: string;
+  success?: string;
+};
+
+export type PublicPageSettingsActionState = {
   error?: string;
   success?: string;
 };
@@ -175,6 +181,29 @@ export async function createProjectAction(
   revalidateProjectSurfaces([result.project.path, result.project.sharedPath]);
 
   return { success: "Project created successfully." };
+}
+
+export async function updatePublicPageSettingsAction(
+  _: PublicPageSettingsActionState,
+  formData: FormData
+): Promise<PublicPageSettingsActionState> {
+  const access = await getAccessForRole("admin");
+  if (!access?.allowed) {
+    return { error: "Only admins can manage public pages." };
+  }
+
+  writePublicPageSettings({
+    me: formData.get("me") === "on",
+    projects: formData.get("projects") === "on",
+    cv: formData.get("cv") === "on",
+  });
+
+  revalidatePath("/me");
+  revalidatePath("/projects");
+  revalidatePath("/cv");
+  revalidatePath("/private");
+
+  return { success: "Public page visibility updated." };
 }
 
 export async function saveProjectAction(
