@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AccessDenied } from "@/components/AccessDenied";
-import { Header } from "@/components/Header";
+import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { getAccessForRole } from "@/lib/auth";
 import { LlmWikiIngestWorkspace } from "@/projects/llm-wiki/LlmWikiIngestWorkspace";
 import { LlmWikiWorkspace } from "@/projects/llm-wiki/LlmWikiWorkspace";
@@ -36,13 +36,14 @@ export default async function LlmWikiPage({ searchParams }: LlmWikiPageProps) {
   const isWikiView = params.view === "wiki";
 
   return (
-    <main className="min-h-dvh bg-ink text-paper" data-llm-wiki-ui-version={LLM_WIKI_UI_VERSION}>
-      <Header variant="dark" />
-      {isWikiView ? (
-        <LlmWikiWorkspace openEntryInModal={Boolean(params.file || params.kind)} snapshot={getWikiSnapshot(params)} />
-      ) : (
-        <LlmWikiIngestWorkspace inbox={getInboxSnapshot()} />
-      )}
-    </main>
+    <WorkspaceShell active="llm-wiki" eyebrow="Private Knowledge Workspace" title="LLM Wiki">
+      <div data-llm-wiki-ui-version={LLM_WIKI_UI_VERSION}>
+        {isWikiView ? (
+          <LlmWikiWorkspace openEntryInModal={Boolean(params.file || params.kind)} snapshot={getWikiSnapshot(params)} />
+        ) : (
+          <LlmWikiIngestWorkspace inbox={getInboxSnapshot()} />
+        )}
+      </div>
+    </WorkspaceShell>
   );
 }

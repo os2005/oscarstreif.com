@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AdminSettingsBox, type SettingsSection } from "./AdminSettingsBox";
-import { ControlCenterAccordion } from "./ControlCenterAccordion";
 import {
   CreateProjectSection,
   ExistingProjectsSection,
@@ -117,114 +116,98 @@ export function PrivateAreaPanel({
 }: PrivateAreaPanelProps) {
   const initialState = getInitialState(initialSection);
   const [activeTopLevel, setActiveTopLevel] = useState<ControlCenterTopLevelSection>(initialState.activeTopLevel);
-  const [activeProjectsSection, setActiveProjectsSection] = useState<ProjectsViewSection | null>(
-    initialState.activeProjectsSection
-  );
-  const [activeManageSection, setActiveManageSection] = useState<ManageProjectSection | null>(
-    initialState.activeManageSection
-  );
   const activeSettingsSection = initialState.activeSettingsSection;
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 pb-12 pt-8 md:px-8">
-      <section className="min-h-[calc(100dvh-128px)] overflow-hidden rounded-[2rem] border border-paper/12 bg-white/[0.045] shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur">
-        <div className="border-b border-paper/10 bg-black/18 px-5 py-5 md:px-8 md:py-6">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/42">Workspace</p>
-              <h1 className="mt-3 font-display text-3xl leading-none text-paper md:text-4xl">Private Workspace</h1>
-            </div>
-
-            <div className="flex flex-wrap gap-2 rounded-full border border-paper/12 bg-black/24 p-1.5">
-              {topLevelSections.map((section) => {
-                const isActive = activeTopLevel === section.id;
-
-                return (
-                  <button
-                    className={`rounded-full px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] transition ${
-                      isActive
-                        ? "bg-accent text-white shadow-[0_0_24px_rgba(20,92,255,0.24)]"
-                        : "text-paper/62 hover:bg-white/6 hover:text-paper"
-                    }`}
-                    key={section.id}
-                    onClick={() => setActiveTopLevel(section.id)}
-                    type="button"
-                  >
-                    {section.label}
-                  </button>
-                );
-              })}
-              <Link
-                className="rounded-full px-4 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/62 transition hover:bg-white/6 hover:text-paper"
-                href="/private/llm-wiki"
-              >
-                LLM Wiki
-              </Link>
-            </div>
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-8 md:px-8">
+      <section className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="rounded-3xl border border-neutral-200 bg-white p-3 shadow-sm lg:sticky lg:top-6 lg:self-start">
+          <div className="px-3 py-3">
+            <p className="text-sm font-medium text-neutral-500">Control Center</p>
+            <p className="mt-1 text-lg font-semibold tracking-tight text-neutral-950">Workspace Tools</p>
           </div>
-        </div>
+          <div className="mt-2 grid gap-1">
+            {topLevelSections.map((section) => {
+              const isActive = activeTopLevel === section.id;
 
-        <div className="flex-1 px-5 py-6 md:px-8 md:py-8">
+              return (
+                <button
+                  className={`rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${
+                    isActive ? "bg-neutral-950 text-white" : "text-neutral-700 hover:bg-neutral-100"
+                  }`}
+                  key={section.id}
+                  onClick={() => setActiveTopLevel(section.id)}
+                  type="button"
+                >
+                  {section.label}
+                </button>
+              );
+            })}
+            <Link className="rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100" href="/private/llm-wiki">
+              LLM Wiki
+            </Link>
+          </div>
+        </aside>
+
+        <div className="min-w-0">
           {activeTopLevel === "projects" ? (
-            <div className="space-y-4">
-              <ControlCenterAccordion
-                isOpen={activeProjectsSection === "view-all-projects"}
-                label="View All Projects"
-                onToggle={() =>
-                  setActiveProjectsSection((current) =>
-                    current === "view-all-projects" ? null : "view-all-projects"
-                  )
-                }
-              >
+            <div className="grid gap-6">
+              <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-500">Overview</p>
+                    <h2 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">All Projects</h2>
+                  </div>
+                </div>
                 <ViewAllProjectsSection projects={projects} />
-              </ControlCenterAccordion>
-              <ControlCenterAccordion
-                isOpen={activeProjectsSection === "project-table"}
-                label="Project Table View"
-                onToggle={() =>
-                  setActiveProjectsSection((current) => (current === "project-table" ? null : "project-table"))
-                }
-              >
+              </section>
+              <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="mb-5">
+                  <p className="text-sm font-medium text-neutral-500">Registry</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">Project Table</h2>
+                </div>
                 <ProjectTableSection projects={projects} sharedAccounts={sharedAccounts} />
-              </ControlCenterAccordion>
+              </section>
             </div>
           ) : null}
 
           {activeTopLevel === "manage-projects" ? (
-            <div className="space-y-4">
-              <ControlCenterAccordion
-                isOpen={activeManageSection === "create-project"}
-                label="Create New Project"
-                onToggle={() =>
-                  setActiveManageSection((current) => (current === "create-project" ? null : "create-project"))
-                }
-              >
+            <div className="grid gap-6">
+              <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="mb-5">
+                  <p className="text-sm font-medium text-neutral-500">New record</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">Create Project</h2>
+                </div>
                 <CreateProjectSection />
-              </ControlCenterAccordion>
-              <ControlCenterAccordion
-                isOpen={activeManageSection === "existing-projects"}
-                label="All Projects / Manage Existing Projects"
-                onToggle={() =>
-                  setActiveManageSection((current) => (current === "existing-projects" ? null : "existing-projects"))
-                }
-              >
+              </section>
+              <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="mb-5">
+                  <p className="text-sm font-medium text-neutral-500">Editors</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">Manage Existing Projects</h2>
+                </div>
                 <ExistingProjectsSection
                   focusedProjectId={focusedProjectId}
                   key={focusedProjectId ?? "projects"}
                   projects={projects}
                 />
-              </ControlCenterAccordion>
+              </section>
             </div>
           ) : null}
 
           {activeTopLevel === "settings" ? (
-            <AdminSettingsBox
-              initialAdminEmail={initialAdminEmail}
-              initialMemberError={initialMemberError}
-              initialSection={activeSettingsSection}
-              members={members}
-              publicPageSettings={publicPageSettings}
-            />
+            <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+              <div className="mb-5">
+                <p className="text-sm font-medium text-neutral-500">Configuration</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">Settings</h2>
+              </div>
+              <AdminSettingsBox
+                initialAdminEmail={initialAdminEmail}
+                initialMemberError={initialMemberError}
+                initialSection={activeSettingsSection}
+                members={members}
+                publicPageSettings={publicPageSettings}
+              />
+            </section>
           ) : null}
         </div>
       </section>

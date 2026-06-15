@@ -1,6 +1,6 @@
 import { AccessDenied } from "@/components/AccessDenied";
-import { Header } from "@/components/Header";
 import { PrivateAreaPanel, type PrivateAreaSectionParam } from "@/components/PrivateAreaPanel";
+import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { redirect } from "next/navigation";
 import { ADMIN_EMAIL } from "@/lib/auth-config";
 import { getAccessForRole, listMembers } from "@/lib/auth";
@@ -54,8 +54,7 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
   }
 
   return (
-    <main className="min-h-dvh bg-ink text-paper">
-      <Header variant="dark" />
+    <WorkspaceShell active="private" eyebrow="Admin Workspace" title="Private Workspace">
       <PrivateAreaPanel
         focusedProjectId={params.project ?? null}
         initialAdminEmail={ADMIN_EMAIL}
@@ -67,6 +66,6 @@ export default async function PrivatePage({ searchParams }: PrivatePageProps) {
         publicPageSettings={readPublicPageSettings()}
         sharedAccounts={members.filter((member) => member.role === "shared")}
       />
-    </main>
+    </WorkspaceShell>
   );
 }

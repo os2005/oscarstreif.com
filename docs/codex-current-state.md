@@ -53,6 +53,8 @@ P-PAGES-001 adds admin-controlled public page visibility switches for `/me`, `/p
 
 P-HOME-002 removes animated film noise again; the landing page keeps only static photo-like grain.
 
+P-WORKSPACE-002 redesigns logged-in workspace areas with a light Apple-like shell for `/private`, `/shared`, and `/private/llm-wiki`, while leaving public pages and login unchanged.
+
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
 - `oscarstreif.service` was active after restart.

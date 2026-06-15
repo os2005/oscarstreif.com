@@ -1,6 +1,6 @@
 import { AccessDenied } from "@/components/AccessDenied";
-import { Header } from "@/components/Header";
 import { ProjectGrid } from "@/components/ProjectGrid";
+import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { redirect } from "next/navigation";
 import { getAccessForRole } from "@/lib/auth";
 import { listSharedProjectsForUser } from "@/lib/projects";
@@ -24,18 +24,17 @@ export default async function SharedPage() {
   const displayName = access.user.email;
 
   return (
-    <main className="min-h-dvh bg-ink text-paper">
-      <Header variant="dark" />
-      <section className="mx-auto min-h-[calc(100dvh-88px)] w-full max-w-7xl px-6 pb-12 pt-8 md:px-8">
-        <div className="rounded-[2rem] border border-paper/12 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur md:p-8">
-          <div className="flex flex-col gap-5 border-b border-paper/10 pb-6 md:flex-row md:items-end md:justify-between">
+    <WorkspaceShell active="shared" eyebrow="Shared Workspace" title="Protected Shared Area">
+      <section className="mx-auto min-h-[calc(100dvh-160px)] w-full max-w-[1440px] px-5 py-8 md:px-8">
+        <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-8">
+          <div className="flex flex-col gap-5 border-b border-neutral-200 pb-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper/46">Protected</p>
-              <h1 className="mt-3 font-display text-4xl leading-none text-paper md:text-5xl">Protected Shared Area</h1>
+              <p className="text-sm font-medium text-neutral-500">Projects shared with this account</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 md:text-3xl">Shared Projects</h2>
             </div>
-            <div className="rounded-[1.25rem] border border-paper/12 bg-black/18 px-4 py-3 text-left md:text-right">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper/46">Logged in as</p>
-              <p className="mt-2 text-sm text-paper/76">{displayName}</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-left md:text-right">
+              <p className="text-xs font-medium text-neutral-500">Logged in as</p>
+              <p className="mt-1 text-sm font-medium text-neutral-800">{displayName}</p>
             </div>
           </div>
 
@@ -49,6 +48,6 @@ export default async function SharedPage() {
           </div>
         </div>
       </section>
-    </main>
+    </WorkspaceShell>
   );
 }
