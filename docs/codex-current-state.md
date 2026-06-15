@@ -45,6 +45,12 @@ Lessons file follow-up records reusable fixes for stale production deploys, View
 - Do not deploy before manual checks.
 
 ## Latest smoke result
+P-CV-001 live CV deploy passed on `main`:
+- Commit `6c7e3cd` is deployed on `/var/www/oscarstreif.com/current`.
+- `oscarstreif.service` is active after restart.
+- `https://oscarstreif.com/cv` returns `200` and contains the new public CV content.
+- In-app Browser visual check was unavailable in this Codex session; HTML/live route smoke passed.
+
 Production deploy smoke checks passed after direct-ingest merge:
 - `/`, `/login`, `/treffpunkt`, and `/cv` return `200`.
 - `/private/llm-wiki` and `/private/llm-wiki?view=wiki` return `307` to login without auth.
