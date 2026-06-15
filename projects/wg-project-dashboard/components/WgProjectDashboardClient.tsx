@@ -2,7 +2,13 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteWgProjectAction, saveWgProjectAction, type WgProjectActionState } from "../server/actions";
+import {
+  deleteWgProjectAction,
+  saveWgProjectAction,
+  toggleWgChecklistItemAction,
+  toggleWgFundingCompleteAction,
+  type WgProjectActionState,
+} from "../server/actions";
 import type {
   WgChecklistItem,
   WgDashboardProject,
@@ -658,6 +664,95 @@ function SummaryCard({
   );
 }
 
+function FundingToggle({ project }: { project: WgDashboardProject }) {
+  const funded = isFundedProject(project);
+
+  return (
+    <form action={toggleWgFundingCompleteAction}>
+      <input name="projectId" type="hidden" value={project.id} />
+      <input name="completed" type="hidden" value={funded ? "false" : "true"} />
+      <button
+        className={`inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition ${
+          funded
+            ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+            : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
+        }`}
+        type="submit"
+      >
+        <span
+          className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] ${
+            funded ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white text-transparent"
+          }`}
+        >
+          OK
+        </span>
+        {funded ? "Funding complete" : "Mark funding complete"}
+      </button>
+    </form>
+  );
+}
+
+function ChecklistToggleRow({
+  compact = false,
+  item,
+  projectId,
+}: {
+  compact?: boolean;
+  item: WgChecklistItem;
+  projectId: string;
+}) {
+  return (
+    <form action={toggleWgChecklistItemAction}>
+      <input name="projectId" type="hidden" value={projectId} />
+      <input name="itemId" type="hidden" value={item.id} />
+      <input name="completed" type="hidden" value={item.completed ? "false" : "true"} />
+      <button
+        className={`flex w-full items-start gap-3 rounded-2xl border border-slate-200 bg-white text-left text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 ${
+          compact ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm"
+        }`}
+        type="submit"
+      >
+        <span
+          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[10px] font-semibold ${
+            item.completed ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white text-transparent"
+          }`}
+        >
+          OK
+        </span>
+        <span className={item.completed ? "text-slate-500 line-through decoration-slate-400" : "text-slate-800"}>
+          {item.label}
+        </span>
+      </button>
+    </form>
+  );
+}
+
+function ChecklistPanel({ compact = false, project }: { compact?: boolean; project: WgDashboardProject }) {
+  const checklist = getChecklistProgress(project);
+
+  return (
+    <details className="group rounded-[22px] border border-slate-200 bg-slate-50 p-3" open={!compact}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-1 py-1 text-sm font-semibold text-slate-800">
+        <span>Open Checklist</span>
+        <span className="rounded-full bg-white px-2.5 py-1 text-xs text-slate-600 ring-1 ring-slate-200">
+          {checklist.completed}/{checklist.total || 0}
+        </span>
+      </summary>
+      <div className="mt-3 space-y-2">
+        {project.checklistItems.length ? (
+          project.checklistItems.map((item) => (
+            <ChecklistToggleRow compact={compact} item={item} key={item.id} projectId={project.id} />
+          ))
+        ) : (
+          <p className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-500">
+            No checklist items yet.
+          </p>
+        )}
+      </div>
+    </details>
+  );
+}
+
 function ProjectCard({
   project,
   selected,
@@ -677,7 +772,7 @@ function ProjectCard({
     <article
       className={`rounded-[28px] border p-5 transition ${
         selected
-          ? "border-slate-900 bg-slate-900 text-white shadow-[0_22px_60px_rgba(15,23,42,0.18)]"
+          ? "border-slate-300 bg-slate-50 text-slate-950 ring-2 ring-slate-900/10 shadow-[0_18px_48px_rgba(15,23,42,0.1)]"
           : "border-slate-200 bg-white text-slate-900 shadow-[0_16px_40px_rgba(15,23,42,0.06)]"
       }`}
     >
@@ -688,31 +783,31 @@ function ProjectCard({
         </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            selected ? "bg-white/10 text-white" : "bg-slate-100 text-slate-600"
+            selected ? "bg-white text-slate-700 ring-1 ring-slate-200" : "bg-slate-100 text-slate-600"
           }`}
         >
           {readinessLabel}
         </span>
       </div>
 
-      <p className={`mt-4 text-sm leading-7 ${selected ? "text-slate-200" : "text-slate-600"}`}>{project.description}</p>
+      <p className="mt-4 text-sm leading-7 text-slate-600">{project.description}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span className={selected ? "text-slate-300" : "text-slate-500"}>Funding</span>
+            <span className="text-slate-500">Funding</span>
             <span>{formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}</span>
           </div>
-          <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${selected ? "bg-white/10" : "bg-slate-200"}`}>
+          <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full rounded-full bg-emerald-400" style={{ width: `${project.currentSavings > 0 ? Math.max(8, fundingRatio * 100) : 0}%` }} />
           </div>
         </div>
         <div>
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span className={selected ? "text-slate-300" : "text-slate-500"}>Checklist</span>
+            <span className="text-slate-500">Checklist</span>
             <span>{checklist.completed}/{checklist.total || 0}</span>
           </div>
-          <div className={`mt-2 h-2.5 overflow-hidden rounded-full ${selected ? "bg-white/10" : "bg-slate-200"}`}>
+          <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full rounded-full bg-sky-400" style={{ width: `${checklist.completed > 0 ? Math.max(8, checklist.ratio * 100) : 0}%` }} />
           </div>
         </div>
@@ -722,7 +817,7 @@ function ProjectCard({
         {project.shoppingItems.slice(0, 3).map((item) => (
           <span
             className={`rounded-full px-3 py-1 text-xs ${
-              selected ? "bg-white/10 text-slate-100" : "bg-slate-100 text-slate-600"
+              selected ? "bg-white text-slate-600 ring-1 ring-slate-200" : "bg-slate-100 text-slate-600"
             }`}
             key={item.id}
           >
@@ -731,20 +826,24 @@ function ProjectCard({
         ))}
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-5">
+        <FundingToggle project={project} />
+      </div>
+
+      <div className="mt-4">
+        <ChecklistPanel compact project={project} />
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-            selected ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-700"
-          }`}
+          className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
           onClick={onSelect}
           type="button"
         >
           View details
         </button>
         <button
-          className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-            selected ? "border-white/20 text-white hover:bg-white/10" : "border-slate-300 text-slate-700 hover:bg-slate-100"
-          }`}
+          className="rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
           onClick={onEdit}
           type="button"
         >
@@ -795,9 +894,14 @@ function ProjectDetailPanel({ project }: { project: WgDashboardProject | null })
 
       <div className="mt-6 space-y-4">
         <div className="rounded-[22px] bg-slate-50 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-slate-500">Funding</span>
-            <span className="text-sm font-semibold text-slate-900">{formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}</span>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="text-sm font-medium text-slate-500">Funding</span>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{formatCurrency(project.currentSavings)} / {formatCurrency(project.totalBudget)}</p>
+            </div>
+            <div className="sm:min-w-[210px]">
+              <FundingToggle project={project} />
+            </div>
           </div>
           <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full rounded-full bg-emerald-400" style={{ width: `${project.currentSavings > 0 ? Math.max(8, fundingRatio * 100) : 0}%` }} />
@@ -816,7 +920,7 @@ function ProjectDetailPanel({ project }: { project: WgDashboardProject | null })
       </div>
 
       <div className="mt-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Stage timeline</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Storage Timeline</p>
         <div className="mt-3">
           <StageTimeline stage={project.stage} />
         </div>
@@ -853,25 +957,7 @@ function ProjectDetailPanel({ project }: { project: WgDashboardProject | null })
       </div>
 
       <div className="mt-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Checklist</p>
-        <div className="mt-3 space-y-3">
-          {project.checklistItems.length ? (
-            project.checklistItems.map((item) => (
-              <div className="flex items-center gap-3 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3" key={item.id}>
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
-                    item.completed ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"
-                  }`}
-                >
-                  {item.completed ? "OK" : "..."}
-                </span>
-                <span className={item.completed ? "text-slate-900" : "text-slate-600"}>{item.label}</span>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-slate-500">No checklist items yet.</p>
-          )}
-        </div>
+        <ChecklistPanel project={project} />
       </div>
 
       <div className="mt-6 grid gap-4">
@@ -989,7 +1075,7 @@ export function WgProjectDashboardClient({
             </div>
           </div>
 
-          <div className="grid gap-6 px-5 py-5 sm:px-8 sm:py-8 xl:grid-cols-[260px_minmax(0,1fr)_390px]">
+          <div className="grid gap-6 px-5 py-5 sm:px-8 sm:py-8 xl:grid-cols-[240px_minmax(0,1fr)_minmax(360px,440px)] 2xl:grid-cols-[260px_minmax(0,1fr)_minmax(400px,500px)]">
             <aside className="rounded-[28px] border border-slate-200 bg-[#f8faf8] p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Navigation</p>
               <div className="mt-4 grid gap-2">

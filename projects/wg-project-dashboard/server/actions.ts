@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { getWgProjectDashboardAccessContext } from "./runtime-project";
 import {
   deleteWgProject,
+  updateWgProjectDashboardStore,
   upsertWgProject,
 } from "../data/store";
 import type {
@@ -259,4 +260,63 @@ export async function deleteWgProjectAction(
   return {
     success: "WG project deleted successfully.",
   };
+}
+
+export async function toggleWgChecklistItemAction(formData: FormData): Promise<void> {
+  const access = await ensureDashboardAccess();
+
+  if (!access.ok) {
+    return;
+  }
+
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  const itemId = String(formData.get("itemId") ?? "").trim();
+  const completed = String(formData.get("completed") ?? "") === "true";
+
+  if (!projectId || !itemId) {
+    return;
+  }
+
+  updateWgProjectDashboardStore((store) => {
+    const project = store.projects.find((entry) => entry.id === projectId);
+
+    if (!project) {
+      return;
+    }
+
+    project.checklistItems = project.checklistItems.map((item) =>
+      item.id === itemId ? { ...item, completed } : item
+    );
+    project.updatedAt = new Date().toISOString();
+  });
+
+  revalidateDashboardPaths();
+}
+
+export async function toggleWgFundingCompleteAction(formData: FormData): Promise<void> {
+  const access = await ensureDashboardAccess();
+
+  if (!access.ok) {
+    return;
+  }
+
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  const completed = String(formData.get("completed") ?? "") === "true";
+
+  if (!projectId) {
+    return;
+  }
+
+  updateWgProjectDashboardStore((store) => {
+    const project = store.projects.find((entry) => entry.id === projectId);
+
+    if (!project) {
+      return;
+    }
+
+    project.currentSavings = completed ? project.totalBudget : 0;
+    project.updatedAt = new Date().toISOString();
+  });
+
+  revalidateDashboardPaths();
 }

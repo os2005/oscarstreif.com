@@ -55,6 +55,8 @@ P-HOME-002 removes animated film noise again; the landing page keeps only static
 
 P-WORKSPACE-002 redesigns logged-in workspace areas with a light Apple-like shell for `/private`, `/shared`, and `/private/llm-wiki`, while leaving public pages and login unchanged.
 
+P-WORKSPACE-003 polishes the logged-in workspace: duplicate LLM Wiki entry removed from Private Control Center, private button readability scoped in CSS, WG dashboard card/detail layout tightened, and WG checklist/funding can be toggled directly from overview/detail without opening Edit.
+
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
 - `oscarstreif.service` was active after restart.

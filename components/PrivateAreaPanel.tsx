@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { AdminSettingsBox, type SettingsSection } from "./AdminSettingsBox";
 import {
@@ -143,9 +142,6 @@ export function PrivateAreaPanel({
                 </button>
               );
             })}
-            <Link className="rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100" href="/private/llm-wiki">
-              LLM Wiki
-            </Link>
           </div>
         </aside>
 

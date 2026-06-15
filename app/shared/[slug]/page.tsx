@@ -29,14 +29,14 @@ function getProjectExitHref(project: Pick<ProjectRecord, "visibility">) {
 
 function MissingProjectModulePage({ project }: { project: ProjectRecord }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-neutral-950 px-6 py-20 text-neutral-100">
-      <section className="w-full max-w-xl border border-white/12 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
+    <main className="flex min-h-dvh items-center justify-center bg-[#f5f5f7] px-6 py-20 text-neutral-950">
+      <section className="w-full max-w-xl rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Project runtime</p>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white">Project module missing</h1>
-        <p className="mt-4 text-sm leading-7 text-neutral-300">
-          The active project record for <span className="text-neutral-100">{project.title}</span> exists, but no
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-neutral-950">Project module missing</h1>
+        <p className="mt-4 text-sm leading-7 text-neutral-600">
+          The active project record for <span className="font-medium text-neutral-950">{project.title}</span> exists, but no
           registered project module was found for the slug{" "}
-          <span className="text-neutral-100">{project.slug}</span>.
+          <span className="font-medium text-neutral-950">{project.slug}</span>.
         </p>
       </section>
     </main>
