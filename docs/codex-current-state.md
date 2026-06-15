@@ -41,7 +41,7 @@ Lessons file follow-up records reusable fixes for stale production deploys, View
 - Public Treffpunkt POST API has no auth/rate limit/cleanup.
 - WG dashboard depends on production project record.
 - Shared project routes changed to standalone rendering.
-- CV is placeholder.
+- CV route is public and visible with a concise profile/CV page.
 - Do not deploy before manual checks.
 
 ## Latest smoke result
