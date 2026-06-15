@@ -59,6 +59,8 @@ P-WORKSPACE-003 polishes the logged-in workspace: duplicate LLM Wiki entry remov
 
 P-WORKSPACE-004 adds a localStorage-backed Dark/Light toggle to the logged-in WorkspaceShell, tightens LLM Wiki light styling via scoped CSS, fixes Public Pages toggle contrast, and makes the project exit X visible before interaction.
 
+P-WORKSPACE-005 replaces the text Dark/Light toggle with a round animated icon toggle and tightens scoped button color rules so secondary/bordered buttons invert cleanly between light and dark workspace modes.
+
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
 - `oscarstreif.service` was active after restart.
