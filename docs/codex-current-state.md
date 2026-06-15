@@ -57,6 +57,8 @@ P-WORKSPACE-002 redesigns logged-in workspace areas with a light Apple-like shel
 
 P-WORKSPACE-003 polishes the logged-in workspace: duplicate LLM Wiki entry removed from Private Control Center, private button readability scoped in CSS, WG dashboard card/detail layout tightened, and WG checklist/funding can be toggled directly from overview/detail without opening Edit.
 
+P-WORKSPACE-004 adds a localStorage-backed Dark/Light toggle to the logged-in WorkspaceShell, tightens LLM Wiki light styling via scoped CSS, fixes Public Pages toggle contrast, and makes the project exit X visible before interaction.
+
 P-CV-001 live CV deploy passed on `main`:
 - Commit `6c7e3cd` deployed a temporary concise CV replacement on `/var/www/oscarstreif.com/current`.
 - `oscarstreif.service` was active after restart.

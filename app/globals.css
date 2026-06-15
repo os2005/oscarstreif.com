@@ -172,6 +172,165 @@ body {
   color: #1d1d1f !important;
 }
 
+.workspace-theme-toggle__option {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 0.75rem;
+  color: #6e6e73;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.workspace-theme-toggle__option-active {
+  background: #1d1d1f;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] {
+  color: #1d1d1f;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] :is(section, article, aside, div, pre, textarea, input, form)[class*="border"] {
+  border-color: #e5e5ea !important;
+  border-radius: 1.5rem;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] :is(section, article, aside, div)[class*="bg-black/"],
+.private-workspace-light [data-llm-wiki-ui-version] :is(section, article, aside, div)[class*="bg-white/"] {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.035);
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] pre,
+.private-workspace-light [data-llm-wiki-ui-version] textarea,
+.private-workspace-light [data-llm-wiki-ui-version] input {
+  background-color: #f5f5f7 !important;
+  color: #1d1d1f !important;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-paper/"],
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-white/"] {
+  color: #6e6e73 !important;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-paper"],
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-white"] {
+  color: #1d1d1f !important;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-paper/"],
+.private-workspace-light [data-llm-wiki-ui-version] [class*="text-white/"] {
+  color: #6e6e73 !important;
+}
+
+.private-workspace-light [data-llm-wiki-ui-version] button[class*="bg-paper"],
+.private-workspace-light [data-llm-wiki-ui-version] a[class*="bg-paper"],
+.private-workspace-light [data-llm-wiki-ui-version] button[type="submit"] {
+  background-color: #1d1d1f !important;
+  border-color: #1d1d1f !important;
+  color: #ffffff !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light {
+  background: #111113;
+  color: #f5f5f7;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light header {
+  background: #18181b !important;
+  border-color: #2f2f35 !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-white"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-neutral-50"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-slate-50"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-[#f5f5f7]"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-[#f7faf8]"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-[#f8faf7]"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-[#f8faf8]"] {
+  background-color: #1c1c1f !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-neutral-100"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-slate-100"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-slate-200"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="bg-neutral-200"] {
+  background-color: #2a2a2f !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light [class*="border-neutral-200"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="border-neutral-300"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="border-slate-200"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="border-slate-300"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="border-paper/"] {
+  border-color: #34343a !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-950"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-900"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-950"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-900"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-800"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-ink"],
+html[data-workspace-theme="dark"] .private-workspace-light .text-paper {
+  color: #f5f5f7 !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-800"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-700"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-600"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-neutral-500"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-700"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-600"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-slate-500"],
+html[data-workspace-theme="dark"] .private-workspace-light [class*="text-paper/"] {
+  color: #b6b6bd !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light input:not([type="checkbox"]),
+html[data-workspace-theme="dark"] .private-workspace-light select,
+html[data-workspace-theme="dark"] .private-workspace-light textarea,
+html[data-workspace-theme="dark"] .private-workspace-light pre {
+  background-color: #151518 !important;
+  border-color: #34343a !important;
+  color: #f5f5f7 !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light button[class*="bg-white"],
+html[data-workspace-theme="dark"] .private-workspace-light a[class*="bg-white"] {
+  background-color: #242428 !important;
+  color: #f5f5f7 !important;
+}
+
+html[data-workspace-theme="dark"] .private-workspace-light button[class*="bg-neutral-950"],
+html[data-workspace-theme="dark"] .private-workspace-light a[class*="bg-neutral-950"],
+html[data-workspace-theme="dark"] .private-workspace-light button[class*="bg-slate-900"],
+html[data-workspace-theme="dark"] .private-workspace-light a[class*="bg-slate-900"] {
+  background-color: #f5f5f7 !important;
+  border-color: #f5f5f7 !important;
+  color: #111113 !important;
+}
+
+html[data-workspace-theme="dark"] .workspace-theme-toggle {
+  background: #242428 !important;
+  border-color: #34343a !important;
+  color: #f5f5f7 !important;
+}
+
+html[data-workspace-theme="dark"] .workspace-theme-toggle__option {
+  color: #b6b6bd;
+}
+
+html[data-workspace-theme="dark"] .workspace-theme-toggle__option-active {
+  background: #f5f5f7;
+  color: #111113;
+}
+
 a {
   color: inherit;
   text-decoration: none;

@@ -40,13 +40,13 @@ export function PublicPageSettingsForm({ settings }: PublicPageSettingsFormProps
       <div className="grid gap-3">
         {pages.map((page) => (
           <label
-            className="flex cursor-pointer flex-col gap-4 rounded-3xl border border-paper/12 bg-black/20 p-5 transition hover:border-paper/24 md:flex-row md:items-center md:justify-between"
+            className="flex cursor-pointer flex-col gap-4 rounded-3xl border border-neutral-200 bg-white p-5 text-neutral-950 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50 md:flex-row md:items-center md:justify-between"
             htmlFor={`public-page-${page.key}`}
             key={page.key}
           >
             <span>
-              <span className="block text-lg text-paper">{page.label}</span>
-              <span className="mt-1 block text-sm leading-6 text-paper/54">{page.description}</span>
+              <span className="block text-lg font-semibold text-neutral-950">{page.label}</span>
+              <span className="mt-1 block text-sm leading-6 text-neutral-600">{page.description}</span>
             </span>
             <span className="relative inline-flex h-8 w-14 shrink-0 items-center">
               <input
@@ -56,15 +56,15 @@ export function PublicPageSettingsForm({ settings }: PublicPageSettingsFormProps
                 name={page.key}
                 type="checkbox"
               />
-              <span className="absolute inset-0 rounded-full border border-paper/16 bg-black/55 transition peer-checked:border-accent peer-checked:bg-accent" />
-              <span className="absolute left-1 h-6 w-6 rounded-full bg-paper transition peer-checked:translate-x-6 peer-checked:bg-white" />
+              <span className="absolute inset-0 rounded-full border border-neutral-300 bg-neutral-200 transition peer-checked:border-neutral-950 peer-checked:bg-neutral-950 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-neutral-950" />
+              <span className="absolute left-1 h-6 w-6 rounded-full bg-white shadow-sm transition peer-checked:translate-x-6 peer-checked:bg-white" />
             </span>
           </label>
         ))}
       </div>
 
       <button
-        className="rounded-2xl border border-paper/16 bg-paper px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-2xl border border-neutral-950 bg-neutral-950 px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

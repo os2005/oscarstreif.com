@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "./LogoutButton";
+import { WorkspaceThemeToggle } from "./WorkspaceThemeToggle";
 
 type WorkspaceShellProps = {
   active: "private" | "shared" | "llm-wiki";
@@ -50,6 +51,7 @@ export function WorkspaceShell({ active, children, eyebrow, title }: WorkspaceSh
             <div className="rounded-full border border-neutral-200 bg-white px-1 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
               <LogoutButton />
             </div>
+            <WorkspaceThemeToggle />
           </div>
         </nav>
       </header>
